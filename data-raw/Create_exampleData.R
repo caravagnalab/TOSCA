@@ -47,30 +47,30 @@ V = 10
 beta_omega = V / E
 alpha_omega = E*beta_omega
 
-convert_date_real = function(x) {
-  y = 2000 + x %>% floor()
-  py = (x - (x %>% floor())) * 365
-  m = (py / 30) %>% floor
-  d = (py - (m * 30)) %>% floor
-  date_string = paste(y, m +1, d + 1, sep = '-')
-
-  date_string = ifelse (d>30, paste(y, m +1, 30, sep = '-'), date_string)
-  date_string = ifelse ((m==1 & d>27), paste(y, m +1, 28, sep = '-'), date_string)
-  date_string = ifelse (m>=12, paste(y+1, 1, 1, sep = '-'), date_string)
-
-  return(date_string)
-}
-
-convert_real_date = function(date = NULL, ref_year = 2000) {
-  ref_month = 1
-  ref_day = 1
-
-  year = as.integer(strsplit(date, '-')[[1]][1])
-  month = as.integer(strsplit(date, '-')[[1]][2])
-  day = as.integer(strsplit(date, '-')[[1]][3])
-
-  return((year - ref_year) + (month / 12 - ref_month / 12) + (day / 365 - ref_day / 365))
-}
+# convert_date_real = function(x) {
+#   y = 2000 + x %>% floor()
+#   py = (x - (x %>% floor())) * 365
+#   m = (py / 30) %>% floor
+#   d = (py - (m * 30)) %>% floor
+#   date_string = paste(y, m +1, d + 1, sep = '-')
+#
+#   date_string = ifelse (d>30, paste(y, m +1, 30, sep = '-'), date_string)
+#   date_string = ifelse ((m==1 & d>27), paste(y, m +1, 28, sep = '-'), date_string)
+#   date_string = ifelse (m>=12, paste(y+1, 1, 1, sep = '-'), date_string)
+#
+#   return(date_string)
+# }
+#
+# convert_real_date = function(date = NULL, ref_year = 2000) {
+#   ref_month = 1
+#   ref_day = 1
+#
+#   year = as.integer(strsplit(date, '-')[[1]][1])
+#   month = as.integer(strsplit(date, '-')[[1]][2])
+#   day = as.integer(strsplit(date, '-')[[1]][3])
+#
+#   return((year - ref_year) + (month / 12 - ref_month / 12) + (day / 365 - ref_day / 365))
+# }
 
 exampleData = list(
   'Clinical Timepoints' =
