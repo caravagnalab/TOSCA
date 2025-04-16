@@ -58,7 +58,7 @@ rate between the first and last sample
 You can install the development version of TOSCA like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+devtools::install_github("AliceAntonello/TOSCA")
 ```
 
 ## Example
