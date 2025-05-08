@@ -1,5 +1,7 @@
 data(exampleData)
 
-clinical_data = exampleData$`Clinical Timepoints`
+clinical_records = exampleData$`Clinical Timepoints`
 mutations = exampleData$Mutations
 parameters = exampleData$Parameters
+
+#x = init(mutations=mutations, clinical_records=clinical_records, parameters=parameters)
