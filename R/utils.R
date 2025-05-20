@@ -1,7 +1,9 @@
+library(dplyr)
+
 check_input_mutations = function(mutations){
   condition1= class(mutations) == "data.frame"
   condition2= (colnames(mutations) == c('Mutation.type','Number.of.mutations')) %>% sum() == ncol(mutations)
-  condition3= (c('m_clock', 'm_alpha', 'm_beta', 'm_th_1') %in% mutations$Mutation.type) %>% sum() == nrow(mutations)
+  condition3= (c('m_clock', 'm_alpha', 'm_beta', 'm_th_1') %in% mutations$Mutation.type) %>% sum() == 4
   condition4= class(mutations$Number.of.mutations) == 'numeric'
 
   if(!condition1){
@@ -21,17 +23,17 @@ check_input_mutations = function(mutations){
 
 check_input_clinical = function(clinical_records){
   condition1 = class(clinical_records) == "data.frame"
-  condition2 = (colnames(clinical_data) == c('Timepoint','Start','End')) %>% sum() == ncol(clinical_data)
-  condition3 = (c('Sample 1', 'Sample 2', 'Therapy 1') %in% clinical_data$Timepoint) %>% sum() == 3
+  condition2 = (colnames(clinical_records) == c('Timepoint','Start','End')) %>% sum() == 3
+  condition3 = (c('Sample_1', 'Sample_2', 'Therapy_1') %in% clinical_records$Timepoint) %>% sum() == 3
   condition4 =
-    (sapply(clinical_data$Start, function(x){
+    (sapply(clinical_records$Start, function(x){
     year=strsplit(x, '-')[[1]][1]
     month=strsplit(x, '-')[[1]][2]
     day=strsplit(x, '-')[[1]][3]
     c1 = nchar(year) == 4
     c2 = as.integer(month) < 12
     c1 & c2
-  }) %>% sum()) == ncol(clinical_data)
+  }) ) %>% sum() == nrow(clinical_records)
 
   if(!condition1){
     stop("Clinical records input must be a dataframe")
@@ -59,12 +61,15 @@ check_parameters = function(mutations, clinical_records, parameters, delta_omega
   if (!('CNA_length' %in% parameters$Param.name)){
     stop("Missing required parameter: length of the CNA region")
   }
+  if (c('Major','Minor') %in% parameters$Param.name %>% sum()==0){
+    stop("Missing required parameter: Karyotype")
+  }
   # Compute best alpha/beta hyperparameters for growth rate
   nmin = parameters %>% filter(Param.name=='N_min') %>% pull(Value)
   nmax = parameters %>% filter(Param.name=='N_max') %>% pull(Value)
-  last_th_end = clinical_records %>% filter(grepl('Therapy', Timepoint)) %>% arrange(End) %>% pull(End)
+  last_th_end = clinical_records %>% filter(grepl('Therapy', Timepoint)) %>% arrange(desc(End)) %>% pull(End)
   end_last_therapy = convert_real_date(last_th_end[length(last_th_end)])
-  last_sample = convert_real_date(clinical_records %>% filter(Timepoint=='Sample 2') %>% pull(Start))
+  last_sample = convert_real_date(clinical_records %>% filter(Timepoint=='Sample_2') %>% pull(Start))
   exp_omega = expected_growth_rate(nmin, nmax, end_last_therapy, last_sample, delta = delta_omega)
   if (!('omega_alpha' %in% parameters$Param.name)){
     alpha_beta = get_hyperparameters_growth_rate(exp_omega, V=growth_rate_variance)
@@ -77,8 +82,8 @@ check_parameters = function(mutations, clinical_records, parameters, delta_omega
     par_name = paste0('alpha_mu_th_',i)
     if (!(par_name %in% parameters$Param.name)){
 
-      th_start = convert_real_date(clinical_records %>% filter(Timepoint == paste0('Therapy ',i)) %>% pull(Start))
-      th_end = convert_real_date(clinical_records %>% filter(Timepoint == paste0('Therapy ',i)) %>% pull(End))
+      th_start = convert_real_date(clinical_records %>% filter(Timepoint == paste0('Therapy_',i)) %>% pull(Start))
+      th_end = convert_real_date(clinical_records %>% filter(Timepoint == paste0('Therapy_',i)) %>% pull(End))
       delta_therapy = th_end - th_start
       l_diploid = parameters %>% filter(Param.name == 'diploid_length') %>% pull(Value)
       muts_th = mutations %>% filter(Mutation.type == paste0('m_th_',i)) %>% pull(Number.of.mutations)
@@ -89,7 +94,7 @@ check_parameters = function(mutations, clinical_records, parameters, delta_omega
                                     'Value'=c(alpha_beta['alpha'], alpha_beta['beta'])))
     }
   }
-
+  parameters
 }
 
 convert_date_real = function(x) {
