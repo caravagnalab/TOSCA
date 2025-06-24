@@ -4,7 +4,13 @@
 \alias{init}
 \title{Initialise a TOSCA object}
 \usage{
-init(mutations, clinical_records, parameters = NULL)
+init(
+  mutations,
+  clinical_records,
+  parameters,
+  delta_omega = 0.02,
+  growth_rate_variance = 10
+)
 }
 \arguments{
 \item{mutations}{dataframe containing input mutations}
