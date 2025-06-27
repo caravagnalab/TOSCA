@@ -6,11 +6,12 @@ fit = function(
     max_treedepth = 10,
     cores = 4,
     adapt_delta = 0.99,
-    stepsize = 0.01){
+    stepsize = 0.01,
+    model = 'standard'
+    ){
 
-
-  code = generate_stan_code(x)
-  data = get_inference_data(x)
+  data = get_inference_data(x, model=model)
+  code = generate_stan_code(x, model=model)
 
   fit = rstan::stan(
     model_code = code,

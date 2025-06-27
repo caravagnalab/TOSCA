@@ -6,4 +6,5 @@
 # parameters = exampleData$Parameters
 #
 # x = init(mutations=mutations, clinical_records=clinical_records, parameters=parameters)
-# code = generate_stan_code(x)
+# #code = generate_stan_code(x)
+# fit =
