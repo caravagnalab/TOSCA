@@ -96,125 +96,42 @@ get_cauchy_beta = function(x){
 }
 
 ## Get data for inference
-get_inference_data_standard = function(x){
+get_inference_data = function(x){
+  data[["m_clock"]]
+  data[["l_diploid"]]
+  data[["mu_clock"]]
 
-  n_therapies = length(grep('Therapy', x$clinical_records$Timepoint))
+  data[["n_cna"]]
+  data[["[n_cna] m_alpha"]] # vector
+  data[["[n_cna] m_beta"]] # vector
+  data[["[n_cna] l_CNA"]] # vector
+  data[["[n_cna] coeff"]]
 
-  data = list(
-    'm_clock'= as.integer(get_m_clock(x)),
-    'm_alpha'= as.integer(get_m_alpha(x)),
-    'm_beta'= as.integer(get_m_beta(x))
-  )
-  for (i in 1:n_therapies){
-    data[[paste0('m_th_',i)]] = as.integer(get_m_th(x, th=i))
-  }
+  data[["n_driver"]]
+  data[["[n_driver] m_driver"]] # vector
+  data[["[n_driver] mu_driver"]] # vector
 
-  data[["mu"]]= get_mutation_rate(x)
-  data[["diploid_length"]] = get_diploid_length(x)
-  data[["CNA_length"]] = get_CNA_length(x)
-  data[["Major"]] = get_Major_allele(x)
-  data[["Minor"]] = get_Minor_allele(x)
-  data[["N_max"]] = get_N_max(x)
-  data[["N_min"]] = get_N_min(x)
-  data[["k"]] = get_k(x)
-  data[["omega_alpha"]] = get_omega_alpha(x)
-  data[["omega_beta"]] = get_omega_beta(x)
-  for (i in 1:n_therapies){
-    data[[paste0('alpha_mu_th_',i)]] = get_mu_th_alpha(x, th=i)
-    data[[paste0('beta_mu_th_',i)]] = get_mu_th_beta(x, th=i)
-  }
-  data[["Sample_1"]] = get_sampling_time(x,time='1')
-  data[["Sample_2"]] = get_sampling_time(x,time='2')
+  data[["n_th_step"]]
+  data[["[n_th_step] start_th_step"]] # vector
+  data[["[n_th_step] end_th_step"]] # vector
+  data[["[n_th_step] alpha_th_step"]] # vector
+  data[["[n_th_step] beta_th_step"]] # vector
+  data[["[n_th_step] m_th_step"]] # vector
 
-  for (i in 1:n_therapies){
-    data[[paste0('Therapy_',i,'_start')]] = get_therapy_start(x, th=i)
-    data[[paste0('Therapy_',i,'_end')]] = get_therapy_end(x, th=i)
-  }
-  data
-}
-get_inference_data_dormancy = function(x){
+  data[["n_th_cauchy"]]
+  data[["[n_th_cauchy] location_th_cauchy"]] # vector
+  data[["[n_th_step] scales_th_cauchy"]] # vector
+  data[["[n_th_step] m_th_cauchy"]] # vector
 
-  data = list()
+  data[["omega_alpha"]]
+  data[["omega_beta"]]
+  data[["N_min"]]
+  data[["N_max"]]
+  data[["k_step"]]
+  data[["k_softmax"]]
 
-  data[["m_clock"]] = as.integer(get_m_clock(x))
-  data[["m_chemo"]] = as.integer(get_m_chemo(x))
-  data[["m_th_1"]] = as.integer(get_m_th(x, th='1'))
-  data[["m_alpha"]] = as.integer(get_m_alpha(x))
-  data[["m_beta"]] = as.integer(get_m_beta(x))
-  data[["Major"]]= get_Major_allele(x)
-  data[["Minor"]]= get_Minor_allele(x)
-  data[["N_min"]] = get_N_min(x)
-  data[["N_max"]] = get_N_max(x)
-
-  data[["mu"]] = get_mutation_rate(x)
-  data[["omega_alpha"]] = get_omega_alpha(x)
-  data[["omega_beta"]] = get_omega_beta(x)
-  data[["alpha_mu_th_1"]] = get_mu_th_alpha(x, th='1')
-  data[["beta_mu_th_1"]] = get_mu_th_beta(x, th='1')
-
-  data[["k"]] = get_k(x)
-  data[["k_sm"]] = get_k_sm(x)
-  data[["CNA_length"]] = get_CNA_length(x)
-  data[["diploid_length"]] = get_diploid_length(x)
-  data[["Sample_2"]] = get_sampling_time(x, time='2')
-  data[["Chemo_start"]] = get_chemo_start(x)
-  data[["Therapy_1_start"]] = get_therapy_start(x, th='1')
-  data[["Chemo_end"]] = get_chemo_end(x)
-  data[["Therapy_1_end"]] = get_therapy_end(x, th='1')
-
-  data
-}
-get_inference_data_cauchy = function(x){
-
-  data = list()
-
-  data[["m_clock"]]= as.integer(get_m_clock(x))
-  data[["m_chemo"]]= as.integer(get_m_chemo(x))
-  data[["m_th_1"]]= as.integer(get_m_th(x, th='1'))
-  data[["m_mutag"]]= as.integer(get_m_th(x)) # cauchy
-  data[["Major"]]= get_Major_allele(x)
-  data[["Minor"]]= get_Minor_allele(x)
-  data[["m_alpha"]]= as.integer(get_m_alpha(x))
-  data[["m_beta"]]= as.integer(get_m_beta(x))
-  data[["N_min"]]= get_N_min(x)
-  data[["N_max"]]= get_N_max(x)
-  data[["mu"]]= get_mutation_rate(x)
-  data[["omega_alpha"]]= get_omega_alpha(x)
-  data[["omega_beta"]]= get_omega_alpha(x)
-  data[["alpha_mu_th_1"]]= get_mu_th_alpha(x, th='1')
-  data[["beta_mu_th_1"]]= get_mu_th_beta(x, th='2')
-
-  data[["k"]]= get_k(x)
-  data[["k_sm"]]= get_k_sm(x)
-  data[["CNA_length"]]= get_CNA_length(x)
-  data[["diploid_length"]]= get_diploid_length(x)
-  data[["Sample_2"]]= get_sampling_time(x, time='2')
-
-  data[["Chemo_start"]]= get_chemo_start(x)
-  data[["Therapy_1_start"]]= get_therapy_start(x, th='1')
-  data[["Chemo_end"]]= get_chemo_end(x)
-  data[["Therapy_1_end"]]= get_therapy_end(x, th='1')
-
-  data[["cauchy_centre"]]= get_cauchy_centre(x)
-  data[["cauchy_centre_alpha"]]= get_cauchy_alpha(x)
-  data[["cauchy_centre_beta"]]= get_cauchy_beta(x)
-
-  data
-}
-
-get_inference_data = function(x, model='standard'){
-
-  if (model == 'standard'){
-    data = get_inference_data_standard(x)
-  }
-  if (model == 'dormancy'){
-    data = get_inference_data_dormancy(x)
-  }
-  if (model == 'cauchy'){
-    data = get_inference_data_cauchy(x)
-  }
-
-  data
+  data[["Sample_1"]]
+  data[["Sample_2"]]
 }
 
 #### Getters for inferred data

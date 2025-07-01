@@ -3,7 +3,8 @@ library(dplyr)
 check_input_mutations = function(mutations){
   condition1= class(mutations) == "data.frame"
   condition2= (colnames(mutations) == c('Mutation.type','Number.of.mutations')) %>% sum() == ncol(mutations)
-  condition3= (c('m_clock', 'm_alpha', 'm_beta', 'm_th_1') %in% mutations$Mutation.type) %>% sum() == 4
+  condition3= ((c('m_clock', 'm_alpha_1', 'm_beta_1', 'm_th_1') %in% mutations$Mutation.type) %>% sum() == 4) |
+    ((c('m_clock', 'm_driver_1', 'm_th_1') %in% mutations$Mutation.type) %>% sum() == 3)
   condition4= class(mutations$Number.of.mutations) == 'numeric'
 
   if(!condition1){
@@ -23,7 +24,7 @@ check_input_mutations = function(mutations){
 
 check_input_clinical = function(clinical_records){
   condition1 = class(clinical_records) == "data.frame"
-  condition2 = (colnames(clinical_records) == c('Timepoint','Start','End')) %>% sum() == 3
+  condition2 = (colnames(clinical_records) == c('Timepoint','Type','Start','End')) %>% sum() == 4
   condition3 = (c('Sample_1', 'Sample_2', 'Therapy_1') %in% clinical_records$Timepoint) %>% sum() == 3
   condition4 =
     (sapply(clinical_records$Start, function(x){
@@ -58,11 +59,14 @@ check_parameters = function(mutations, clinical_records, parameters, delta_omega
   if (!('mu' %in% parameters$Param.name)){
     stop("Missing required parameter: mutation rate")
   }
-  if (!('CNA_length' %in% parameters$Param.name)){
-    stop("Missing required parameter: length of the CNA region")
-  }
-  if (c('Major','Minor') %in% parameters$Param.name %>% sum()==0){
-    stop("Missing required parameter: Karyotype")
+  n_cna = grepl('m_alpha', mutations$Mutation.type) %>% sum()
+  for (cna in 1:n_cna){
+    if (!(paste0('CNA_length_',cna) %in% parameters$Param.name)){
+      stop(paste0("Missing required parameter: length of the ",cna," CNA region"))
+    }
+    if (c(paste0('Major_',cna),paste0('Minor_',cna)) %in% parameters$Param.name %>% sum()==0){
+      stop(paste0("Missing required parameter: ",cna," Karyotype"))
+    }
   }
   # Compute best alpha/beta hyperparameters for growth rate
   nmin = parameters %>% filter(Param.name=='N_min') %>% pull(Value)

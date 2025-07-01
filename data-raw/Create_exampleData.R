@@ -71,17 +71,19 @@ alpha_omega = E*beta_omega
 exampleData = list(
   'Clinical Timepoints' =
     data.frame('Timepoint' = c('Sample_1', 'Sample_2', 'Therapy_1', 'Therapy_2'),
+               'Type' = c(NA, NA, 'Step', 'Step'),
                'Start' = c(convert_date_real(t_obs_1), convert_date_real(t_obs_2), convert_date_real(t_th_1_start),convert_date_real(t_th_2_start)),
                'End'= c(NA, NA, convert_date_real(t_th_1_end), convert_date_real(t_th_2_end))
     ),
   'Mutations' =
-    data.frame('Mutation type' = c('m_clock', 'm_alpha', 'm_beta', 'm_th_1','m_th_2'),
+    data.frame('Mutation type' = c('m_clock', 'm_alpha_1', 'm_beta_1', 'm_th_1','m_th_2'),
                'Number of mutations' = c(m_clock, m_alpha, m_beta, m_th_1, m_th_2)),
   'Parameters' =
-    data.frame('Param name' = c('mu', 'diploid_length', 'CNA_length','Major','Minor'),
+    data.frame('Param name' = c('mu', 'diploid_length', 'CNA_length_1','Major_1','Minor_1'),
                'Value' = c(mu,diploid_length, CNA_length, 2,0))
 )
 
 #saveRDS(exampleData, file = "exampleData.rds")
 
 usethis::use_data(exampleData, overwrite = TRUE)
+
