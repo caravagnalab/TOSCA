@@ -81,7 +81,8 @@ get_k_step = function(x){
 }
 
 get_max_th = function(x){
-  dates=c(x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.value.start), x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.value.end))
+  dates=c(x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.value.start), x$clinical_records %>% filter(Clinical.name!="Sample") %>%
+            pull(Clinical.value.start))
   max(dates)
 }
 

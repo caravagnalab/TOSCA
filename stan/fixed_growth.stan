@@ -79,8 +79,9 @@ data{
   array[n_th_cauchy_type] int<lower=0> m_th_cauchy;
 
   // other parameters
-  real <lower=0> omega_alpha;
-  real <lower=0> omega_beta;
+  // real <lower=0> omega_alpha;
+  // real <lower=0> omega_beta;
+  real omega;
   real <lower=0> k_step;
   // real <lower=0> k_softmax;
 
@@ -99,7 +100,7 @@ parameters{
   real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
-  real <lower=0> omega;
+  // real <lower=0> omega;
   real <lower=0> mu_driver;
 }
 
@@ -155,7 +156,7 @@ model{
     }
 
 
-  omega ~ gamma(omega_alpha, omega_beta);
+  // omega ~ gamma(omega_alpha, omega_beta);
   mu_driver ~ gamma(mu_driver_alpha,mu_driver_beta);
 
   // Likelihood

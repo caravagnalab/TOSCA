@@ -1,8 +1,8 @@
 fit = function(
     x,
-    n_iterations = 10000,
+    n_iterations = 50000,
     n_chains = 4,
-    warm_up = 5000,
+    warm_up = 10000,
     max_treedepth = 10,
     cores = 4,
     adapt_delta = 0.99,
