@@ -2,136 +2,152 @@
 
 ## Get mutations
 get_m_clock = function(x){
-  return(x$mutations %>% filter(Mutation.type=='m_clock') %>% pull(Number.of.mutations))
+  x$mutations %>% filter(Mutation.name=='m_clock') %>% pull(Mutation.value)
 }
-get_m_chemo = function(x){
-  return(x$mutations %>% filter(Mutation.type=='m_chemo') %>% pull(Number.of.mutations))
+get_m_driver = function(x){
+  x$mutations %>% filter(Mutation.name=='m_driver') %>% pull(Mutation.value)
 }
-get_m_mutag = function(x){
-  return(x$mutations %>% filter(Mutation.type=='m_mutag') %>% pull(Number.of.mutations))
+get_m_CNA = function(x, type = 'alpha'){
+  as.integer(x$mutations %>% filter(Mutation.name==type) %>% pull(Mutation.value))
 }
-get_m_alpha = function(x){
-  return(x$mutations %>% filter(Mutation.type=='m_alpha') %>% pull(Number.of.mutations))
-}
-get_m_beta = function(x){
-  return(x$mutations %>% filter(Mutation.type=='m_beta') %>% pull(Number.of.mutations))
-}
-get_m_th = function(x, th='1'){
-  return(x$mutations %>% filter(Mutation.type==paste0('m_th_',th)) %>% pull(Number.of.mutations))
+get_m_th = function(x, type = 'Step'){
+  as.integer(x$mutations %>% filter(Mutation.name==type) %>% pull(Mutation.value))
 }
 
 ## Get Clinical Data
-get_therapy_start = function(x, th='1'){
-  return(convert_real_date(x$clinical_records %>% filter(Timepoint==paste0('Therapy_',th)) %>% pull(Start)))
-}
-get_therapy_end = function(x, th='1'){
-  return(convert_real_date(x$clinical_records %>% filter(Timepoint==paste0('Therapy_',th)) %>% pull(End)))
-}
-get_chemo_start = function(x){
-  return(convert_real_date(x$clinical_records %>% filter(Timepoint=='Chemotherapy') %>% pull(Start)))
-}
-get_chemo_end = function(x){
-  return(convert_real_date(x$clinical_records %>% filter(Timepoint=='Chemotherapy') %>% pull(End)))
-}
-get_sampling_time = function(x, time='1'){
-  return(convert_real_date(x$clinical_records %>% filter(Timepoint==paste0('Sample_',time)) %>% pull(Start)))
+get_sample = function(x, sample='1'){
+  x$clinical_records %>% filter(Clinical.name=='Sample', Clinical.type==sample) %>% pull(Clinical.value.start)
 }
 
+get_therapy_driver = function(x){
+  start = x$clinical_records %>% filter(Clinical.name=='Therapy driver') %>% pull(Clinical.value.start)
+  end = x$clinical_records %>% filter(Clinical.name=='Therapy driver') %>% pull(Clinical.value.end)
+  list('start'=start,'end'=end)
+}
+
+get_n_th = function(x, name = 'Therapy step'){
+  x$clinical_records %>% filter(Clinical.name==name) %>% nrow()
+}
+
+get_n_th_type = function(x, name = 'Therapy step'){
+  n_th_type = x$clinical_records %>% filter(Clinical.name== name) %>% pull(Clinical.type) %>% unique() %>% nrow()
+  if (is.null(n_th_type)){n_th_type=0}
+  n_th_type
+}
+
+start_th = function(x, type='Therapy step'){
+  x$clinical_records %>% filter(Clinical.name==type) %>% pull(Clinical.value.start)
+}
+
+end_th_step = function(x){
+  x$clinical_records %>% filter(Clinical.name=='Therapy step') %>% pull(Clinical.value.end)
+}
+
+get_type_th_step = function(x, name='Therapy step'){
+  as.integer(x$clinical_records %>% filter(Clinical.name==name) %>% pull(Clinical.type))
+}
+
+
 ## Get parameters
-get_mutation_rate = function(x){
-  return(x$parameters %>% filter(Param.name=='mu') %>% pull(Value))
+get_l_diploid = function(x){
+  x$parameters %>% filter(Parameter.name=="l_diploid") %>% pull(Parameter.value)
 }
-get_N_max = function(x){
-  return(x$parameters %>% filter(Param.name=='N_max') %>% pull(Value))
+
+get_mu_clock = function(x){
+  x$parameters %>% filter(Parameter.name=="mu_clock") %>% pull(Parameter.value)
 }
+
+get_mu_driver_clock = function(x){
+  x$parameters %>% filter(Parameter.name=="mu_clock_driver") %>% pull(Parameter.value)
+}
+
+get_driver_type = function(x){
+  (x$mutations %>% filter(Mutation.name=='m_driver') %>% pull(Mutation.type) %>% as.integer()) -1
+}
+
+get_cycles_drivers = function(x){
+  x$clinical_records %>% filter(Clinical.name=='Therapy driver') %>% nrow()
+}
+
+get_prior_hyperparameters = function(x, name){
+  # name = mu_driver*, mu_th_step*, scale_th_cauchy*, omega*
+  alpha= x$parameters %>% filter(Parameter.name==paste0(name,'_alpha')) %>% pull(Parameter.value)
+  beta= x$parameters %>% filter(Parameter.name==paste0(name,'_beta')) %>% pull(Parameter.value)
+  list('alpha'=alpha, 'beta'=beta)
+}
+
+get_k_step = function(x){
+  x$parameters %>% filter(Parameter.name=='k_step') %>% pull(Parameter.value)
+}
+
+get_max_th = function(x){
+  dates=c(x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.value.start), x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.value.end))
+  max(dates)
+}
+
+get_exponential_growth = function(x){
+  x$parameters %>% filter(Parameter.name=='exponential_growth') %>% pull(Parameter.value)
+}
+
 get_N_min = function(x){
-  return(x$parameters %>% filter(Param.name=='N_min') %>% pull(Value))
+  x$parameters %>% filter(Parameter.name=='N_min') %>% pull(Parameter.value)
 }
-get_k = function(x){
-  return(x$parameters %>% filter(Param.name=='k') %>% pull(Value))
+
+get_N_max= function(x){
+  x$parameters %>% filter(Parameter.name=='N_max') %>% pull(Parameter.value)
 }
-get_k_sm = function(x){
-  return(x$parameters %>% filter(Param.name=='k_sm') %>% pull(Value))
-}
-get_omega_alpha = function(x){
-  return(x$parameters %>% filter(Param.name=='omega_alpha') %>% pull(Value))
-}
-get_omega_beta = function(x){
-  return(x$parameters %>% filter(Param.name=='omega_beta') %>% pull(Value))
-}
-get_mu_th_alpha = function(x, th='1'){
-  return(x$parameters %>% filter(Param.name==paste0('alpha_mu_th_',th)) %>% pull(Value))
-}
-get_mu_th_beta = function(x, th='1'){
-  return(x$parameters %>% filter(Param.name==paste0('beta_mu_th_',th)) %>% pull(Value))
-}
-get_diploid_length = function(x){
-  x$parameters %>% filter(Param.name=="diploid_length") %>% pull(Value)
-}
-get_CNA_length = function(x){
-  x$parameters %>% filter(Param.name=="CNA_length") %>% pull(Value)
-}
-get_Major_allele = function(x){
-  x$parameters %>% filter(Param.name=="Major") %>% pull(Value)
-}
-get_Minor_allele = function(x){
-  x$parameters %>% filter(Param.name=="Minor") %>% pull(Value)
-}
-get_cauchy_centre = function(x){
-  return(convert_real_date(x$clinical_records %>% filter(Timepoint=='Mutagenic exposure') %>% pull(Start)))
-}
-get_cauchy_alpha = function(x){
-  alpha=x$parameters %>% filter(Param.name=="Cauchy alpha") %>% pull(Value)
-  if (is.null(alpha)){
-    alpha=10
-  }
-  beta
-}
-get_cauchy_beta = function(x){
-  beta=x$parameters %>% filter(Param.name=="Cauchy beta") %>% pull(Value)
-  if (is.null(beta)){
-    beta=10
-  }
-  beta
-}
+
 
 ## Get data for inference
 get_inference_data = function(x){
-  data[["m_clock"]]
-  data[["l_diploid"]]
-  data[["mu_clock"]]
+  data = list(
+    # Clock-like mutations
+    'm_clock' = get_m_clock(x),
+    'l_diploid' = get_l_diploid(x),
+    'mu_clock' = get_mu_clock(x),
 
-  data[["n_cna"]]
-  data[["[n_cna] m_alpha"]] # vector
-  data[["[n_cna] m_beta"]] # vector
-  data[["[n_cna] l_CNA"]] # vector
-  data[["[n_cna] coeff"]]
 
-  data[["n_driver"]]
-  data[["[n_driver] m_driver"]] # vector
-  data[["[n_driver] mu_driver"]] # vector
+    # mutations associated to driver
+    'driver_type' = get_driver_type(x),
+    'cycles_driver' = get_cycles_drivers(x),
+    'driver_start' = get_therapy_driver(x)[["start"]],
+    'driver_end' = get_therapy_driver(x)[["end"]],
+    'm_driver' = get_m_driver(x),
+    'mu_driver_alpha' = get_prior_hyperparameters(x, name='mu_driver')[["alpha"]],
+    'mu_driver_beta' = get_prior_hyperparameters(x, name='mu_driver')[["beta"]],
+    'mu_driver_clock' = get_mu_driver_clock(x),
 
-  data[["n_th_step"]]
-  data[["[n_th_step] start_th_step"]] # vector
-  data[["[n_th_step] end_th_step"]] # vector
-  data[["[n_th_step] alpha_th_step"]] # vector
-  data[["[n_th_step] beta_th_step"]] # vector
-  data[["[n_th_step] m_th_step"]] # vector
+    'n_th_step'= get_n_th(x, name = 'Therapy step'),
+    'n_th_step_type'= get_n_th_type(x, name = 'Therapy step'),
+    'start_th_step' = start_th(x, type='Therapy step'),
+    'end_th_step' =  end_th_step(x),
+    'type_th_step'= get_type_th_step(x, name='Therapy step'),
+    'alpha_th_step'= get_prior_hyperparameters(x, name='mu_th_step')[["alpha"]],
+    'beta_th_step'= get_prior_hyperparameters(x, name='mu_th_step')[["beta"]],
+    'm_th_step'= get_m_th(x, type = 'Step'),
 
-  data[["n_th_cauchy"]]
-  data[["[n_th_cauchy] location_th_cauchy"]] # vector
-  data[["[n_th_step] scales_th_cauchy"]] # vector
-  data[["[n_th_step] m_th_cauchy"]] # vector
+    # mutations associated to cauchy
+    'n_th_cauchy'= get_n_th(x, name = 'Therapy cauchy'),
+    'n_th_cauchy_type'= get_n_th_type(x, name = 'Therapy cauchy'),
+    'location_th_cauchy'= start_th(x, type='Therapy cauchy'),
+    'type_th_cauchy'= get_type_th_step(x, name='Therapy cauchy'),
+    'alpha_th_cauchy'= get_prior_hyperparameters(x, name='scale_th_cauchy')[["alpha"]],
+    'beta_th_cauchy'= get_prior_hyperparameters(x, name='scale_th_cauchy')[["beta"]],
+    'm_th_cauchy'= get_m_th(x, type = 'Cauchy'),
 
-  data[["omega_alpha"]]
-  data[["omega_beta"]]
-  data[["N_min"]]
-  data[["N_max"]]
-  data[["k_step"]]
-  data[["k_softmax"]]
+    # other parameters
+    'omega_alpha' = get_prior_hyperparameters(x, name='omega')[["alpha"]],
+    'omega_beta' = get_prior_hyperparameters(x, name='omega')[["beta"]],
+    'k_step' = get_k_step(x),
 
-  data[["Sample_1"]]
-  data[["Sample_2"]]
+    'Sample_1' = get_sample(x, sample='1'),
+    'Sample_2' = get_sample(x, sample='2'),
+    'max_therapy' = get_max_th(x),
+    'exponential_growth' = get_exponential_growth(x),
+    'N_min' = get_N_min(x),
+    'N_max' = get_N_max(x)
+  )
+  data
 }
 
 #### Getters for inferred data

@@ -7,14 +7,18 @@ fit = function(
     cores = 4,
     adapt_delta = 0.99,
     stepsize = 0.01,
-    model = 'standard'
+    model = 'cna'
     ){
 
-  data = get_inference_data(x, model=model)
-  code = generate_stan_code(x, model=model)
+  data = get_inference_data(x)
+  if (model == 'cna'){
+    file = '/stan/CNA.stan'
+  }else{
+    file = '~/Docs/GitHub/TOSCA/stan/Driver.stan'
+  }
 
   fit = rstan::stan(
-    model_code = code,
+    file = file,
     data = data,
     control = list(
       adapt_delta = adapt_delta,

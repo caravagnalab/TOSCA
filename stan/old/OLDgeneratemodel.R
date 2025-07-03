@@ -49,7 +49,7 @@ generate_data = function(x, model='standard'){
     if (grepl('Therapy', x$clinical_records$Timepoint[t])){
       paste0('real <lower=0> ', x$clinical_records$Timepoint[t], '_start;\nreal <lower= 0> ',x$clinical_records$Timepoint[t], '_end;')
     }else{
-    paste0('real <lower=0> ', x$clinical_records$Timepoint[t], ';')
+      paste0('real <lower=0> ', x$clinical_records$Timepoint[t], ';')
     }
   }) %>% paste(collapse='\n')
   linef= '

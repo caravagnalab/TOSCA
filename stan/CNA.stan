@@ -33,8 +33,8 @@ functions {
 
 	real couchy_cdf(int n_cycles, vector[n_cycles] location, vector[n_cycles] scale, real a,real b){
 	  real c=0;
-	  for (c in 1:n_cycles){
-      c += couchy_cdf_single(location[c], scale[c], a, b);
+	  for (i in 1:n_cycles){
+      c += couchy_cdf_single(location[i], scale[i], a, b);
 	  }
     return(c);
 	}
@@ -49,8 +49,8 @@ data{
 
    // mutations on CNA
   int <lower=0> n_cna;
-  vector<lower=0>[n_cna] m_alpha;
-  vector<lower=0>[n_cna] m_beta;
+  int<lower=0>[n_cna] m_alpha;
+  int<lower=0>[n_cna] m_beta;
   vector<lower=0>[n_cna] l_CNA;
   vector<lower=0>[n_cna] coeff;
 
@@ -63,7 +63,7 @@ data{
   vector<lower=0>[n_th_step] type_th_step; // vector with numbers identifying the therapy (1:n_th_type)
   vector<lower=0>[n_th_step_type] alpha_th_step;
   vector<lower=0>[n_th_step_type] beta_th_step;
-  vector<lower=0>[n_th_step_type] m_th_step;
+  int<lower=0>[n_th_step_type] m_th_step;
 
   // mutations associated to cauchy
   int <lower=0> n_th_cauchy;
@@ -73,7 +73,7 @@ data{
   vector<lower=0>[n_th_cauchy] type_th_cauchy; // vector with numbers identifying the therapy (1:n_th_cauchy_type)
   vector<lower=0>[n_th_cauchy_type] alpha_th_cauchy;
   vector<lower=0>[n_th_cauchy_type] beta_th_cauchy;
-  vector<lower=0>[n_th_cauchy_type] m_th_cauchy;
+  int<lower=0>[n_th_cauchy_type] m_th_cauchy;
 
   // other parameters
   real <lower=0> omega_alpha;
