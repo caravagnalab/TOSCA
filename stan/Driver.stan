@@ -189,6 +189,7 @@ model{
 generated quantities{
 
   int<lower =0> m_clock_rep = poisson_rng(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));
+
   int <lower =0> m_driver_rep;
 
   if (driver_type==0){

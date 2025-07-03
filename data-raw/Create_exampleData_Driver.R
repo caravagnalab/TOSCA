@@ -1,36 +1,38 @@
 # Timeline
 t_eca = .1
-Sample_1 = 1
+Sample_1 = .5
 
-step_1_start_cycle_1 = 3
-step_1_end_cycle_1 = 3.3
+step_1_start_cycle_1 = .7
+step_1_end_cycle_1 = .75
 
-step_1_start_cycle_2 = 6.8
-t_driver = 7
-step_1_end_cycle_2 = 7.5
+step_1_start_cycle_2 = 1.3
+t_driver = 1.35
+step_1_end_cycle_2 = 1.55
 
-t_mrca = 10
-Sample_2 = 12
+t_mrca = 2
+Sample_2 = 3.3
 
 # Parameters
-omega = 10
-omega_alpha = 10
-omega_beta = 1
+omega = 20
+omega_alpha = 200
+omega_beta = 10
 hist(rgamma(10000,omega_alpha,omega_beta))
+
 l_diploid = 3e9
-mu_clock = 1e-8
-mu_clock_driver = 1e-7
-mu_driver = 1e-6
-mu_driver_alpha = 10
-mu_driver_beta = 1e7
+mu_clock = 1e-9
+mu_clock_driver = 5e-8
+
+mu_driver = 3e-7
+mu_driver_alpha = 3e3
+mu_driver_beta = 1e10
 hist(rgamma(10000,mu_driver_alpha, mu_driver_beta))
 
 # Driver legato a evento esogeno
 m_clock = 2*omega*l_diploid*(mu_clock*(t_driver-t_eca) + mu_clock_driver*(t_mrca-t_driver))
 m_driver = 2*omega*l_diploid*mu_driver*(step_1_end_cycle_2-t_driver)
 N = exp(omega*(Sample_2-t_mrca))
-N_min = N*.1
-N_max = N*10
+N_min = N*.8
+N_max = N*1.2
 
 exampleData = list(
   'Clinical Timepoints' =

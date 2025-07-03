@@ -2,10 +2,10 @@
 
 ## Get mutations
 get_m_clock = function(x){
-  x$mutations %>% filter(Mutation.name=='m_clock') %>% pull(Mutation.value)
+  as.integer(x$mutations %>% filter(Mutation.name=='m_clock') %>% pull(Mutation.value))
 }
 get_m_driver = function(x){
-  x$mutations %>% filter(Mutation.name=='m_driver') %>% pull(Mutation.value)
+  as.integer(x$mutations %>% filter(Mutation.name=='m_driver') %>% pull(Mutation.value))
 }
 get_m_CNA = function(x, type = 'alpha'){
   as.integer(x$mutations %>% filter(Mutation.name==type) %>% pull(Mutation.value))
