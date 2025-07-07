@@ -27,21 +27,6 @@ mu_driver_alpha = 10
 mu_driver_beta = 2e8
 hist(rgamma(10000,mu_driver_alpha, mu_driver_beta))
 
-expected_mutation_rate_th = function(muts_th, omega, delta_therapy, length_genome=3e9){
-  mu_th_LB = muts_th / (2*length_genome*omega*delta_therapy)
-  mu_th_UB = muts_th / (2*length_genome)
-  mu_th = mean(mu_th_LB, mu_th_UB)
-  mu_th
-}
-
-expected_mutation_rate_th(mu_driver, 5,(.35-.3)+(.65-.5))
-
-get_hyperparameters_mutation_rate = function(mu_th, delta_therapy, var=.05){
-  alpha_mu_th = mu_th*delta_therapy*var
-  beta_mu_th = delta_therapy*var
-  return(c('alpha'=alpha_mu_th, 'beta'=beta_mu_th))
-}
-
 # Driver legato a evento esogeno
 m_clock = 2*omega*l_diploid*(mu_clock*(t_driver-t_eca) + mu_clock_driver*(t_mrca-t_driver))
 m_driver = 2*omega*l_diploid*mu_driver*(step_1_end_cycle_2-t_driver)
@@ -49,7 +34,7 @@ N = exp(omega*(Sample_2-t_mrca))
 N_min = N*.9
 N_max = N*1.1
 
-exampleData = list(
+exampleData_Driver = list(
   'Clinical Timepoints' =
     data.frame(
       'Clinical.name'= c('Sample','Sample','Therapy driver','Therapy driver'),
@@ -66,15 +51,15 @@ exampleData = list(
       'Mutation.value'= c(m_clock, m_driver)
     ),
   'Parameters' =
-    data.frame('Parameter.name' = c('l_diploid','mu_clock','mu_clock_driver','mu_driver_alpha','mu_driver_beta','omega_alpha','omega_beta','k_step','N_min','N_max','exponential_growth'),
-               'Parameter.value' = c(l_diploid, mu_clock, mu_clock_driver, mu_driver_alpha, mu_driver_beta, omega_alpha, omega_beta, 10, N_min, N_max, 1),
-               'Parameter.index' = c(rep(NA, 11))
+    data.frame('Parameter.name' = c('l_diploid','mu_clock','mu_clock_driver','mu_driver_alpha','mu_driver_beta','omega_alpha','omega_beta','k_step','N_min','N_max','exponential_growth', 'mrca_alpha','mrca_beta'),
+               'Parameter.value' = c(l_diploid, mu_clock, mu_clock_driver, mu_driver_alpha, mu_driver_beta, omega_alpha, omega_beta, 10, N_min, N_max, 1,1,1),
+               'Parameter.index' = c(rep(NA, 13))
                )
 )
 
 #saveRDS(exampleData, file = "exampleData.rds")
 
-usethis::use_data(exampleData, overwrite = TRUE)
+usethis::use_data(exampleData_Driver, overwrite = TRUE)
 
 
 

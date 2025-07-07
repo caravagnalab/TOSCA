@@ -92,11 +92,15 @@ data{
   real N_min;
   real N_max;
 
+  real alpha_mrca;
+  real beta_mrca;
+
 }
 
 parameters{
   real <lower=0, upper=Sample_1> t_eca;
-  real <lower=max_therapy, upper=Sample_2> t_mrca;
+  // real <lower=max_therapy, upper=Sample_2> t_mrca;
+  real rho_mrca;
   real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
@@ -105,6 +109,7 @@ parameters{
 }
 
 transformed parameters{
+  real t_mrca = max_therapy + rho_mrca*(Sample_2-max_therapy);
   array[n_th_step_type] real lambda_th_step;
   array[n_th_cauchy_type] real lambda_th_cauchy;
 
@@ -144,7 +149,8 @@ model{
 
   // Priors
   t_eca ~ uniform(0, Sample_1);
-  t_mrca ~ uniform(max_therapy, Sample_2);
+  //t_mrca ~ uniform(max_therapy, Sample_2);
+  rho_mrca ~ beta(alpha_mrca, beta_mrca);
   t_driver ~ uniform(t_eca, t_mrca);
 
   for (m in 1:n_th_step_type){
