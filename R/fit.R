@@ -18,23 +18,12 @@ fit = function(
                       iter_warmup = warm_up,
                       iter_sampling = n_iterations,
                       chains = n_chains
-                      #parallel_chains = 8,
-                      #output_dir = tmp_file_path
                       )
 
-  # fit = rstan::stan(
-  #   file = file,
-  #   data = data,
-  #   control = list(
-  #     adapt_delta = adapt_delta,
-  #     stepsize = stepsize,
-  #     max_treedepth = max_treedepth
-  #   ),
-  #   iter = n_iterations,
-  #   chains = n_chains,
-  #   warmup = warm_up,
-  #   cores = cores
-  # )
-
-  fit
+  x$tosca_fit = list(
+    'posterior' = posterior::as_draws_df(fit$draws()),
+    'summary' = fit$summary(),
+    'diagnostic_summary' = fit$diagnostic_summary()
+  )
+  x
 }

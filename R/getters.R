@@ -17,6 +17,13 @@ get_m_th = function(x, type = 'step'){
   as.integer(x$mutations %>% filter(Mutation.type==type) %>% pull(Mutation.value))
 }
 
+get_mutation = function(x, name, type=NA, index=NA){
+  m = x$mutations %>% filter(Mutation.name==name)
+  if (!is.na(type)) m %>% filter(Mutation.type == type)
+  if (!is.na(index)) m %>% filter(Mutation.index == index)
+  m %>% pull(Mutation.value) %>% as.integer()
+}
+
 ## Get Clinical Data
 get_sample = function(x, sample='1'){
   x$clinical_records %>% filter(Clinical.name=='Sample', Clinical.type==sample) %>% pull(Clinical.value.start)
@@ -215,6 +222,14 @@ get_model <- function(model_name='Driver', fixed_pars=c()) {
 }
 
 #### Getters for inferred data
+get_inferred_parameters = function(x){
+  # posterior::as_draws_df(x$tosca_fit$draws())
+  x$tosca_fit$posterior
+}
+
+get_inferred_times_colors = function(){
+  c("t_eca"="#44998dff", "t_driver"="#cb3144ff", "t_mrca"="#64419bff")
+}
 
 ## Get inferred times
 
