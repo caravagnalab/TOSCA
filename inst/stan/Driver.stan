@@ -15,29 +15,10 @@ functions {
   }
 
 
-  // real lambda_therapy(int n_cycles, real ti, real tf, array[n_cycles] t_therapy_i, array[n_cycles] t_therapy_f, real k){
-  //
-  //   real f=0;
-  //
-  //   for (c in 1:n_cycles){
-  //     f += lambda_therapy_single(ti, tf, t_therapy_i[c], t_therapy_f[c], k);
-  //   }
-  //   return(f);
-  //
-  // }
-
 	real couchy_cdf_single(real location, real scale, real a,real b){
     real d= ((1/pi()) * atan((b-location)/scale) + .5) - ((1/pi()) * atan((a-location)/scale) + .5);
   return(d);
 	}
-
-// 	real couchy_cdf(int n_cycles, array[n_cycles] location, array[n_cycles] scale, real a,real b){
-// 	  real c=0;
-// 	  for (i in 1:n_cycles){
-//       c += couchy_cdf_single(location[i], scale[i], a, b);
-// 	  }
-//     return(c);
-// 	}
 
 }
 
@@ -93,6 +74,8 @@ data{
 
   real <lower=0> alpha_mrca;
   real <lower=0> beta_mrca;
+  // real <lower=0> alpha_eca;
+  // real <lower=0> beta_eca;
 
 }
 
@@ -100,6 +83,7 @@ parameters{
   real <lower=0, upper=Sample_1> t_eca;
   // real <lower=max_therapy, upper=Sample_2> t_mrca;
   real <lower=0, upper=1> rho_mrca;
+  // real <lower=0, upper=1> rho_eca;
   real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
@@ -110,6 +94,9 @@ parameters{
 transformed parameters{
 
   real <lower=max_therapy> t_mrca = max_therapy + rho_mrca*(Sample_2-max_therapy);
+  // real <lower=0, upper=Sample_1> t_eca = Sample_1 - rho_eca;
+  // real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
+
   array[n_th_step_type] real lambda_th_step;
   array[n_th_cauchy_type] real lambda_th_cauchy;
 
@@ -151,6 +138,7 @@ model{
   t_eca ~ uniform(0, Sample_1);
   // t_mrca ~ uniform(max_therapy, Sample_2);
   rho_mrca ~ beta(alpha_mrca, beta_mrca);
+  // rho_eca ~ beta(alpha_eca, beta_eca);
   t_driver ~ uniform(t_eca, t_mrca);
 
   for (m in 1:n_th_step_type){

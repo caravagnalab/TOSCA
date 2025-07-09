@@ -15,29 +15,10 @@ functions {
   }
 
 
-  // real lambda_therapy(int n_cycles, real ti, real tf, array[n_cycles] t_therapy_i, array[n_cycles] t_therapy_f, real k){
-  //
-  //   real f=0;
-  //
-  //   for (c in 1:n_cycles){
-  //     f += lambda_therapy_single(ti, tf, t_therapy_i[c], t_therapy_f[c], k);
-  //   }
-  //   return(f);
-  //
-  // }
-
 	real couchy_cdf_single(real location, real scale, real a,real b){
     real d= ((1/pi()) * atan((b-location)/scale) + .5) - ((1/pi()) * atan((a-location)/scale) + .5);
   return(d);
 	}
-
-// 	real couchy_cdf(int n_cycles, array[n_cycles] location, array[n_cycles] scale, real a,real b){
-// 	  real c=0;
-// 	  for (i in 1:n_cycles){
-//       c += couchy_cdf_single(location[i], scale[i], a, b);
-// 	  }
-//     return(c);
-// 	}
 
 }
 
@@ -56,7 +37,9 @@ data{
   int <lower=0> m_driver;
   real <lower=0> mu_driver_alpha;
   real <lower=0> mu_driver_beta;
-  real <lower=0> mu_driver_clock; // if driver alters basal mutation rate of clock-like
+  real <lower=0> mu_driver_clock_alpha;
+  real <lower=0> mu_driver_clock_beta;
+  // real <lower=0> mu_driver_clock; // if driver alters basal mutation rate of clock-like
 
   // mutations associated to step-like therapies
   int <lower=0> n_th_step; // numero totale di terapie*cicli
@@ -81,7 +64,7 @@ data{
   // other parameters
   // real <lower=0> omega_alpha;
   // real <lower=0> omega_beta;
-  real omega;
+  real <lower=0> omega;
   real <lower=0> k_step;
   // real <lower=0> k_softmax;
 
@@ -94,22 +77,28 @@ data{
 
   real alpha_mrca;
   real beta_mrca;
+  real alpha_eca;
+  real beta_eca;
 
 }
 
 parameters{
-  real <lower=0, upper=Sample_1> t_eca;
+  // real <lower=0, upper=Sample_1> t_eca;
   // real <lower=max_therapy, upper=Sample_2> t_mrca;
   real rho_mrca;
-  real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
+  real rho_eca;
+  // real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   // real <lower=0> omega;
   real <lower=0> mu_driver;
+  real <lower=0> mu_driver_clock;
 }
 
 transformed parameters{
-  real t_mrca = max_therapy + rho_mrca*(Sample_2-max_therapy);
+  real <lower=max_therapy> t_mrca = max_therapy + rho_mrca*(Sample_2-max_therapy);
+  real <lower=0, upper=Sample_1> t_eca = Sample_1 - rho_eca;
+  real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
   array[n_th_step_type] real lambda_th_step;
   array[n_th_cauchy_type] real lambda_th_cauchy;
 
@@ -148,8 +137,8 @@ transformed parameters{
 model{
 
   // Priors
-  t_eca ~ uniform(0, Sample_1);
-  //t_mrca ~ uniform(max_therapy, Sample_2);
+  // t_eca ~ uniform(0, Sample_1);
+  rho_eca ~ beta(alpha_eca, beta_eca);
   rho_mrca ~ beta(alpha_mrca, beta_mrca);
   t_driver ~ uniform(t_eca, t_mrca);
 
@@ -164,6 +153,7 @@ model{
 
   // omega ~ gamma(omega_alpha, omega_beta);
   mu_driver ~ gamma(mu_driver_alpha,mu_driver_beta);
+  mu_driver_clock ~ gamma(mu_driver_clock_alpha,mu_driver_clock_beta);
 
   // Likelihood
   m_clock ~ poisson(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));

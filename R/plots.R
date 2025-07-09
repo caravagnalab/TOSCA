@@ -184,20 +184,24 @@ plot_timing = function(x)
       aes(x = as.Date(convert_date_real(Clinical.value.start)), y = 0),
       inherit.aes = FALSE,
       size = 3
-    ) +
-    geom_label(
-      data = endpoints,
-      aes(x = as.Date(convert_date_real(Clinical.value.start)), y = .1, label= paste0(Clinical.name, ' ',Clinical.type))
-    ) +
-    geom_segment(
-      data = endpoints,
-      aes(x = as.Date(convert_date_real(Clinical.value.start)),
-          xend = as.Date(convert_date_real(Clinical.value.start)),
-          y=0,yend=.08),
-      linetype = 'dashed'
     ) + CNAqc:::my_ggplot_theme()+
     theme(legend.position = 'bottom')+
     scale_fill_manual(values = get_inferred_times_colors())
+  # +
+  #   geom_label(
+  #     data = endpoints,
+  #     aes(x = as.Date(convert_date_real(Clinical.value.start)), y = .1, label= paste0(Clinical.name, ' ',Clinical.type))
+  #   )
+  # +
+  #   geom_segment(
+  #     data = endpoints,
+  #     aes(x = as.Date(convert_date_real(Clinical.value.start)),
+  #         xend = as.Date(convert_date_real(Clinical.value.start)),
+  #         y=0,yend=.08),
+  #     linetype = 'dashed'
+  #   ) + CNAqc:::my_ggplot_theme()+
+  #   theme(legend.position = 'bottom')+
+  #   scale_fill_manual(values = get_inferred_times_colors())
 
   for (th in 1:nrow(therapies)){
     posterior_plot = posterior_plot + geom_rect(

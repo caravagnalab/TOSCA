@@ -148,6 +148,13 @@ get_inference_data = function(x, model='Driver', fixed_pars=c()){
 
       data[['mu_driver_clock']] = get_mu_driver_clock(x)
 
+      # if ('mu_driver_clock' %in% fixed_pars){
+      #   data[['mu_driver_clock']] = get_mu_driver_clock(x)
+      # }else{
+      #   data[['mu_driver_clock_alpha']] = get_prior_hyperparameters(x, name='mu_driver_clock')[["alpha"]]
+      #   data[['mu_driver_clock_beta']] = get_prior_hyperparameters(x, name='mu_driver_clock')[["beta"]]
+      # }
+
   }
 
   if (model == 'CNA'){
@@ -178,7 +185,7 @@ get_inference_data = function(x, model='Driver', fixed_pars=c()){
   data[['m_th_cauchy']]= get_m_th(x, type = 'Cauchy')
 
   # other parameters
-  if ('mu_driver' %in% fixed_pars){
+  if ('omega' %in% fixed_pars){
     data[['omega']] = get_prior_hyperparameters(x, name='omega')
   }else{
     data[['omega_alpha']] = get_prior_hyperparameters(x, name='omega')[["alpha"]]
@@ -194,6 +201,8 @@ get_inference_data = function(x, model='Driver', fixed_pars=c()){
   data[['N_max']] = get_N_max(x)
   data[['alpha_mrca']] = get_prior_hyperparameters(x, name='mrca')[["alpha"]]
   data[['beta_mrca']] = get_prior_hyperparameters(x, name='mrca')[["beta"]]
+  # data[['alpha_eca']] = get_prior_hyperparameters(x, name='eca')[["alpha"]]
+  # data[['beta_eca']] = get_prior_hyperparameters(x, name='eca')[["beta"]]
 
   data
 }
