@@ -212,14 +212,18 @@ get_model <- function(model_name='Driver', fixed_pars=c()) {
   if (model_name=='Driver' & length(fixed_pars)==2){
     model_name = "Driver_fixed_mu_and_omega"
   }
-  if (model_name=='Driver' & length(fixed_pars)==1){
+  if (model_name=='Driver' & fixed_pars == "omega"){
     model_name = "Driver_fixed_omega"
+  }
+  if (model_name=='Driver' & fixed_pars == "mu_driver"){
+    model_name = "Driver_fixed_mu_driver"
   }
 
   all_paths <- list(
     "Driver" = "Driver.stan",
     "Driver_fixed_mu_and_omega" = "Driver_fixed_mut_rate_and_growth.stan",
     "Driver_fixed_omega" = "Driver_fixed_growth.stan",
+    "Driver_fixed_mu_driver" = "Driver_fixed_mu_driver.stan",
     "CNA" = "CNA.stan"
   )
 
