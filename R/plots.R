@@ -2,6 +2,10 @@
 
 plot_prior_vs_posterior = function(x, parameter){
 
+  posterior = get_inferred_parameters(x)
+
+  if (!(parameter %in% colnames(posterior)) & parameter != "mrca") return(CNAqc:::eplot())
+
   prior = get_prior_distribution_type(parameter)
   alpha = get_prior_hyperparameters(x, parameter)[["alpha"]]
   beta = get_prior_hyperparameters(x, parameter)[["beta"]]
@@ -9,8 +13,7 @@ plot_prior_vs_posterior = function(x, parameter){
   if (prior == 'gamma') draws = rgamma(1000000, alpha, beta)
   if (prior == 'beta') draws = rbeta(1000000, alpha, beta)
 
-  posterior = get_inferred_parameters(x)
-  posterior = as.data.frame(posterior[[parameter]])
+  if (parameter == "mrca") { posterior = as.data.frame(posterior[["rho_mrca"]]) } else { posterior = as.data.frame(posterior[[parameter]]) }
 
   lb = min(min(draws), min(posterior[,1]))
   ub = max(max(draws), max(posterior[,1]))
@@ -69,7 +72,7 @@ plot_prior_vs_posterior = function(x, parameter){
 
 get_prior_distribution_type = function(par){
   prior_distributions = data.frame(
-    'parameter'= c("t_eca","t_driver","t_mrca", "rho_mrca", "omega", "mu_driver"),
+    'parameter'= c("t_eca","t_driver","t_mrca", "mrca", "omega", "mu_driver"),
     'prior_distribution' = c("uniform", "uniform", "uniform", "beta", "gamma", "gamma")
   )
 
@@ -203,19 +206,38 @@ plot_timing = function(x)
   #   theme(legend.position = 'bottom')+
   #   scale_fill_manual(values = get_inferred_times_colors())
 
-  for (th in 1:nrow(therapies)){
-    posterior_plot = posterior_plot + geom_rect(
-      aes(xmin = as.Date(convert_date_real(therapies$Clinical.value.start[th])),
-          xmax = as.Date(convert_date_real(therapies$Clinical.value.end[th]))),
-      ymin = 0,
-      ymax = Inf,
-      fill = 'indianred',
-      colour = "white",
-      size = 0.5,
-      alpha = .5
-    )
-  }
-  posterior_plot
+  posterior_plot = posterior_plot + geom_rect(
+    aes(xmin = as.Date(convert_date_real(therapies$Clinical.value.start[1])),
+        xmax = as.Date(convert_date_real(therapies$Clinical.value.end[1]))),
+    ymin = 0,
+    ymax = Inf,
+    fill = 'indianred',
+    colour = "white",
+    size = 0.5,
+    alpha = .5
+  )
+
+  posterior_plot +
+    geom_segment(data = therapies[2:nrow(therapies),],
+               aes(x=as.Date(convert_date_real(Clinical.value.start)),
+                   xend=as.Date(convert_date_real(Clinical.value.start)),
+                   y=0, yend=Inf), color = "indianred", alpha=.5)
+
+  # for (th in 2:nrow(therapies)){
+  #   posterior_plot = posterior_plot +
+  #     geom_vline(
+  #     aes(
+  #       xintercept = as.Date(convert_date_real(therapies$Clinical.value.start[th])),
+  #       #xmax = as.Date(convert_date_real(therapies$Clinical.value.end[th]))),
+  #     #ymin = 0,
+  #     #ymax = Inf,
+  #     #fill = 'indianred',
+  #     colour = "indianred",
+  #     size = 0.5,
+  #     alpha = .5
+  #   ))
+  # }
+  # posterior_plot
 }
 
 ## Diagnostics

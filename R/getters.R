@@ -122,7 +122,7 @@ get_N_max= function(x){
 
 
 ## Get data for inference
-get_inference_data = function(x, model='Driver', fixed_pars=c()){
+get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
 
   data = list()
 
@@ -139,7 +139,7 @@ get_inference_data = function(x, model='Driver', fixed_pars=c()){
       data[['driver_end']] = get_therapy_driver(x)[["end"]]
       data[['m_driver']] = get_m_driver(x)
 
-      if ('mu_driver' %in% fixed_pars){
+      if (fixed_mu==T){
         data[['mu_driver']] = get_prior_hyperparameters(x, name='mu_driver')
       }else{
         data[['mu_driver_alpha']] = get_prior_hyperparameters(x, name='mu_driver')[["alpha"]]
@@ -185,7 +185,7 @@ get_inference_data = function(x, model='Driver', fixed_pars=c()){
   data[['m_th_cauchy']]= get_m_th(x, type = 'Cauchy')
 
   # other parameters
-  if ('omega' %in% fixed_pars){
+  if (fixed_omega==T){
     data[['omega']] = get_prior_hyperparameters(x, name='omega')
   }else{
     data[['omega_alpha']] = get_prior_hyperparameters(x, name='omega')[["alpha"]]
@@ -207,17 +207,11 @@ get_inference_data = function(x, model='Driver', fixed_pars=c()){
   data
 }
 
-get_model <- function(model_name='Driver', fixed_pars=c()) {
+get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F) {
 
-  if (model_name=='Driver' & length(fixed_pars)==2){
-    model_name = "Driver_fixed_mu_and_omega"
-  }
-  if (model_name=='Driver' & fixed_pars == "omega"){
-    model_name = "Driver_fixed_omega"
-  }
-  if (model_name=='Driver' & fixed_pars == "mu_driver"){
-    model_name = "Driver_fixed_mu_driver"
-  }
+  if (model_name=='Driver' & fixed_omega) model_name = "Driver_fixed_omega"
+  if (model_name=='Driver' & fixed_mu) model_name = "Driver_fixed_mu_driver"
+  if (model_name=='Driver' & fixed_omega & fixed_mu) model_name = "Driver_fixed_mu_and_omega"
 
   all_paths <- list(
     "Driver" = "Driver.stan",

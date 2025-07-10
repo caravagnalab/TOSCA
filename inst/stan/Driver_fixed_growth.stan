@@ -37,9 +37,7 @@ data{
   int <lower=0> m_driver;
   real <lower=0> mu_driver_alpha;
   real <lower=0> mu_driver_beta;
-  real <lower=0> mu_driver_clock_alpha;
-  real <lower=0> mu_driver_clock_beta;
-  // real <lower=0> mu_driver_clock; // if driver alters basal mutation rate of clock-like
+  real <lower=0> mu_driver_clock; // if driver alters basal mutation rate of clock-like
 
   // mutations associated to step-like therapies
   int <lower=0> n_th_step; // numero totale di terapie*cicli
@@ -75,30 +73,31 @@ data{
   real N_min;
   real N_max;
 
-  real alpha_mrca;
-  real beta_mrca;
-  real alpha_eca;
-  real beta_eca;
+  real <lower=0> alpha_mrca;
+  real <lower=0> beta_mrca;
+  // real <lower=0> alpha_eca;
+  // real <lower=0> beta_eca;
 
 }
 
 parameters{
-  // real <lower=0, upper=Sample_1> t_eca;
+  real <lower=0, upper=Sample_1> t_eca;
   // real <lower=max_therapy, upper=Sample_2> t_mrca;
-  real rho_mrca;
-  real rho_eca;
-  // real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
+  real <lower=0, upper=1> rho_mrca;
+  // real <lower=0, upper=1> rho_eca;
+  real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   // real <lower=0> omega;
   real <lower=0> mu_driver;
-  real <lower=0> mu_driver_clock;
 }
 
 transformed parameters{
+
   real <lower=max_therapy> t_mrca = max_therapy + rho_mrca*(Sample_2-max_therapy);
-  real <lower=0, upper=Sample_1> t_eca = Sample_1 - rho_eca;
-  real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
+  // real <lower=0, upper=Sample_1> t_eca = Sample_1 - rho_eca;
+  // real <lower=t_eca, upper=driver_end[cycles_driver]> t_driver;
+
   array[n_th_step_type] real lambda_th_step;
   array[n_th_cauchy_type] real lambda_th_cauchy;
 
@@ -137,9 +136,10 @@ transformed parameters{
 model{
 
   // Priors
-  // t_eca ~ uniform(0, Sample_1);
-  rho_eca ~ beta(alpha_eca, beta_eca);
+  t_eca ~ uniform(0, Sample_1);
+  // t_mrca ~ uniform(max_therapy, Sample_2);
   rho_mrca ~ beta(alpha_mrca, beta_mrca);
+  // rho_eca ~ beta(alpha_eca, beta_eca);
   t_driver ~ uniform(t_eca, t_mrca);
 
   for (m in 1:n_th_step_type){
@@ -153,7 +153,6 @@ model{
 
   // omega ~ gamma(omega_alpha, omega_beta);
   mu_driver ~ gamma(mu_driver_alpha,mu_driver_beta);
-  mu_driver_clock ~ gamma(mu_driver_clock_alpha,mu_driver_clock_beta);
 
   // Likelihood
   m_clock ~ poisson(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));

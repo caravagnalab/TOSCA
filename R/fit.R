@@ -8,11 +8,12 @@ fit = function(
     adapt_delta = 0.99,
     stepsize = 0.01,
     model_name = 'Driver',
-    fixed_pars = c()
+    fixed_omega,
+    fixed_mu
     ){
 
-  data = get_inference_data(x, model=model_name, fixed_pars=fixed_pars)
-  model = get_model(model_name=model_name, fixed_pars=fixed_pars)
+  data = get_inference_data(x, model=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu)
+  model = get_model(model_name=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu)
 
   fit <- model$sample(data = data,
                       iter_warmup = warm_up,
