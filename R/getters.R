@@ -209,8 +209,8 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
 
 get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F) {
 
-  if (model_name=='Driver' & fixed_omega) model_name = "Driver_fixed_omega"
-  if (model_name=='Driver' & fixed_mu) model_name = "Driver_fixed_mu_driver"
+  if (model_name=='Driver' & fixed_omega & !fixed_mu) model_name = "Driver_fixed_omega"
+  if (model_name=='Driver' & fixed_mu & !fixed_omega) model_name = "Driver_fixed_mu_driver"
   if (model_name=='Driver' & fixed_omega & fixed_mu) model_name = "Driver_fixed_mu_and_omega"
 
   all_paths <- list(
