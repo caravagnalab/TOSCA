@@ -1,8 +1,8 @@
 #### Getters for input data
 
 ## Get mutations
-get_m_clock = function(x){
-  as.integer(x$mutations %>% filter(Mutation.name=='m_clock') %>% pull(Mutation.value))
+get_m_clock = function(x, type = "relapse"){
+  as.integer(x$mutations %>% filter(Mutation.name=='m_clock', Mutation.type == type) %>% pull(Mutation.value))
 }
 get_m_driver = function(x){
   as.integer(x$mutations %>% filter(Mutation.name=='m_driver') %>% pull(Mutation.value))
@@ -19,8 +19,8 @@ get_m_th = function(x, type = 'step'){
 
 get_mutation = function(x, name, type=NA, index=NA){
   m = x$mutations %>% filter(Mutation.name==name)
-  if (!is.na(type)) m %>% filter(Mutation.type == type)
-  if (!is.na(index)) m %>% filter(Mutation.index == index)
+  if (!is.na(type)) m = m %>% filter(Mutation.type == type)
+  if (!is.na(index)) m = m %>% filter(Mutation.index == index)
   m %>% pull(Mutation.value) %>% as.integer()
 }
 
@@ -103,9 +103,15 @@ get_k_step = function(x){
 }
 
 get_max_th = function(x){
-  dates=c(x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.value.start), x$clinical_records %>% filter(Clinical.name!="Sample") %>%
-            pull(Clinical.value.start))
-  max(dates)
+  # dates=c(x$clinical_records %>% filter(Clinical.name!="Sample") %>%
+  #           pull(Clinical.value.start), x$clinical_records %>% filter(Clinical.name!="Sample") %>%
+  #           pull(Clinical.value.start))
+  # max(dates)
+
+  dates=c(x$clinical_records %>% filter(Clinical.name!="Sample") %>%
+            pull(Clinical.value.end), x$clinical_records %>% filter(Clinical.name!="Sample") %>%
+            pull(Clinical.value.end))
+  min(dates)
 }
 
 get_exponential_growth = function(x){
@@ -113,11 +119,13 @@ get_exponential_growth = function(x){
 }
 
 get_N_min = function(x){
-  x$parameters %>% filter(Parameter.name=='N_min') %>% pull(Parameter.value)
+  N_min = x$parameters %>% filter(Parameter.name=='N_min') %>% pull(Parameter.value)
+  if (length(N_min) < 2){return(c(N_min, N_min))}else{N_min}
 }
 
 get_N_max= function(x){
-  x$parameters %>% filter(Parameter.name=='N_max') %>% pull(Parameter.value)
+  N_max = x$parameters %>% filter(Parameter.name=='N_max') %>% pull(Parameter.value)
+  if (length(N_max) < 2){return(c(N_max, N_max))}else{N_max}
 }
 
 
@@ -127,7 +135,8 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data = list()
 
   # Clock-like mutations
-  data[['m_clock']] = get_m_clock(x)
+  data[['m_clock_primary']] = get_m_clock(x, type = "primary")
+  data[['m_clock']] = get_m_clock(x, type = "relapse")
   data[['l_diploid']] = get_l_diploid(x)
   data[['mu_clock']] = get_mu_clock(x)
 

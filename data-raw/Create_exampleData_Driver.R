@@ -1,5 +1,6 @@
 # Timeline
 t_eca = .2
+t_mrca_sample_1 = .23
 Sample_1 = .25
 
 step_1_start_cycle_1 = .3
@@ -28,11 +29,13 @@ mu_driver_beta = 2e8
 hist(rgamma(10000,mu_driver_alpha, mu_driver_beta))
 
 # Driver legato a evento esogeno
+m_clock_primary = 2*omega*l_diploid*mu_clock*(t_mrca_sample_1-t_eca)
 m_clock = 2*omega*l_diploid*(mu_clock*(t_driver-t_eca) + mu_clock_driver*(t_mrca-t_driver))
 m_driver = 2*omega*l_diploid*mu_driver*(step_1_end_cycle_2-t_driver)
-N = exp(omega*(Sample_2-t_mrca))
-N_min = N*.9
-N_max = N*1.1
+N2 = exp(omega*(Sample_2-t_mrca))
+N1 = exp(omega*(Sample_1-t_mrca_sample_1))
+N_min = N1*.9
+N_max = N2*1.1
 
 exampleData_Driver = list(
   'Clinical Timepoints' =
@@ -45,10 +48,10 @@ exampleData_Driver = list(
     ),
   'Mutations' =
     data.frame(
-      'Mutation.name'= c('m_clock','m_driver'),
-      'Mutation.type'= c('clock','2'),
-      'Mutation.index'= c(NA, NA),
-      'Mutation.value'= c(m_clock, m_driver)
+      'Mutation.name'= c('m_clock', 'm_clock','m_driver'),
+      'Mutation.type'= c('primary', 'relapse','2'),
+      'Mutation.index'= c(NA, NA, NA),
+      'Mutation.value'= c(m_clock_primary, m_clock, m_driver)
     ),
   'Parameters' =
     data.frame('Parameter.name' = c('l_diploid','mu_clock','mu_clock_driver','mu_driver_alpha','mu_driver_beta','omega_alpha','omega_beta','k_step','N_min','N_max','exponential_growth', 'mrca_alpha','mrca_beta'),

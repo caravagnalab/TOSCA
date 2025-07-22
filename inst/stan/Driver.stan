@@ -24,6 +24,7 @@ functions {
 
 data{
   // Clock-like mutations
+  int <lower=0> m_clock_primary;
   int <lower=0> m_clock;
   real <lower=0> l_diploid;
   real <lower=0> mu_clock;
@@ -69,8 +70,8 @@ data{
   real <lower=0> Sample_2;
   real <lower=0> max_therapy;
   int <lower=0, upper=1> exponential_growth;
-  real N_min;
-  real N_max;
+  array[2] real<lower=0> N_min;
+  array[2] real<lower=0> N_max;
 
   real <lower=0> alpha_mrca;
   real <lower=0> beta_mrca;
@@ -81,6 +82,7 @@ data{
 
 parameters{
   real <lower=0, upper=Sample_1> t_eca;
+  real <lower=t_eca, upper=Sample_1> t_mrca_primary;
   // real <lower=max_therapy, upper=Sample_2> t_mrca;
   real <lower=0, upper=1> rho_mrca;
   // real <lower=0, upper=1> rho_eca;
@@ -136,6 +138,7 @@ model{
 
   // Priors
   t_eca ~ uniform(0, Sample_1);
+  t_mrca_primary ~ uniform(t_eca, Sample_1);
   // t_mrca ~ uniform(max_therapy, Sample_2);
   rho_mrca ~ beta(alpha_mrca, beta_mrca);
   // rho_eca ~ beta(alpha_eca, beta_eca);
@@ -154,6 +157,7 @@ model{
   mu_driver ~ gamma(mu_driver_alpha,mu_driver_beta);
 
   // Likelihood
+  m_clock_primary ~ poisson(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca));
   m_clock ~ poisson(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));
 
   // Step therapy mutations
@@ -177,13 +181,15 @@ model{
   }
 
   if (exponential_growth==1){
-    target += -N_min*exp(-omega*(Sample_2 - t_mrca)) + log(1-exp(-(N_max-N_min)*exp(-omega*(Sample_2 - t_mrca))));
+    target += -N_min[1]*exp(-omega*(Sample_1 - t_mrca_primary)) + log(1-exp(-(N_max[1]-N_min[1])*exp(-omega*(Sample_1 - t_mrca_primary))));
+    target += -N_min[2]*exp(-omega*(Sample_2 - t_mrca)) + log(1-exp(-(N_max[2]-N_min[2])*exp(-omega*(Sample_2 - t_mrca))));
   }
 
 }
 
 generated quantities{
 
+  int<lower =0> m_clock_primary_rep = poisson_rng(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca));
   int<lower =0> m_clock_rep = poisson_rng(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));
 
   int <lower =0> m_driver_rep;

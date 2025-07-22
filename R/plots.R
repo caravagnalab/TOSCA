@@ -87,7 +87,7 @@ get_parameters_of_model = function(model_name){
 get_mutations_of_model = function(model_name){}
 
 # Posterior Predictive checks
-plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "clock", NA), mut2 = c("m_driver","2",NA)){
+plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "relapse", NA), mut2 = c("m_driver","2",NA)){
 
   estimates = get_inferred_parameters(x)
   mut1_real = get_mutation(x, mut1[1], mut1[2], mut1[3])
@@ -108,10 +108,10 @@ plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "clock", NA), 
       group_by(m_rep_1, m_rep_2, pp) %>%
       summarise(n = n())
 
-  ggplot(ppc,aes(m_rep_1, m_rep_2, fill= pp, alpha = n)) +
-      ggplot2::geom_tile() +
+  ggplot(ppc,aes(m_rep_1, m_rep_2, color= pp, alpha = n), size=.05) +
+      ggplot2::geom_point() +
       CNAqc:::my_ggplot_theme() +
-      scale_fill_gradient(
+      scale_color_gradient(
         high = "goldenrod",
         low = "purple4"
       )+
@@ -141,7 +141,8 @@ plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "clock", NA), 
       guides(
         fill = 'none',
         alpha = 'none'
-      ) + xlab(mut1[1]) + ylab(mut2[1])
+      ) + xlab(mut1[1]) + ylab(mut2[1])+
+    theme(legend.position = "none")
 
   }
 plot_expected_N = function(x){
