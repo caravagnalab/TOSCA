@@ -204,7 +204,8 @@ generated quantities{
 
 
   if (exponential_growth==1){
-    real N = exp(omega*(Sample_2-t_mrca));
+    real N_sample_2 = exp(omega*(Sample_2-t_mrca));
+    real N_sample_1 = exp(omega*(Sample_1-t_eca));
   }
 
 }
