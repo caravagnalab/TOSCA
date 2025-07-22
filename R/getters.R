@@ -103,15 +103,11 @@ get_k_step = function(x){
 }
 
 get_max_th = function(x){
-  # dates=c(x$clinical_records %>% filter(Clinical.name!="Sample") %>%
-  #           pull(Clinical.value.start), x$clinical_records %>% filter(Clinical.name!="Sample") %>%
-  #           pull(Clinical.value.start))
-  # max(dates)
 
-  dates=c(x$clinical_records %>% filter(Clinical.name!="Sample") %>%
-            pull(Clinical.value.end), x$clinical_records %>% filter(Clinical.name!="Sample") %>%
-            pull(Clinical.value.end))
-  min(dates)
+  max_index = x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.type) %>% as.integer() %>% max() %>% as.character()
+
+  x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>% pull(Clinical.value.start)
+  #min(dates)
 }
 
 get_exponential_growth = function(x){

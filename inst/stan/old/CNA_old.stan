@@ -36,11 +36,11 @@ data{
   array[n_cna] int<lower=0> coeff;
 
 
-  int <lower=0> n_th_step;
-  int <lower=0> n_th_step_type;
+  int <lower=0> n_th_step; // total number of steps (ex. 3 cycles of th1 and 2 cycles of th2 -> n_th_step=5)
+  int <lower=0> n_th_step_type; // number of therapy types (ex. 3 cycles of th1 and 2 cycles of th2 -> n_th_step_type=2)
   array[n_th_step] real<lower=0> start_th_step;
   array[n_th_step] real<lower=0> end_th_step;
-  array[n_th_step] int<lower=0> type_th_step;
+  array[n_th_step] int<lower=0> type_th_step; // index indicating the therapy type (length = n_th_step, index in i = 1...n_th_step_type)
   array[n_th_step_type] real<lower=0> alpha_th_step;
   array[n_th_step_type] real<lower=0> beta_th_step;
   array[n_th_step_type] int<lower=0> m_th_step;
