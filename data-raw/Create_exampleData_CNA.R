@@ -84,9 +84,11 @@ exampleData_CNA = list(
   'Mutations' =
     data.frame(
       'Mutation.name'= c('m_clock', 'm_clock', 'm_cna','m_cna','m_cna','m_cna', 'm_th', 'm_th'),
-      'Mutation.type'= c('primary','relapse','alpha','beta','alpha','beta', 'step','step'),
+      'Mutation.type'= c('primary','relapse','alpha','beta','alpha','beta', NA,NA),
       'Mutation.index'= c(NA,NA, '1','1','2','2','1','2'),
-      'Mutation.value'= c(m_clock_primary, m_clock, m_alpha_cna_1, m_beta_cna_1, m_alpha_cna_2, m_beta_cna_2, m_step_1, m_step_2)
+      'Mutation.value'= c(m_clock_primary, m_clock, m_alpha_cna_1, m_beta_cna_1, m_alpha_cna_2, m_beta_cna_2, m_step_1, m_step_2),
+      'Mutation.coeff'= c(NA,NA,2,2,2,2,NA,NA),
+      'Mutation.source'= c('clock','clock','mixed','mixed','mixed','mixed','step','step')
     ),
   'Parameters' =
     data.frame('Parameter.name' = c('l_diploid',

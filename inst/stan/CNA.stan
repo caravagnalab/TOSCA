@@ -34,7 +34,8 @@ data{
   array[n_cna] int<lower=0> m_alpha;
   array[n_cna] int<lower=0> m_beta;
   array[n_cna] real<lower=0> l_CNA;
-  array[n_cna] int<lower=0> coeff;
+  array[n_cna] int<lower=0> coeff_alpha; // 1 for 2:0, 2 for 2:2
+  array[n_cna] int<lower=0> coeff_beta; // 2 for 2:0, 4 for 2:2
 
   // mutations associated to step-like therapies
   int <lower=0> n_th_step; // numero totale di terapie*cicli
@@ -112,8 +113,8 @@ transformed parameters{
 
   // clock-like rate
   for (c in 1:n_cna){
-    lambda_alpha_clock[c] += l_CNA[c] * omega * mu_clock * (t_cna[c] - t_eca);
-    lambda_beta_clock[c] += coeff[c] * l_CNA[c] * omega * mu_clock * (t_mrca - t_cna[c]);
+    lambda_alpha_clock[c] += coeff_alpha[c] l_CNA[c] * omega * mu_clock * (t_cna[c] - t_eca);
+    lambda_beta_clock[c] += coeff_beta[c] * l_CNA[c] * omega * mu_clock * (t_mrca - t_cna[c]);
   }
 
   // Step therapy mutations
@@ -127,8 +128,8 @@ transformed parameters{
 
           // Update lambda CNA
           for (c in 1:n_cna){
-            lambda_alpha_th_step[c] += l_CNA[c] * omega * mu_th_step[th_type] * lambda_therapy_single(t_eca, t_cna[c], start_th_step[cycle], end_th_step[cycle], k_step);
-            lambda_beta_th_step[c] += coeff[c] * l_CNA[c] * omega * mu_th_step[th_type] * lambda_therapy_single(t_cna[c], t_mrca, start_th_step[cycle], end_th_step[cycle], k_step);
+            lambda_alpha_th_step[c] += coeff_alpha[c] * l_CNA[c] * omega * mu_th_step[th_type] * lambda_therapy_single(t_eca, t_cna[c], start_th_step[cycle], end_th_step[cycle], k_step);
+            lambda_beta_th_step[c] += coeff_beta[c] * l_CNA[c] * omega * mu_th_step[th_type] * lambda_therapy_single(t_cna[c], t_mrca, start_th_step[cycle], end_th_step[cycle], k_step);
           }
 
         }
@@ -143,8 +144,8 @@ transformed parameters{
       if (type_th_cauchy[cycle] == th_cauchy){
         lambda_th_cauchy[th_cauchy] += couchy_cdf_single(location_th_cauchy[cycle], scales_th_cauchy[cycle], t_eca, t_mrca);
         for (c in 1:n_cna){
-          lambda_alpha_th_cauchy[c] += l_CNA[c] * omega * mu_clock * couchy_cdf_single(location_th_cauchy[cycle], scales_th_cauchy[cycle], t_eca, t_cna[c]);
-          lambda_beta_th_cauchy[c] += coeff[c] * l_CNA[c] * omega * mu_clock * couchy_cdf_single(location_th_cauchy[cycle], scales_th_cauchy[cycle], t_cna[c], t_mrca);
+          lambda_alpha_th_cauchy[c] += coeff_alpha[c] * l_CNA[c] * omega * mu_clock * couchy_cdf_single(location_th_cauchy[cycle], scales_th_cauchy[cycle], t_eca, t_cna[c]);
+          lambda_beta_th_cauchy[c] += coeff_beta[c] * l_CNA[c] * omega * mu_clock * couchy_cdf_single(location_th_cauchy[cycle], scales_th_cauchy[cycle], t_cna[c], t_mrca);
         }
       }
     }

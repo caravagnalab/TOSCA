@@ -51,7 +51,9 @@ exampleData_Driver = list(
       'Mutation.name'= c('m_clock', 'm_clock','m_driver'),
       'Mutation.type'= c('primary', 'relapse','2'),
       'Mutation.index'= c(NA, NA, NA),
-      'Mutation.value'= c(m_clock_primary, m_clock, m_driver)
+      'Mutation.value'= c(m_clock_primary, m_clock, m_driver),
+      'Mutation.coeff'= rep(NA,3),
+      'Mutation.source'= c('clock','clock','driver')
     ),
   'Parameters' =
     data.frame('Parameter.name' = c('l_diploid','mu_clock','mu_clock_driver','mu_driver_alpha','mu_driver_beta','omega_alpha','omega_beta','k_step','N_min','N_max','exponential_growth', 'mrca_alpha','mrca_beta'),
