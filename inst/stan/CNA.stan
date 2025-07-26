@@ -74,9 +74,9 @@ data{
 }
 
 parameters{
-  real <lower=0, upper=Sample_1 - 1e-8 > t_eca;
+  real <lower=Sample_1-2, upper=Sample_1 - 1e-8 > t_eca;
   real <lower=t_eca, upper=Sample_1 > t_mrca_primary;
-  array[n_cna] real<lower=t_eca, upper=Sample_2> t_cna;
+  array[n_cna] real<lower=t_eca, upper=Sample_2 - 1e-8 > t_cna;
   real <lower=0, upper=1> rho_mrca;
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
@@ -113,7 +113,7 @@ transformed parameters{
 
   // clock-like rate
   for (c in 1:n_cna){
-    lambda_alpha_clock[c] += coeff_alpha[c] l_CNA[c] * omega * mu_clock * (t_cna[c] - t_eca);
+    lambda_alpha_clock[c] += coeff_alpha[c] * l_CNA[c] * omega * mu_clock * (t_cna[c] - t_eca);
     lambda_beta_clock[c] += coeff_beta[c] * l_CNA[c] * omega * mu_clock * (t_mrca - t_cna[c]);
   }
 

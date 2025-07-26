@@ -1,14 +1,33 @@
 # Plot Prior vs Posterior - all parameters
+get_prior_distribution_type = function(par){
+  prior_distributions = data.frame(
+    'parameter'= c("t_eca","t_driver","t_mrca", "mrca", "omega", "mu_driver"),
+    'prior_distribution' = c("uniform", "uniform", "uniform", "beta", "gamma", "gamma")
+  )
 
-plot_prior_vs_posterior = function(x, parameter){
+  prior_distributions %>% filter(parameter == par) %>% pull(prior_distribution)
+
+}
+
+# need to adjust this function for parameters with multiple entries!
+plot_prior_vs_posterior_single_parameter = function(x, parameter){
 
   posterior = get_inferred_parameters(x)
 
   if (!(parameter %in% colnames(posterior)) & parameter != "mrca") return(CNAqc:::eplot())
 
-  prior = get_prior_distribution_type(parameter)
-  alpha = get_prior_hyperparameters(x, parameter)[["alpha"]]
-  beta = get_prior_hyperparameters(x, parameter)[["beta"]]
+  if (grepl("\\[", parameter)){
+    prior = "gamma"
+    par_name = strsplit(parameter, split = "\\[")[[1]][1]
+    index = as.integer(strsplit(strsplit(parameter, split = "\\[")[[1]][2], split = "\\]")[1])
+    alpha = get_prior_hyperparameters(x, par_name)[["alpha"]][index]
+    beta = get_prior_hyperparameters(x, par_name)[["beta"]][index]
+    } else {
+      prior = get_prior_distribution_type(parameter)
+      alpha = get_prior_hyperparameters(x, parameter)[["alpha"]]
+      beta = get_prior_hyperparameters(x, parameter)[["beta"]]
+
+      }
 
   if (prior == 'gamma') draws = rgamma(1000000, alpha, beta)
   if (prior == 'beta') draws = rbeta(1000000, alpha, beta)
@@ -70,23 +89,55 @@ plot_prior_vs_posterior = function(x, parameter){
   return(density_post_vs_prior)
 }
 
-get_prior_distribution_type = function(par){
-  prior_distributions = data.frame(
-    'parameter'= c("t_eca","t_driver","t_mrca", "mrca", "omega", "mu_driver"),
-    'prior_distribution' = c("uniform", "uniform", "uniform", "beta", "gamma", "gamma")
-  )
+plot_prior_vs_posterior = function(x, model){
+  parameters = c()
+  posterior = get_inferred_parameters(x)
 
-  prior_distributions %>% filter(parameter == par) %>% pull(prior_distribution)
+  is_omega = grepl("omega", colnames(posterior)) %>% sum()
+  is_mu_driver = grepl("mu_driver", colnames(posterior)) %>% sum()
+  if (is_omega == 1) parameters = c("omega", parameters)
+  if (is_mu_driver == 1) parameters = c("mu_driver", parameters)
 
+  n_mu_th = grepl("mu_th_step", colnames(posterior)) %>% sum()
+  n_scales = grepl("scales_th_cauchy", colnames(posterior)) %>% sum()
+
+  if (n_mu_th > 0){
+  for (n in 1:n_mu_th){
+    parameters = c(parameters, paste0("mu_th_step[",n,"]"))
+  }
+  }
+
+  if (n_scales > 0){
+  for (n in 1:n_scales){
+    parameters = c(parameters, paste0("scales_th_cauchy[",n,"]"))
+  }
+  }
+
+  parameter_plots = lapply(parameters, function(p){
+    # print(p)
+    plot_prior_vs_posterior_single_parameter(x, p) + ggtitle(p)
+  })
+
+  ggpubr::ggarrange(plotlist = parameter_plots, nrow=1, ncol = length(parameters))
 }
-
-get_parameters_of_model = function(model_name){
-
-}
-
-get_mutations_of_model = function(model_name){}
 
 # Posterior Predictive checks
+get_mutations_of_model = function(model_name){
+  common = c("m_clock_primary"
+             )
+  "m_clock" # CNA, Driver
+  "m_alpha"
+  "m_beta" # CNA
+  # array[n_th_step_type] int<lower=0> m_th_step; # CNA, Driver
+  # array[n_th_cauchy_type] int<lower=0> m_th_cauchy; # CNA, Driver
+  # array[n_th_step_type] int <lower=0> alpha_tetraploid_step; // mutations in 2:2, for each therapy + clock
+  # array[n_th_step_type] int <lower=0> beta_tetraploid_step;
+  # array[n_th_cauchy_type] int <lower=0> alpha_tetraploid_cauchy;
+  # array[n_th_cauchy_type] int <lower=0> beta_tetraploid_cauchy;
+  # int <lower=0> alpha_tetraploid_clock;
+  # int <lower=0> beta_tetraploid_clock;
+}
+
 plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "relapse", NA), mut2 = c("m_driver","2",NA)){
 
   estimates = get_inferred_parameters(x)

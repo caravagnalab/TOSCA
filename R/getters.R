@@ -62,29 +62,29 @@ get_type_th_step = function(x, name='Therapy step'){
 
 
 ## Get parameters
-get_length = function(x, karyotype=NA, model=NA){
-  if (karyotype=="1:1"){
+get_length = function(x, model=NA){
+  if (is.na(model)){
     return(x$parameters %>% filter(Parameter.name=="l_diploid") %>% pull(Parameter.value))
   }
   if (model=="CNA"){
     return(x$parameters %>% filter(Parameter.name=="l_CNA") %>% pull(Parameter.value))
   }
-  if (karyotype=="2:2" & model=="WGD"){
+  if (model=="WGD"){
     return(x$parameters %>% filter(Parameter.name=="l_tetraploid") %>% pull(Parameter.value))
   }
-  if (karyotype=="2:0" & model=="WGD"){
-    return(x$parameters %>% filter(Parameter.name=="l_cnloh") %>% pull(Parameter.value))
-  }
+  # if (karyotype=="2:0" & model=="WGD"){
+  #   return(x$parameters %>% filter(Parameter.name=="l_cnloh") %>% pull(Parameter.value))
+  # }
 }
 
 get_coeff_CNA = function(x){
   coeff_beta = x$parameters %>% filter(Parameter.name=="coeff_CNA") %>% pull(Parameter.value)
   coeff_alpha = c()
   for (c in coeff_beta){
-    if (coeff_beta==2){coeff_alpha=c(coeff_alpha, 1)}
-    if (coeff_beta==4){coeff_alpha=c(coeff_alpha, 2)}
+    if (c=="2"){coeff_alpha=c(coeff_alpha, 1)}
+    if (c=="4"){coeff_alpha=c(coeff_alpha, 2)}
   }
-  list('alpha'=coeff_alpha, 'beta'=coeff_beta)
+  list('alpha'=coeff_alpha, 'beta'=as.integer(coeff_beta))
 }
 
 get_mu_clock = function(x){
@@ -120,9 +120,9 @@ get_k_step = function(x){
 
 get_max_th = function(x){
 
-  max_index = x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.type) %>% as.integer() %>% max() %>% as.character()
+  max_index = x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.index) %>% as.integer() %>% max() %>% as.character()
 
-  x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>% pull(Clinical.value.start)
+  x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.index == max_index) %>% pull(Clinical.value.start)
   #min(dates)
 }
 
@@ -146,10 +146,10 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
 
   data = list()
   data[['m_clock_primary']] = get_mutation(x, name="m_clock", type="primary", index=NA, source=NA)
-  data[['l_diploid']] = get_length(x, karyotype="1:1", model=NA)
+  data[['l_diploid']] = get_length(x, model=NA)
   if (model %in% c('Driver', 'CNA')){
     # Clock-like mutations
-    data[['m_clock_primary']] = get_mutation(x, name="m_clock", type="primary", index=NA, source=NA)
+    #data[['m_clock_primary']] = get_mutation(x, name="m_clock", type="primary", index=NA, source=NA)
     data[['m_clock']] = get_mutation(x, name="m_clock", type="relapse", index=NA, source=NA)
   }
   data[['mu_clock']] = get_mu_clock(x)
@@ -215,15 +215,15 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     data[['alpha_tetraploid_clock']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="clock", coeff="4")
     data[['beta_tetraploid_clock']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="clock", coeff="4")
 
-    data[['alpha_cnloh_step']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="step", coeff="2")
-    data[['beta_cnloh_step']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="step", coeff="2")
-    data[['alpha_cnloh_cauchy']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="cauchy", coeff="2")
-    data[['beta_cnloh_cauchy']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="cauchy", coeff="2")
-    data[['alpha_cnloh_clock']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="clock", coeff="2")
-    data[['beta_cnloh_clock']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="clock", coeff="2")
+    # data[['alpha_cnloh_step']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="step", coeff="2")
+    # data[['beta_cnloh_step']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="step", coeff="2")
+    # data[['alpha_cnloh_cauchy']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="cauchy", coeff="2")
+    # data[['beta_cnloh_cauchy']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="cauchy", coeff="2")
+    # data[['alpha_cnloh_clock']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="clock", coeff="2")
+    # data[['beta_cnloh_clock']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="clock", coeff="2")
 
     data[['l_tetraploid']]= get_length(x, karyotype="2:2", model="WGD")
-    data[['l_cnloh']]= get_length(x, karyotype="2:0", model="WGD")
+    # data[['l_cnloh']]= get_length(x, karyotype="2:0", model="WGD")
 
   }
 
@@ -279,7 +279,8 @@ get_inferred_parameters = function(x){
 }
 
 get_inferred_times_colors = function(){
-  c("t_eca"="#44998dff", "t_driver"="#cb3144ff", "t_mrca"="#64419bff")
+  c("t_eca"="#ae4532ff", "t_driver"="#d48b3eff", "t_mrca"="#7876adff",
+    "t_cna"="#dc5895ff", "t_wgd"="#438455ff")
 }
 
 ## Get inferred times
