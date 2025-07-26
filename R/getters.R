@@ -208,12 +208,12 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     }
 
   if (model == 'WGD'){
-    data[['alpha_tetraploid_step']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="step", coeff="4")
-    data[['beta_tetraploid_step']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="step", coeff="4")
-    data[['alpha_tetraploid_cauchy']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="cauchy", coeff="4")
-    data[['beta_tetraploid_cauchy']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="cauchy", coeff="4")
-    data[['alpha_tetraploid_clock']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="clock", coeff="4")
-    data[['beta_tetraploid_clock']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="clock", coeff="4")
+    data[['m_alpha_tetraploid_step']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="step", coeff="4")
+    data[['m_beta_tetraploid_step']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="step", coeff="4")
+    data[['m_alpha_tetraploid_cauchy']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="cauchy", coeff="4")
+    data[['m_beta_tetraploid_cauchy']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="cauchy", coeff="4")
+    data[['m_alpha_tetraploid_clock']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="clock", coeff="4")
+    data[['m_beta_tetraploid_clock']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="clock", coeff="4")
 
     # data[['alpha_cnloh_step']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="step", coeff="2")
     # data[['beta_cnloh_step']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="step", coeff="2")
@@ -222,7 +222,7 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     # data[['alpha_cnloh_clock']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="clock", coeff="2")
     # data[['beta_cnloh_clock']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="clock", coeff="2")
 
-    data[['l_tetraploid']]= get_length(x, karyotype="2:2", model="WGD")
+    data[['l_tetraploid']]= get_length(x, model="WGD")
     # data[['l_cnloh']]= get_length(x, karyotype="2:0", model="WGD")
 
   }

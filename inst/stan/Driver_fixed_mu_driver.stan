@@ -200,6 +200,22 @@ generated quantities{
     m_driver_rep = poisson_rng(2*l_diploid*omega*mu_driver*lambda_driver);
   }
 
+  // Step therapy mutations
+  array[n_th_step_type] int<lower=0> m_th_step_rep;
+  if (n_th_step_type > 0){
+  for (th_type in 1:n_th_step_type){
+    m_th_step_rep[th_type] = poisson_rng(2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type]);
+  }
+  }
+
+  // Cauchy therapy mutations
+  array[n_th_cauchy_type] int<lower=0> m_th_cauchy_rep;
+  if (n_th_cauchy_type > 0){
+  for (th_cauchy in 1:n_th_cauchy_type){
+    m_th_cauchy_rep[th_cauchy] = poisson_rng(2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy]);
+  }
+  }
+
 
   if (exponential_growth==1){
     real N_sample_2 = exp(omega*(Sample_2-t_mrca));

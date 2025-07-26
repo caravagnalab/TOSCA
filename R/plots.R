@@ -122,33 +122,76 @@ plot_prior_vs_posterior = function(x, model){
 }
 
 # Posterior Predictive checks
-get_mutations_of_model = function(model_name){
-  common = c("m_clock_primary"
-             )
-  "m_clock" # CNA, Driver
-  "m_alpha"
-  "m_beta" # CNA
-  # array[n_th_step_type] int<lower=0> m_th_step; # CNA, Driver
-  # array[n_th_cauchy_type] int<lower=0> m_th_cauchy; # CNA, Driver
-  # array[n_th_step_type] int <lower=0> alpha_tetraploid_step; // mutations in 2:2, for each therapy + clock
-  # array[n_th_step_type] int <lower=0> beta_tetraploid_step;
-  # array[n_th_cauchy_type] int <lower=0> alpha_tetraploid_cauchy;
-  # array[n_th_cauchy_type] int <lower=0> beta_tetraploid_cauchy;
-  # int <lower=0> alpha_tetraploid_clock;
-  # int <lower=0> beta_tetraploid_clock;
+check_ppc = function(x){
+
+  posterior = get_inferred_parameters(x)#x$tosca_fit$posterior
+  m_rep_draws = colnames(posterior)[grepl('_rep', colnames(posterior))]
+  training_data = get_inference_data(x, model = x$tosca_fit$model_info$model_name,
+                     fixed_omega = x$tosca_fit$model_info$fixed_omega,
+                    fixed_mu = x$tosca_fit$model_info$fixed_mu)
+  variables = names(training_data)[grepl("m_", names(training_data))]
+
+  ppc_df = data.frame()
+
+  for (v in variables){
+    # print(v)
+
+    true_value = training_data[[v]]
+
+    if (length(true_value)>0){
+
+      if (v %in% c("m_th_step","m_th_cauchy", "m_alpha", "m_beta",
+                   "m_alpha_tetraploid_step","m_beta_tetraploid_step",
+                   "m_alpha_tetraploid_cauchy","m_beta_tetraploid_cauchy")){
+
+        for (i in 1:length(true_value)){
+          rep_draws = posterior[[paste0(v,"_rep[",i,"]")]]
+          coverage <- mean(true_value[i] > (rep_draws - 2*sd(rep_draws)) &
+                             true_value[i] < (rep_draws + 2*sd(rep_draws)))
+          # cat(paste0(v, '_', i,':'))
+          # cat(sprintf("Approximate posterior predictive coverage: %.1f%%\n", coverage * 100))
+          # cat('\n')
+          ppc_df = rbind(ppc_df,
+                         data.frame(
+                           "variable" = paste0(v,"_",i),
+                           "true_value"=true_value[i],
+                           "ppc_coverage"=coverage,
+                           "pass" = coverage > .6
+                         ))
+        }
+
+          }else{
+
+      rep_draws = posterior[[paste0(v, "_rep")]]
+      coverage <- mean(true_value > (rep_draws - 2*sd(rep_draws)) &
+                       true_value < (rep_draws + 2*sd(rep_draws)))
+      # cat(paste0(v, ':'))
+      # cat(sprintf("Approximate posterior predictive coverage: %.1f%%\n", coverage * 100))
+      # cat('\n')
+      ppc_df = rbind(ppc_df,
+                     data.frame(
+                       "variable" = v,
+                       "true_value"=true_value,
+                       "ppc_coverage"=coverage,
+                       "pass" = coverage > .6
+                     ))
+
+      }
+    }
+  }
+
+  return(ppc_df %>% select(variable, pass))
+
 }
 
-plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "relapse", NA), mut2 = c("m_driver","2",NA)){
+plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
 
   estimates = get_inferred_parameters(x)
-  mut1_real = get_mutation(x, mut1[1], mut1[2], mut1[3])
-  mut2_real = get_mutation(x, mut2[1], mut2[2], mut2[3])
-  # to modify for alpha and beta!
-  if (mut1[1] == "m_CNA" | mut1[1] == "m_CNA"){
-    print("Error, you still need to write this!")
-  }
-  rep_name1 = paste0(mut1[1], "_rep")
-  rep_name2 = paste0(mut2[1], "_rep")
+  # mut1_real = get_mutation(x, mut1[1], mut1[2], mut1[3])
+  # mut2_real = get_mutation(x, mut2[1], mut2[2], mut2[3])
+  #
+  # rep_name1 = paste0(mut1[1], "_rep")
+  # rep_name2 = paste0(mut2[1], "_rep")
 
   ppc = estimates %>% dplyr::select(rep_name1,rep_name2)
 
@@ -192,10 +235,81 @@ plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "relapse", NA)
       guides(
         fill = 'none',
         alpha = 'none'
-      ) + xlab(mut1[1]) + ylab(mut2[1])+
+      ) + xlab(rep_name1) + ylab(rep_name2)+
     theme(legend.position = "none")
 
   }
+
+plot_ppc = function(x){
+
+  posterior = get_inferred_parameters(x)
+  m_rep_draws = colnames(posterior)[grepl('_rep', colnames(posterior))]
+  training_data = get_inference_data(x, model = x$tosca_fit$model_info$model_name,
+                                     fixed_omega = x$tosca_fit$model_info$fixed_omega,
+                                     fixed_mu = x$tosca_fit$model_info$fixed_mu)
+  variables = names(training_data)[grepl("m_", names(training_data))]
+
+  ppc_plot_list = list()
+  seen = c()
+
+  for (v1 in variables){
+    #print(v1)
+    for (v2 in variables){
+      #print(v2)
+
+      if (v1 != v2){
+
+        true_value1 = training_data[[v1]]
+        true_value2 = training_data[[v2]]
+
+        if (!(v1 %in% seen)){
+
+          if (length(true_value1)==1 & length(true_value2)==1){
+
+            rep_name1 = paste0(v1, "_rep")
+            rep_name2 = paste0(v2, "_rep")
+            ppc_plot = plot_ppc_single_mut(x, true_value1, true_value2, rep_name1, rep_name2)
+            ppc_plot_list[[length(ppc_plot_list)+1]] = ppc_plot
+
+
+          }else{
+
+            if (length(true_value1)>1 & length(true_value2)==1){
+              for (i in 1:length(true_value1)){
+                rep_name1 = paste0(v1,"_rep[",i,"]")
+                rep_name2 = paste0(v2, "_rep")
+                ppc_plot = plot_ppc_single_mut(x, true_value1[i], true_value2, rep_name1, rep_name2)
+                ppc_plot_list[[length(ppc_plot_list)+1]] = ppc_plot
+              }
+            }
+
+            if (length(true_value1)==1 & length(true_value2)>1){
+              for (i in 1:length(true_value1)){
+                rep_name2 = paste0(v2,"_rep[",i,"]")
+                rep_name1 = paste0(v1, "_rep")
+                ppc_plot = plot_ppc_single_mut(x, true_value1, true_value2[i], rep_name1, rep_name2)
+                ppc_plot_list[[length(ppc_plot_list)+1]] = ppc_plot
+              }
+            }
+
+          }
+
+          seen = c(seen, v1, v2)
+
+        }
+
+        }
+
+
+    }
+
+  }
+
+  ggpubr::ggarrange(plotlist = ppc_plot_list) + ggtitle("Posterior Predictive Checks")
+
+
+  }
+
 plot_expected_N = function(x){
   posterior = get_inferred_parameters(x) %>% as_tibble()
   N = exp(posterior$omega*(posterior$t_mrca-get_sample(x, sample ='2')))
@@ -217,14 +331,15 @@ plot_timing = function(x)
     dplyr::select(starts_with('t_')) %>%
     apply(2, convert_date_real) %>%
     as_tibble()
-  times = timing_estimates$variable %>% unique()
+  #times = timing_estimates$variable %>% unique()
 
   for (i in 1:ncol(timing_estimates)){
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
   }
 
   timing_estimates = timing_estimates %>% reshape2::melt() %>% as_tibble()
-  var_colors = ggsci::pal_npg()(ncol(timing_estimates))
+  times = timing_estimates$variable %>% unique()
+  var_colors = ggsci::pal_npg()(length(times))
   names(var_colors) = times
 
   posterior_plot = ggplot() +
@@ -241,7 +356,7 @@ plot_timing = function(x)
       size = 3
     ) + CNAqc:::my_ggplot_theme()+
     theme(legend.position = 'bottom')+
-    scale_fill_manual(values = get_inferred_times_colors())
+    scale_fill_manual(values = var_colors)
   # +
   #   geom_label(
   #     data = endpoints,

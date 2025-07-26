@@ -46,12 +46,12 @@ data{
   array[n_th_cauchy_type] real<lower=0> beta_th_cauchy;
 
   // WGD
-  array[n_th_step_type] int <lower=0> alpha_tetraploid_step; // mutations in 2:2, for each therapy + clock
-  array[n_th_step_type] int <lower=0> beta_tetraploid_step;
-  array[n_th_cauchy_type] int <lower=0> alpha_tetraploid_cauchy;
-  array[n_th_cauchy_type] int <lower=0> beta_tetraploid_cauchy;
-  int <lower=0> alpha_tetraploid_clock;
-  int <lower=0> beta_tetraploid_clock;
+  array[n_th_step_type] int <lower=0> m_alpha_tetraploid_step; // mutations in 2:2, for each therapy + clock
+  array[n_th_step_type] int <lower=0> m_beta_tetraploid_step;
+  array[n_th_cauchy_type] int <lower=0> m_alpha_tetraploid_cauchy;
+  array[n_th_cauchy_type] int <lower=0> m_beta_tetraploid_cauchy;
+  int <lower=0> m_alpha_tetraploid_clock;
+  int <lower=0> m_beta_tetraploid_clock;
 
   // array[n_th_step_type] int <lower=0> alpha_cnloh_step; // mutations in 2:0, for each therapy + clock
   // array[n_th_step_type] int <lower=0> beta_cnloh_step;
@@ -159,8 +159,8 @@ model{
   // Step therapy mutations
   if (n_th_step_type > 0){
   for (th_type in 1:n_th_step_type){
-    alpha_tetraploid_step[th_type] ~ poisson(2 * l_tetraploid * omega * mu_th_step[th_type] * lambda_th_step_alpha[th_type]);
-    beta_tetraploid_step[th_type] ~ poisson(4 * l_tetraploid * omega * mu_th_step[th_type] * lambda_th_step_beta[th_type]);
+    m_alpha_tetraploid_step[th_type] ~ poisson(2 * l_tetraploid * omega * mu_th_step[th_type] * lambda_th_step_alpha[th_type]);
+    m_beta_tetraploid_step[th_type] ~ poisson(4 * l_tetraploid * omega * mu_th_step[th_type] * lambda_th_step_beta[th_type]);
 
     // alpha_cnloh_step[th_type] ~ poisson(l_cnloh * omega * mu_th_step[th_type] * lambda_th_step_alpha[th_type]);
     // beta_cnloh_step[th_type] ~ poisson(2 * l_cnloh * omega * mu_th_step[th_type] * lambda_th_step_beta[th_type]);
@@ -170,16 +170,16 @@ model{
   // Cauchy therapy mutations
   if (n_th_cauchy_type > 0){
   for (th_cauchy in 1:n_th_cauchy_type){
-    alpha_tetraploid_cauchy[th_cauchy] ~ poisson(2 * l_tetraploid * omega * mu_clock * lambda_th_cauchy_alpha[th_cauchy]);
-    beta_tetraploid_cauchy[th_cauchy] ~ poisson(4 * l_tetraploid * omega * mu_clock * lambda_th_cauchy_beta[th_cauchy]);
+    m_alpha_tetraploid_cauchy[th_cauchy] ~ poisson(2 * l_tetraploid * omega * mu_clock * lambda_th_cauchy_alpha[th_cauchy]);
+    m_beta_tetraploid_cauchy[th_cauchy] ~ poisson(4 * l_tetraploid * omega * mu_clock * lambda_th_cauchy_beta[th_cauchy]);
 
     // alpha_cnloh_cauchy[th_cauchy] ~ poisson(l_cnloh * omega * mu_clock * lambda_th_cauchy_alpha[th_cauchy]);
     // beta_cnloh_cauchy[th_cauchy] ~ poisson(2 * l_cnloh * omega * mu_clock * lambda_th_cauchy_beta[th_cauchy]);
   }
   }
 
-  alpha_tetraploid_clock ~ poisson(2 * l_tetraploid * omega * mu_clock * (t_wgd - t_eca));
-  beta_tetraploid_clock ~ poisson(4 * l_tetraploid * omega *  mu_clock * (t_mrca - t_wgd));
+  m_alpha_tetraploid_clock ~ poisson(2 * l_tetraploid * omega * mu_clock * (t_wgd - t_eca));
+  m_beta_tetraploid_clock ~ poisson(4 * l_tetraploid * omega *  mu_clock * (t_mrca - t_wgd));
 
   // if (l_cnloh > 0){
     // alpha_cnloh_clock ~ poisson(l_cnloh * omega * mu_clock * (t_wgd - t_eca));
@@ -198,18 +198,18 @@ model{
 generated quantities{
 
   // Step therapy mutations
-  array[n_th_step_type] int <lower=0> alpha_tetraploid_step_rep; // mutations in 2:2, for each therapy + clock
-  array[n_th_step_type] int <lower=0> beta_tetraploid_step_rep;
-  array[n_th_cauchy_type] int <lower=0> alpha_tetraploid_cauchy_rep;
-  array[n_th_cauchy_type] int <lower=0> beta_tetraploid_cauchy_rep;
+  array[n_th_step_type] int <lower=0> m_alpha_tetraploid_step_rep; // mutations in 2:2, for each therapy + clock
+  array[n_th_step_type] int <lower=0> m_beta_tetraploid_step_rep;
+  array[n_th_cauchy_type] int <lower=0> m_alpha_tetraploid_cauchy_rep;
+  array[n_th_cauchy_type] int <lower=0> m_beta_tetraploid_cauchy_rep;
 
   // array[n_th_step_type] int <lower=0> alpha_cnloh_step_rep; // mutations in 2:2, for each therapy + clock
   // array[n_th_step_type] int <lower=0> beta_cnloh_step_rep;
   // array[n_th_cauchy_type] int <lower=0> alpha_cnloh_cauchy_rep;
   // array[n_th_cauchy_type] int <lower=0> beta_cnloh_cauchy_rep;
 
-  int <lower=0> alpha_tetraploid_clock_rep;
-  int <lower=0> beta_tetraploid_clock_rep;
+  int <lower=0> m_alpha_tetraploid_clock_rep;
+  int <lower=0> m_beta_tetraploid_clock_rep;
   // int <lower=0> alpha_cnloh_clock_rep;
   // int <lower=0> beta_cnloh_clock_rep;
 
@@ -217,8 +217,8 @@ generated quantities{
 
   if (n_th_step_type > 0){
   for (th_type in 1:n_th_step_type){
-    alpha_tetraploid_step_rep[th_type] = poisson_rng(2 * l_tetraploid * omega * mu_th_step[th_type] * lambda_th_step_alpha[th_type]);
-    beta_tetraploid_step_rep[th_type] = poisson_rng(4 * l_tetraploid * omega * mu_th_step[th_type] * lambda_th_step_beta[th_type]);
+    m_alpha_tetraploid_step_rep[th_type] = poisson_rng(2 * l_tetraploid * omega * mu_th_step[th_type] * lambda_th_step_alpha[th_type]);
+    m_beta_tetraploid_step_rep[th_type] = poisson_rng(4 * l_tetraploid * omega * mu_th_step[th_type] * lambda_th_step_beta[th_type]);
 
     // alpha_cnloh_step_rep[th_type] = poisson_rng(l_cnloh * omega * mu_th_step[th_type] * lambda_th_step_alpha[th_type]);
     // beta_cnloh_step_rep[th_type] = poisson_rng(2 * l_cnloh * omega * mu_th_step[th_type] * lambda_th_step_beta[th_type]);
@@ -228,16 +228,16 @@ generated quantities{
   // Cauchy therapy mutations
   if (n_th_cauchy_type > 0){
   for (th_cauchy in 1:n_th_cauchy_type){
-    alpha_tetraploid_cauchy_rep[th_cauchy] = poisson_rng(2 * l_tetraploid * omega * mu_clock * lambda_th_cauchy_alpha[th_cauchy]);
-    beta_tetraploid_cauchy_rep[th_cauchy] = poisson_rng(4 * l_tetraploid * omega * mu_clock * lambda_th_cauchy_beta[th_cauchy]);
+    m_alpha_tetraploid_cauchy_rep[th_cauchy] = poisson_rng(2 * l_tetraploid * omega * mu_clock * lambda_th_cauchy_alpha[th_cauchy]);
+    m_beta_tetraploid_cauchy_rep[th_cauchy] = poisson_rng(4 * l_tetraploid * omega * mu_clock * lambda_th_cauchy_beta[th_cauchy]);
 
     // alpha_cnloh_cauchy_rep[th_cauchy] = poisson_rng(l_cnloh * omega * mu_clock * lambda_th_cauchy_alpha[th_cauchy]);
     // beta_cnloh_cauchy_rep[th_cauchy] = poisson_rng(2 * l_cnloh * omega * mu_clock * lambda_th_cauchy_beta[th_cauchy]);
   }
   }
 
-  alpha_tetraploid_clock_rep = poisson_rng(2 * l_tetraploid * omega * mu_clock * (t_wgd - t_eca));
-  beta_tetraploid_clock_rep = poisson_rng(4 * l_tetraploid * omega *  mu_clock * (t_mrca - t_wgd));
+  m_alpha_tetraploid_clock_rep = poisson_rng(2 * l_tetraploid * omega * mu_clock * (t_wgd - t_eca));
+  m_beta_tetraploid_clock_rep = poisson_rng(4 * l_tetraploid * omega *  mu_clock * (t_mrca - t_wgd));
 
   // if (l_cnloh > 0){
   //   alpha_cnloh_clock_rep = poisson_rng(l_cnloh * omega * mu_clock * (t_wgd - t_eca));

@@ -10,12 +10,13 @@ fit = function(
     model_name = 'Driver',
     fixed_omega = F,
     fixed_mu = F,
-    verbose = F,
-    outdir=NULL
+    verbose = F
     ){
 
   data = get_inference_data(x, model=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu)
   model = get_model(model_name=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu)
+
+  cat("\n--- Start Sampling ---\n")
 
   fit <- model$sample(data = data,
                         iter_warmup = warm_up,
@@ -27,14 +28,40 @@ fit = function(
   x$tosca_fit = list(
     'posterior' = posterior::as_draws_df(fit$draws()),
     'summary' = fit$summary(),
-    'diagnostic_summary' = fit$diagnostic_summary()
+    'diagnostic_summary' = fit$diagnostic_summary(),
+    'model_info' = list('model_name'=model_name, 'fixed_omega'=fixed_omega, 'fixed_mu'=fixed_mu)
   )
-  x
 
-  # Print diagnostics :
-  #   - Rhat
-  #   - divergent transitions
-  #   - low ebfmi
+  cat("\n--- End Sampling ---\n")
+
+
+
+  # ---- Print Diagnostics ----
+  cat("\n--- Sampling Diagnostics ---\n")
+
+  # Convergence: Check all Rhat < 1.01
+  max_rhat <- max(x$tosca_fit$summary$rhat, na.rm = TRUE)
+  converged <- all(x$tosca_fit$summary$rhat <= 1.01, na.rm = TRUE)
+  cat(sprintf("Convergence (Rhat < 1.01): %s (max Rhat = %.3f)\n",
+              if (converged) "✅ Yes" else "❌ No", max_rhat))
+
+  # Divergent transitions
+  divergences <- x$tosca_fit$diagnostic_summary$num_divergent
+  total_div <- sum(divergences)
+  total_samples <- n_iterations*n_chains
+  div_pct <- 100 * total_div / total_samples
+  cat(sprintf("Divergent transitions: %d / %d (%.2f%%)\n", total_div, total_samples, div_pct))
+
+  # EBFMI check
+  ebfmi <- x$tosca_fit$diagnostic_summary$ebfmi
+  low_ebfmi <- sum(ebfmi < 0.3)
+  cat(sprintf("EBFMI < 0.3 in %d / %d chains\n", low_ebfmi, length(ebfmi)))
+  #cat("--- End Diagnostics ---\n")
+
+  cat("\n--- Posterior Predictive Checks ---\n")
+  print.data.frame(check_ppc(x))
+
+  return(x)
 
   # Additional warnings :
   #   - posterior predictive checks
