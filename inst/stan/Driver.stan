@@ -159,7 +159,7 @@ model{
   // Likelihood
   m_clock_primary ~ poisson(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca));
   m_clock ~ poisson(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));
-
+  
   // Step therapy mutations
   if (n_th_step_type > 0){
   for (th_type in 1:n_th_step_type){
@@ -193,6 +193,9 @@ generated quantities{
   int<lower =0> m_clock_rep = poisson_rng(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));
 
   int <lower =0> m_driver_rep;
+  
+  array[n_th_cauchy_type] int<lower=0> m_th_cauchy_rep;
+  array[n_th_step_type] int<lower=0> m_th_step_rep;
 
   if (driver_type==0){
     m_driver_rep = poisson_rng(2*l_diploid*omega*mu_driver*(t_mrca-t_driver));
@@ -204,6 +207,20 @@ generated quantities{
   if (exponential_growth==1){
     real N_sample_2 = exp(omega*(Sample_2-t_mrca));
     real N_sample_1 = exp(omega*(Sample_1-t_eca));
+  }
+  
+   // Step therapy mutations
+  if (n_th_step_type > 0){
+  for (th_type in 1:n_th_step_type){
+    m_th_step_rep[th_type] = poisson_rng(2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type]);
+  }
+  }
+
+  // Cauchy therapy mutations
+  if (n_th_cauchy_type > 0){
+  for (th_cauchy in 1:n_th_cauchy_type){
+    m_th_cauchy_rep[th_cauchy] = poisson_rng(2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy]);
+  }
   }
 
 }

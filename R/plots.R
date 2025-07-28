@@ -147,10 +147,23 @@ plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "relapse", NA)
   }
 plot_expected_N = function(x){
   posterior = get_inferred_parameters(x) %>% as_tibble()
-  N = exp(posterior$omega*(posterior$t_mrca-get_sample(x, sample ='2')))
-  ggplot() + CNAqc:::my_ggplot_theme() +
-    geom_histogram(aes(x=N))
+  N_exp_1 = exp(-posterior$omega*(posterior$t_mrca_primary-get_sample(x, sample ='1')))
+  N_exp_2 = exp(-posterior$omega*(posterior$t_mrca-get_sample(x, sample ='2')))
+  N2 = rexp(n = nrow(posterior),rate = 1/N_exp_2)
+  N1 = rexp(n = nrow(posterior),rate = 1/N_exp_1)
+  
+p1 =   ggplot() + CNAqc:::my_ggplot_theme() +
+    geom_histogram(aes(x=N1)) + scale_x_log10() + labs(x = "Tumor size at Primary")
+  
+  
+p2 =   ggplot() + CNAqc:::my_ggplot_theme() +
+    geom_histogram(aes(x=N2)) + scale_x_log10() + labs(x = "Tumor size at Relapse")
+
+p1 * p2
+  
+  
 }
+
 
 # Plot clinical timeline + posterior times
 plot_timing = function(x)
@@ -163,7 +176,7 @@ plot_timing = function(x)
 
   # 1. time posterior plot
   timing_estimates = estimates %>%
-    dplyr::select(starts_with('t_')) %>%
+    dplyr::select(starts_with('t_')) %>% 
     apply(2, convert_date_real) %>%
     as_tibble()
   times = timing_estimates$variable %>% unique()

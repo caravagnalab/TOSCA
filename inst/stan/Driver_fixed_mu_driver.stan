@@ -33,9 +33,12 @@ data{
   // mutations associated to driver
   int <lower=0, upper=1> driver_type; // 0 = endogeno, 1 = dipendente da esogeno
   int <lower=0> cycles_driver;
+  int <lower=0,upper = 1> cumulative_driver;
   array[cycles_driver] real<lower=0> driver_start; // if driver have effect only associated to external therapy
   array[cycles_driver] real<lower=0> driver_end;
+  real <lower = 0> tau_driver;
   int <lower=0> m_driver;
+  int <lower=0> m_tail_driver;
   // real <lower=0> mu_driver_alpha;
   // real <lower=0> mu_driver_beta;
   real <lower=0> mu_driver;
@@ -50,6 +53,9 @@ data{
   array[n_th_step_type] real<lower=0> alpha_th_step;
   array[n_th_step_type] real<lower=0> beta_th_step;
   array[n_th_step_type] int<lower=0> m_th_step;
+  array[n_th_step_type] int<lower=0,upper = 1> cumulative_step;
+  array[n_th_step_type] real<lower=0> tau_step;
+  array[n_th_step_type] real<lower=0> m_tail_step;
 
   // mutations associated to cauchy
   int <lower=0> n_th_cauchy;
@@ -60,6 +66,7 @@ data{
   array[n_th_cauchy_type] real<lower=0> alpha_th_cauchy;
   array[n_th_cauchy_type] real<lower=0> beta_th_cauchy;
   array[n_th_cauchy_type] int<lower=0> m_th_cauchy;
+  array[n_th_cauchy_type] int<lower=0> m_tail_cauchy;
 
   // other parameters
   real <lower=0> omega_alpha;
@@ -76,13 +83,23 @@ data{
 
   real <lower=0> alpha_mrca;
   real <lower=0> beta_mrca;
+  
+  real <lower=0> mu_driver_alpha;
+  real <lower=0> mu_driver_beta;
+  
+  // Overdispersion parameters for all mutation types
+  real<lower=0> phi_clock;
+  real<lower=0> phi_driver;
+  array[n_th_step_type] real <lower=0> phi_th_step;
+  array[n_th_cauchy_type] real <lower=0> phi_th_cauchy;
+  
   // real <lower=0> alpha_eca;
   // real <lower=0> beta_eca;
 
 }
 
 parameters{
-  real <lower=Sample_1-1, upper=Sample_1> t_eca;
+  real <lower=0, upper=Sample_1> t_eca;
   real <lower=t_eca, upper=Sample_1> t_mrca_primary;
   // real <lower=max_therapy, upper=Sample_2> t_mrca;
   real <lower=0, upper=1> rho_mrca;
@@ -91,7 +108,8 @@ parameters{
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   real <lower=0> omega;
-  // real <lower=0> mu_driver;
+  real <lower=0> mu_driver;
+  
 }
 
 transformed parameters{
@@ -107,103 +125,416 @@ transformed parameters{
   for (i in 1:n_th_cauchy_type) lambda_th_cauchy[i] = 0;
 
   // Step therapy mutations
-  if (n_th_step_type > 0){
-  for (th_type in 1:n_th_step_type){
-    for (cycle in 1:n_th_step){
-      if (type_th_step[cycle] == th_type){
-        lambda_th_step[th_type] += lambda_therapy_single(t_eca, t_mrca, start_th_step[cycle], end_th_step[cycle], k_step);
+  // if (n_th_step_type > 0){
+  // for (th_type in 1:n_th_step_type){
+  //   for (cycle in 1:n_th_step){
+  //     if (type_th_step[cycle] == th_type){
+  //       lambda_th_step[th_type] += lambda_therapy_single(t_eca, t_mrca, start_th_step[cycle], 
+  //       end_th_step[cycle], k_step);
+  //     }
+  //   }
+  // }
+  // }
+  
+  array[n_th_step_type] real lambda_th_step;
+
+// Initialize to zero
+for (i in 1:n_th_step_type) {
+  lambda_th_step[i] = 0;
+}
+
+// Step therapy mutations
+if (n_th_step_type > 0) {
+  for (th_type in 1:n_th_step_type) {
+    for (cycle in 1:n_th_step) {
+      if (type_th_step[cycle] == th_type) {
+
+        if (cumulative_step[th_type] == 1) {
+          // Cumulative dosing: apply effect for each daily dose
+          real dose_time = start_th_step[cycle];
+          while (dose_time <= end_th_step[cycle]) {
+            lambda_th_step[th_type] += lambda_therapy_single(
+              t_eca, t_mrca,
+              dose_time,
+              dose_time + tau_step[th_type],
+              k_step
+            );
+            dose_time += 1.0 / 365.0;
+          }
+
+        } else {
+          // Single block effect over entire therapy window
+          lambda_th_step[th_type] += lambda_therapy_single(
+            t_eca, t_mrca,
+            start_th_step[cycle],
+            end_th_step[cycle],
+            k_step
+          );
+        }
+
       }
     }
   }
-  }
+}
+
 
   // Cauchy therapy mutations
   if (n_th_cauchy_type > 0){
   for (th_cauchy in 1:n_th_cauchy_type){
     for (cycle in 1:n_th_cauchy){
       if (type_th_cauchy[cycle] == th_cauchy){
-        lambda_th_cauchy[th_cauchy] += couchy_cdf_single(location_th_cauchy[cycle], scales_th_cauchy[cycle], t_eca, t_mrca);
+        lambda_th_cauchy[th_cauchy] += couchy_cdf_single(location_th_cauchy[cycle], scales_th_cauchy[cycle], 
+        t_eca, t_mrca);
       }
     }
   }
   }
 
-  real lambda_driver=0;
-    for (c in 1:cycles_driver){
-    lambda_driver += lambda_therapy_single(t_driver,t_mrca, driver_start[c],driver_end[c],k_step);
+  // real lambda_driver=0;
+  //   for (c in 1:cycles_driver){
+  //   lambda_driver += lambda_therapy_single(t_driver,t_mrca, driver_start[c],driver_end[c],k_step);
+  //   }
+  
+  
+  
+  real lambda_driver = 0;
+
+for (c in 1:cycles_driver) {
+  
+  if (cumulative_driver == 1) {
+    real dose_time = driver_start[c];
+    while(dose_time <= driver_end[c]){
+      
+      lambda_driver += lambda_therapy_single(t_driver, t_mrca, dose_time, dose_time + tau_driver, k_step);
+      dose_time = dose_time + 1.0/365.0; 
     }
+    
+  } else {
+    
+    lambda_driver += lambda_therapy_single(
+      t_driver, t_mrca,
+      driver_start[c],
+      driver_end[c],
+      k_step
+      );
+      
+  }
+  
+}
+
+
+
 
 }
 
-model{
+// model{
+// 
+//   // Priors
+//   t_eca ~ uniform(0, Sample_1);
+//   t_mrca_primary ~ uniform(t_eca, Sample_1);
+//   // t_mrca ~ uniform(max_therapy, Sample_2);
+//   rho_mrca ~ beta(alpha_mrca, beta_mrca);
+//   // rho_eca ~ beta(alpha_eca, beta_eca);
+//   t_driver ~ uniform(t_eca, t_mrca);
+// 
+//   for (m in 1:n_th_step_type){
+//       mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
+//     }
+// 
+//   for (ch in 1:n_th_cauchy_type){
+//       scales_th_cauchy[ch] ~ gamma(alpha_th_cauchy[ch], beta_th_cauchy[ch]);
+//     }
+// 
+// 
+//   omega ~ gamma(omega_alpha, omega_beta);
+//   // mu_driver ~ gamma(mu_driver_alpha,mu_driver_beta);
+// 
+//   // Likelihood
+//   m_clock_primary ~ poisson(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca));
+//   // m_clock_primary ~ neg_binomial(omega*(t_mrca_primary-t_eca),1/(1 + 2*l_diploid*mu_clock));
+//   m_clock ~ poisson(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));
+//   
+//     
+//   // Step therapy mutations
+//   if (n_th_step_type > 0){
+//   for (th_type in 1:n_th_step_type){
+//     m_th_step[th_type] ~ poisson(2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type]);
+//     // m_th_step[th_type] ~ neg_binomial(omega * lambda_th_step[th_type], 
+//     //                                     1/(1 + 2*mu_th_step[th_type]*l_diploid));
+//   }
+//   }
+// 
+//   // Cauchy therapy mutations
+//   if (n_th_cauchy_type > 0){
+//   for (th_cauchy in 1:n_th_cauchy_type){
+//      m_th_cauchy[th_cauchy] ~ poisson(2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy]);
+//     // m_th_cauchy[th_cauchy] ~ neg_binomial( omega * lambda_th_cauchy[th_cauchy],
+//     //                                        1/(1+2 * l_diploid* mu_clock));
+//   }
+//   }
+// 
+//   if (driver_type==0){
+//        m_driver ~ poisson(2*l_diploid*omega*mu_driver*(t_mrca-t_driver));
+//       // m_driver ~ neg_binomial(omega*(t_mrca-t_driver),1/(1+2*l_diploid*mu_driver));
+//   }else{
+//       m_driver ~ poisson(2*l_diploid*omega*mu_driver*lambda_driver);
+//      // m_driver ~ neg_binomial(omega*lambda_driver,1/(1+2*l_diploid*mu_driver));
+//   }
+// 
+//   if (exponential_growth==1){
+//     target += -N_min[1]*exp(-omega*(Sample_1 - t_mrca_primary)) + log(1-exp(-(N_max[1]-N_min[1])*exp(-omega*(Sample_1 - t_mrca_primary))));
+//     target += -N_min[2]*exp(-omega*(Sample_2 - t_mrca)) + log(1-exp(-(N_max[2]-N_min[2])*exp(-omega*(Sample_2 - t_mrca))));
+//   }
+// 
+// }
+// 
+// generated quantities{
+// 
+//   int<lower =0> m_clock_primary_rep = poisson_rng(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca));
+//   int<lower =0> m_clock_rep = poisson_rng(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));
+// 
+//   int <lower =0> m_driver_rep;
+// 
+//   array[n_th_cauchy_type] int<lower=0> m_th_cauchy_rep;
+//   array[n_th_step_type] int<lower=0> m_th_step_rep;
+// 
+//   if (driver_type==0){
+//     m_driver_rep = poisson_rng(2*l_diploid*omega*mu_driver*(t_mrca-t_driver));
+//   }else{
+//     m_driver_rep = poisson_rng(2*l_diploid*omega*mu_driver*lambda_driver);
+//   }
+// 
+// 
+//   if (exponential_growth == 1) {
+//     real N_sample_2_rep;
+//     real N_sample_1_rep;
+//     N_sample_2_rep = exponential_rng(exp(-omega * (Sample_2 - t_mrca)));
+//     N_sample_1_rep = exponential_rng(exp(-omega * (Sample_1 - t_mrca_primary)));
+//   }
+// 
+//    // Step therapy mutations
+//   if (n_th_step_type > 0){
+//   for (th_type in 1:n_th_step_type){
+//     m_th_step_rep[th_type] = poisson_rng(2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type]);
+//   }
+//   }
+// 
+//   // Cauchy therapy mutations
+//   if (n_th_cauchy_type > 0){
+//   for (th_cauchy in 1:n_th_cauchy_type){
+//     m_th_cauchy_rep[th_cauchy] = poisson_rng(2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy]);
+//   }
+//   }
+// 
+// }
 
+// generated quantities {
+// 
+//   int<lower =0> m_clock_primary_rep = neg_binomial_rng(
+//     omega * (t_mrca_primary - t_eca),
+//     1 / (1 + 2 * l_diploid * mu_clock)
+//   );
+// 
+//   int<lower =0> m_clock_rep = poisson_rng(
+//     2 * l_diploid * omega * (
+//       mu_clock * (t_driver - t_eca) +
+//       mu_driver_clock * (t_mrca - t_driver)
+//     )
+//   );
+// 
+//   int<lower =0> m_driver_rep;
+//   array[n_th_cauchy_type] int<lower=0> m_th_cauchy_rep;
+//   array[n_th_step_type] int<lower=0> m_th_step_rep;
+// 
+//   if (driver_type == 0) {
+//     m_driver_rep = neg_binomial_rng(
+//       omega * (t_mrca - t_driver),
+//       1/(1+2 * l_diploid * mu_driver)
+//     );
+//   } else {
+//     m_driver_rep = neg_binomial_rng(
+//       omega * lambda_driver,
+//       1/(1+2 * l_diploid * mu_driver)
+//     );
+//   }
+// 
+//   if (n_th_step_type > 0) {
+//     for (th_type in 1:n_th_step_type) {
+//       m_th_step_rep[th_type] = neg_binomial_rng(
+//         omega * lambda_th_step[th_type],
+//         1 / (1 + 2 * mu_th_step[th_type] * l_diploid)
+//       );
+//     }
+//   }
+// 
+//   if (n_th_cauchy_type > 0) {
+//     for (th_cauchy in 1:n_th_cauchy_type) {
+//       m_th_cauchy_rep[th_cauchy] = neg_binomial_rng(
+//         omega * lambda_th_cauchy[th_cauchy],
+//         1 / (1 + 2 * mu_clock * l_diploid)
+//       );
+//     }
+//   }
+// 
+//   if (exponential_growth == 1) {
+//     real N_sample_2_rep; 
+//     real N_sample_1_rep;
+//     N_sample_2_rep = exponential_rng(exp(-omega * (Sample_2 - t_mrca)));
+//     N_sample_1_rep = exponential_rng(exp(-omega * (Sample_1 - t_mrca_primary)));
+//   }
+// }
+// 
+
+
+model {
   // Priors
-  t_eca ~ uniform(Sample_1-1, Sample_1);
+  t_eca ~ uniform(0, Sample_1);
   t_mrca_primary ~ uniform(t_eca, Sample_1);
-  // t_mrca ~ uniform(max_therapy, Sample_2);
   rho_mrca ~ beta(alpha_mrca, beta_mrca);
-  // rho_eca ~ beta(alpha_eca, beta_eca);
   t_driver ~ uniform(t_eca, t_mrca);
 
-  for (m in 1:n_th_step_type){
-      mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
-    }
-
-  for (ch in 1:n_th_cauchy_type){
-      scales_th_cauchy[ch] ~ gamma(alpha_th_cauchy[ch], beta_th_cauchy[ch]);
-    }
-
+  for (m in 1:n_th_step_type) {
+    mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
+  }
+  for (ch in 1:n_th_cauchy_type) {
+    scales_th_cauchy[ch] ~ gamma(alpha_th_cauchy[ch], beta_th_cauchy[ch]);
+  }
 
   omega ~ gamma(omega_alpha, omega_beta);
-  // mu_driver ~ gamma(mu_driver_alpha,mu_driver_beta);
+  mu_driver ~ gamma(mu_driver_alpha, mu_driver_beta);
+
+  // Negative Binomial shape parameters (inverse overdispersion)
+  real shape_clock = 1 / phi_clock;
+  real shape_driver = 1 / phi_driver;
+  array[n_th_step_type] real shape_th_step;
+  array[n_th_cauchy_type] real shape_th_cauchy;
+
+  for (m in 1:n_th_step_type)
+    shape_th_step[m] = 1 / phi_th_step[m];
+  for (ch in 1:n_th_cauchy_type)
+    shape_th_cauchy[ch] = 1 / phi_th_cauchy[ch];
 
   // Likelihood
-  m_clock_primary ~ poisson(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca));
-  m_clock ~ poisson(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));
+  m_clock_primary ~ neg_binomial_2(
+    2 * l_diploid * omega * mu_clock * (t_mrca_primary - t_eca),
+    shape_clock
+  );
 
-  // Step therapy mutations
-  if (n_th_step_type > 0){
-  for (th_type in 1:n_th_step_type){
-    m_th_step[th_type] ~ poisson(2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type]);
-  }
-  }
+  m_clock ~ neg_binomial_2(
+    2 * l_diploid * omega * (mu_clock * (t_driver - t_eca) + mu_driver_clock * (t_mrca - t_driver)),
+    shape_clock
+  );
 
-  // Cauchy therapy mutations
-  if (n_th_cauchy_type > 0){
-  for (th_cauchy in 1:n_th_cauchy_type){
-    m_th_cauchy[th_cauchy] ~ poisson(2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy]);
-  }
-  }
-
-  if (driver_type==0){
-    m_driver ~ poisson(2*l_diploid*omega*mu_driver*(t_mrca-t_driver));
-  }else{
-    m_driver ~ poisson(2*l_diploid*omega*mu_driver*lambda_driver);
+  for (th_type in 1:n_th_step_type) {
+    m_th_step[th_type] ~ neg_binomial_2(
+      2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type],
+      shape_th_step[th_type]
+    );
   }
 
-  if (exponential_growth==1){
-    target += -N_min[1]*exp(-omega*(Sample_1 - t_mrca_primary)) + log(1-exp(-(N_max[1]-N_min[1])*exp(-omega*(Sample_1 - t_mrca_primary))));
-    target += -N_min[2]*exp(-omega*(Sample_2 - t_mrca)) + log(1-exp(-(N_max[2]-N_min[2])*exp(-omega*(Sample_2 - t_mrca))));
+  for (th_cauchy in 1:n_th_cauchy_type) {
+    m_th_cauchy[th_cauchy] ~ neg_binomial_2(
+      2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy],
+      shape_th_cauchy[th_cauchy]
+    );
   }
 
+  if (driver_type == 0) {
+    m_driver ~ neg_binomial_2(
+      2 * l_diploid * omega * mu_driver * (t_mrca - t_driver),
+      shape_driver
+    );
+  } else {
+    m_driver ~ neg_binomial_2(
+      2 * l_diploid * omega * mu_driver * lambda_driver,
+      shape_driver
+    );
+    
+     m_driver_tail ~ neg_binomial_2(
+      2 * l_diploid * omega * lambda_driver_tail,
+      shape_driver
+    );
+  
 }
 
-generated quantities{
-  int<lower =0> m_clock_primary_rep = poisson_rng(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca));
-  int<lower =0> m_clock_rep = poisson_rng(2*l_diploid*omega*(mu_clock*(t_driver-t_eca) + mu_driver_clock*(t_mrca-t_driver)));
-
-  int <lower =0> m_driver_rep;
-
-  if (driver_type==0){
-    m_driver_rep = poisson_rng(2*l_diploid*omega*mu_driver*(t_mrca-t_driver));
-  }else{
-    m_driver_rep = poisson_rng(2*l_diploid*omega*mu_driver*lambda_driver);
+  if (exponential_growth == 1) {
+    target += -N_min[1] * exp(-omega * (Sample_1 - t_mrca_primary)) +
+      log(1 - exp(-(N_max[1] - N_min[1]) * exp(-omega * (Sample_1 - t_mrca_primary))));
+    target += -N_min[2] * exp(-omega * (Sample_2 - t_mrca)) +
+      log(1 - exp(-(N_max[2] - N_min[2]) * exp(-omega * (Sample_2 - t_mrca))));
   }
-
-
-  if (exponential_growth==1){
-    real N_sample_2 = exp(omega*(Sample_2-t_mrca));
-    real N_sample_1 = exp(omega*(Sample_1-t_eca));
-  }
-
+  
 }
+
+generated quantities {
+  
+  int<lower=0> m_clock_primary_rep;
+  int<lower=0> m_clock_rep;
+  int<lower=0> m_driver_rep;
+  
+  array[n_th_step_type] int<lower=0> m_th_step_rep;
+  array[n_th_cauchy_type] int<lower=0> m_th_cauchy_rep;
+
+  // Calculate shape parameters as in model block
+  real shape_clock = 1 / phi_clock;
+  real shape_driver = 1 / phi_driver;
+  array[n_th_step_type] real shape_th_step;
+  array[n_th_cauchy_type] real shape_th_cauchy;
+
+  for (m in 1:n_th_step_type) {
+    shape_th_step[m] = 1 / phi_th_step[m];
+  }
+  for (ch in 1:n_th_cauchy_type) {
+    shape_th_cauchy[ch] = 1 / phi_th_cauchy[ch];
+  }
+
+  // Sample posterior predictive replicates from neg_binomial_2_rng
+  m_clock_primary_rep = neg_binomial_2_rng(
+    2 * l_diploid * omega * mu_clock * (t_mrca_primary - t_eca),
+    shape_clock
+  );
+
+  m_clock_rep = neg_binomial_2_rng(
+    2 * l_diploid * omega * (mu_clock * (t_driver - t_eca) + mu_driver_clock * (t_mrca - t_driver)),
+    shape_clock
+  );
+
+  if (driver_type == 0) {
+    m_driver_rep = neg_binomial_2_rng(
+      2 * l_diploid * omega * mu_driver * (t_mrca - t_driver),
+      shape_driver
+    );
+  } else {
+    m_driver_rep = neg_binomial_2_rng(
+      2 * l_diploid * omega * mu_driver * lambda_driver,
+      shape_driver
+    );
+  }
+
+  for (m in 1:n_th_step_type) {
+    m_th_step_rep[m] = neg_binomial_2_rng(
+      2 * l_diploid * omega * mu_th_step[m] * lambda_th_step[m],
+      shape_th_step[m]
+    );
+  }
+
+  for (ch in 1:n_th_cauchy_type) {
+    m_th_cauchy_rep[ch] = neg_binomial_2_rng(
+      2 * l_diploid * omega * mu_clock * lambda_th_cauchy[ch],
+      shape_th_cauchy[ch]
+    );
+  }
+  
+  
+   if (exponential_growth == 1) {
+     real N_primary_rep;
+     real N_relapse_rep;
+     
+     N_primary_rep = exponential_rng(exp(-omega*(Sample_2 - t_mrca)));
+     N_relapse_rep = exponential_rng(exp(-omega*(Sample_1 - t_mrca_primary)));
+     
+  }
+  
+}
+
+

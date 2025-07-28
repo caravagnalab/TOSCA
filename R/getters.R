@@ -17,6 +17,16 @@ get_m_th = function(x, type = 'step'){
   as.integer(x$mutations %>% filter(Mutation.type==type) %>% pull(Mutation.value))
 }
 
+
+get_phi = function(x,type = "clock"){
+
+v = paste0("phi_",type)  
+
+x$parameters %>% filter(Parameter.name == v) %>% pull(Parameter.value) 
+  
+  
+}
+
 get_mutation = function(x, name, type=NA, index=NA){
   m = x$mutations %>% filter(Mutation.name==name)
   if (!is.na(type)) m = m %>% filter(Mutation.type == type)
@@ -104,9 +114,10 @@ get_k_step = function(x){
 
 get_max_th = function(x){
 
-  max_index = x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.type) %>% as.integer() %>% max() %>% as.character()
+  max_index = x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.type) %>% as.integer() %>% 
+    max() %>% as.character()
 
-  x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>% pull(Clinical.value.start)
+  x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>% pull(Clinical.value.start) %>% min()
   #min(dates)
 }
 
@@ -152,6 +163,9 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
       }
 
       data[['mu_driver_clock']] = get_mu_driver_clock(x)
+      
+      data[["phi_clock"]] = get_phi(x,type = "clock")
+      data[["phi_driver"]] = get_phi(x,type = "driver")
 
       # if ('mu_driver_clock' %in% fixed_pars){
       #   data[['mu_driver_clock']] = get_mu_driver_clock(x)
@@ -179,6 +193,7 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data[['alpha_th_step']]= get_prior_hyperparameters(x, name='mu_th_step')[["alpha"]]
   data[['beta_th_step']]= get_prior_hyperparameters(x, name='mu_th_step')[["beta"]]
   data[['m_th_step']]= get_m_th(x, type = 'step')
+  data[["phi_th_step"]] = get_phi(x, type = "step")
 
   # mutations associated to cauchy
   data[['n_th_cauchy']]= get_n_th(x, name = 'Therapy cauchy')
@@ -188,6 +203,7 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data[['alpha_th_cauchy']]= get_prior_hyperparameters(x, name='scale_th_cauchy')[["alpha"]]
   data[['beta_th_cauchy']]= get_prior_hyperparameters(x, name='scale_th_cauchy')[["beta"]]
   data[['m_th_cauchy']]= get_m_th(x, type = 'Cauchy')
+  data[["phi_th_cauchy"]] = get_phi(x, type = 'Cauchy')
 
   # other parameters
   if (fixed_omega==T){
@@ -240,7 +256,7 @@ get_inferred_parameters = function(x){
 }
 
 get_inferred_times_colors = function(){
-  c("t_eca"="#44998dff", "t_driver"="#cb3144ff", "t_mrca"="#64419bff")
+  c("t_eca"="#44998dff", "t_driver"="#cb3144ff", "t_mrca"="#64419bff","t_mrca_primary" = "grey")
 }
 
 ## Get inferred times
