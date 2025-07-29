@@ -48,7 +48,6 @@ data{
   array[n_th_step_type] real<lower=0> alpha_th_step;
   array[n_th_step_type] real<lower=0> beta_th_step;
   array[n_th_step_type] int<lower=0> m_th_step;
-  array[n_th_step_type] real<lower=0> m_tail_step;
 
   // mutations associated to cauchy
   int <lower=0> n_th_cauchy;
@@ -93,7 +92,6 @@ parameters{
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   real <lower=0> omega;
-  real <lower=0> mu_driver;
   
 }
 
@@ -106,12 +104,6 @@ transformed parameters{
 
   for (i in 1:n_th_step_type) lambda_th_step[i] = 0;
   for (i in 1:n_th_cauchy_type) lambda_th_cauchy[i] = 0;
-
-
-// Initialize to zero
-for (i in 1:n_th_step_type) {
-  lambda_th_step[i] = 0;
-}
 
 // Step therapy mutations
 if (n_th_step_type > 0) {
@@ -130,7 +122,7 @@ if (n_th_step_type > 0) {
 
       }
     }
-  }
+}
 
 
 
@@ -147,22 +139,11 @@ if (n_th_step_type > 0) {
   }
 
  
-  real lambda_driver = 0;
-
-for (c in 1:cycles_driver) {
+   real lambda_driver=0;
+    for (c in 1:cycles_driver){
+    lambda_driver += lambda_therapy_single(t_driver,t_mrca, driver_start[c],driver_end[c],k_step);
+    }
   
-    lambda_driver += lambda_therapy_single(
-      t_driver, t_mrca,
-      driver_start[c],
-      driver_end[c],
-      k_step
-      );
-      
-  }
-  
-}
-
-
 
 
 }
