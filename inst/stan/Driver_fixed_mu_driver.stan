@@ -290,8 +290,8 @@ generated quantities {
    if (exponential_growth == 1) {
      
      
-     N_primary_rep = exponential_rng(exp(-omega*(Sample_2 - t_mrca)));
-     N_relapse_rep = exponential_rng(exp(-omega*(Sample_1 - t_mrca_primary)));
+     N_relapse_rep = exponential_rng(exp(-omega*(Sample_2 - t_mrca)));
+     N_primary_rep = exponential_rng(exp(-omega*(Sample_1 - t_mrca_primary)));
      
   }
   

@@ -175,6 +175,33 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
       # }
 
   }
+  
+  if(model == "cumulative"){
+    
+    data[["m_tail_driver"]] = get_m_driver_tail(x, type = "driver")
+    data[["m_tail_step"]] = get_m_driver_tail(x, type = "step")
+    data[["m_tail_cauchy"]] = get_m_driver_tail(x, type = "cauchy")
+    data[["f_min"]] = get_f(x)[["min"]]
+    data[["f_max"]] = get_f(x)[["max"]]
+    data[["tau_driver"]] = get_tau(x,type = "driver")
+    data[["tau_step"]] =  get_tau(x,type = "step")
+    data[['driver_type']] = get_driver_type(x)
+    data[['cycles_driver']] = get_cycles_drivers(x)
+    data[['driver_start']] = get_therapy_driver(x)[["start"]]
+    data[['driver_end']] = get_therapy_driver(x)[["end"]]
+    data[['m_driver']] = get_m_driver(x)
+    
+    data[['mu_driver_alpha']] = get_prior_hyperparameters(x, name='mu_driver')[["alpha"]]
+    data[['mu_driver_beta']] = get_prior_hyperparameters(x, name='mu_driver')[["beta"]]
+    
+    
+    data[['mu_driver_clock']] = get_mu_driver_clock(x)
+    
+    data[["phi_clock"]] = get_phi(x,type = "clock")
+    data[["phi_driver"]] = get_phi(x,type = "driver")
+    
+    
+  }
 
   if (model == 'CNA'){
     # mutations on CNA
@@ -228,18 +255,61 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data
 }
 
+get_m_driver_tail = function(x, type = "driver"){
+  
+  v = paste0("m_tail_",type)  
+  
+  x$mutations  %>% filter(Mutation.name == v) %>% pull(Mutation.value)
+  
+  
+}
+
+get_f = function(x){
+  
+  f = x$parameters  %>% filter(Parameter.name %in% c("f_min","f_max")) %>% pull(Parameter.value) 
+  
+  names(f) = c("min","max")
+  
+  f
+  
+}
+
+get_tau = function(x,type = "driver"){
+  
+  v = paste0("tau_",type) 
+  
+  x$parameters  %>% filter(Parameter.name  == v) %>% pull(Parameter.value)  
+  
+  
+}
+
+get_prior_hyperparameters = function(x, name='mu_driver'){
+  
+  
+  v =  x$parameters  %>% filter(Parameter.name  %in% c("mu_driver_alpha","mu_driver_beta")) %>% 
+    pull(Parameter.value)   
+  
+  names(v) = c("alpha","beta")
+  
+  v
+  
+  
+}
+
 get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F) {
 
   if (model_name=='Driver' & fixed_omega & !fixed_mu) model_name = "Driver_fixed_omega"
   if (model_name=='Driver' & fixed_mu & !fixed_omega) model_name = "Driver_fixed_mu_driver"
   if (model_name=='Driver' & fixed_omega & fixed_mu) model_name = "Driver_fixed_mu_and_omega"
-
+  if (model_name=="cumulative") model_name = "Driver_cumulative"
+  
   all_paths <- list(
     "Driver" = "Driver.stan",
     "Driver_fixed_mu_and_omega" = "Driver_fixed_mut_rate_and_growth.stan",
     "Driver_fixed_omega" = "Driver_fixed_growth.stan",
     "Driver_fixed_mu_driver" = "Driver_fixed_mu_driver.stan",
-    "CNA" = "CNA.stan"
+    "CNA" = "CNA.stan",
+    "Driver_cumulative" = "Driver_cumulative_stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")
