@@ -56,6 +56,18 @@ end_th_step = function(x){
   x$clinical_records %>% filter(Clinical.name=='Therapy step') %>% pull(Clinical.value.end)
 }
 
+start_chemo = function(x){
+  chemo_names = x$clinical_records$Clinical.name[grepl("Therapy", x$clinical_records$Clinical.name)]
+  start = x$clinical_records %>% filter(Clinical.name %in% chemo_names) %>% pull(Clinical.value.start) #%>% arrange()
+  start[1]
+}
+
+end_chemo = function(x){
+  chemo_names = x$clinical_records$Clinical.name[grepl("Therapy", x$clinical_records$Clinical.name)]
+  end = x$clinical_records %>% filter(Clinical.name %in% chemo_names) %>% pull(Clinical.value.end) #%>% arrange()
+  end[length(end)]
+}
+
 get_type_th_step = function(x, name='Therapy step'){
   as.integer(x$clinical_records %>% filter(Clinical.name==name) %>% pull(Clinical.type) )#%>% unique()
 }
@@ -104,7 +116,7 @@ get_cycles_drivers = function(x){
 }
 
 get_prior_hyperparameters = function(x, name){
-  # name = mu_driver*, mu_th_step*, scale_th_cauchy*, omega*, mrca*
+  # name = mu_driver*, mu_th_step*, scale_th_cauchy*, omega*, mrca*, s*
   if (name %in% x$parameters$Parameter.name){
     x$parameters %>% filter(Parameter.name==name) %>% pull(Parameter.value)
   }else{
@@ -250,6 +262,12 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   if (model %in% c('CNA', 'Driver')){
     data[['alpha_mrca']] = get_prior_hyperparameters(x, name='mrca')[["alpha"]]
     data[['beta_mrca']] = get_prior_hyperparameters(x, name='mrca')[["beta"]]
+  }
+  if (model == "WGD"){
+    data[['chemo_start']] = start_chemo(x)
+    data[['chemo_end']] = end_chemo(x)
+    data[['alpha_s']] = get_prior_hyperparameters(x, name='s')[["alpha"]]
+    data[['beta_s']] = get_prior_hyperparameters(x, name='s')[["beta"]]
   }
   # data[['alpha_eca']] = get_prior_hyperparameters(x, name='eca')[["alpha"]]
   # data[['beta_eca']] = get_prior_hyperparameters(x, name='eca')[["beta"]]

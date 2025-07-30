@@ -77,6 +77,10 @@ data{
 
   // real <lower=0> alpha_mrca;
   // real <lower=0> beta_mrca;
+  real chemo_start;
+  real chemo_end;
+  real <lower=0> alpha_s;
+  real <lower=0> beta_s;
 
 }
 
@@ -90,6 +94,7 @@ parameters{
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   real <lower=0> omega;
+  real <lower=0, upper=1> s;
 }
 
 transformed parameters{
@@ -135,6 +140,9 @@ transformed parameters{
   }
   }
 
+  real lambda_omega = ((Sample_2 - t_mrca) - lambda_therapy_single(t_mrca, Sample_2, chemo_start, chemo_end, k_step)) +
+                      s*lambda_therapy_single(t_mrca, Sample_2, chemo_start, chemo_end, k_step);
+
 
 }
 
@@ -146,6 +154,7 @@ model{
   // rho_mrca ~ beta(alpha_mrca, beta_mrca);
   t_mrca ~ uniform(t_eca, Sample_2);
   t_wgd ~ uniform(t_eca, t_mrca);
+  s ~ beta(alpha_s, beta_s);
 
   for (m in 1:n_th_step_type){
       mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
@@ -193,7 +202,7 @@ model{
 
   if (exponential_growth==1){
     target += -N_min[1]*exp(-omega*(Sample_1 - t_mrca_primary)) + log(1-exp(-(N_max[1]-N_min[1])*exp(-omega*(Sample_1 - t_mrca_primary))));
-    target += -N_min[2]*exp(-omega*(Sample_2 - t_mrca)) + log(1-exp(-(N_max[2]-N_min[2])*exp(-omega*(Sample_2 - t_mrca))));
+    target += -N_min[2]*exp(-omega*lambda_omega) + log(1-exp(-(N_max[2]-N_min[2])*exp(-omega*lambda_omega)));
   }
 
 }
@@ -249,7 +258,7 @@ generated quantities{
 
 
   if (exponential_growth==1){
-    real N_sample_2 = exp(omega*(Sample_2-t_mrca));
+    real N_sample_2 = exp(omega*lambda_omega);
     real N_sample_1 = exp(omega*(Sample_1-t_eca));
   }
 

@@ -1,8 +1,8 @@
 # Plot Prior vs Posterior - all parameters
 get_prior_distribution_type = function(par){
   prior_distributions = data.frame(
-    'parameter'= c("t_eca","t_driver","t_mrca", "mrca", "omega", "mu_driver"),
-    'prior_distribution' = c("uniform", "uniform", "uniform", "beta", "gamma", "gamma")
+    'parameter'= c("t_eca","t_driver","t_mrca", "mrca", "omega", "mu_driver","s"),
+    'prior_distribution' = c("uniform", "uniform", "uniform", "beta", "gamma", "gamma","beta")
   )
 
   prior_distributions %>% filter(parameter == par) %>% pull(prior_distribution)
@@ -94,8 +94,10 @@ plot_prior_vs_posterior = function(x, model){
   posterior = get_inferred_parameters(x)
 
   is_omega = grepl("omega", colnames(posterior)) %>% sum()
+  is_s = grepl("s", colnames(posterior)) %>% sum()
   is_mu_driver = grepl("mu_driver", colnames(posterior)) %>% sum()
-  if (is_omega == 1) parameters = c("omega", parameters)
+  if (is_omega >= 1) parameters = c("omega", parameters)
+  if (is_s == 1) parameters = c("s", parameters)
   if (is_mu_driver == 1) parameters = c("mu_driver", parameters)
 
   n_mu_th = grepl("mu_th_step", colnames(posterior)) %>% sum()
