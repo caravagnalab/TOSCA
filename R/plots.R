@@ -311,10 +311,19 @@ plot_ppc = function(x){
   }
 
 plot_expected_N = function(x){
+
   posterior = get_inferred_parameters(x) %>% as_tibble()
-  N = exp(posterior$omega*(posterior$t_mrca-get_sample(x, sample ='2')))
-  ggplot() + CNAqc:::my_ggplot_theme() +
-    geom_histogram(aes(x=N))
+  N_rel = exp(posterior$omega*(get_sample(x, sample ='2')-posterior$t_mrca))
+  N_pre = exp(posterior$omega*(get_sample(x, sample ='1')-posterior$t_mrca_primary))
+
+  N_rel_plot = ggplot() + CNAqc:::my_ggplot_theme() +
+    geom_histogram(aes(x=log(N_rel)))+
+    scale_x_log10()
+  N_pre_plot = ggplot() + CNAqc:::my_ggplot_theme() +
+    geom_histogram(aes(x=log(N_pre)))+
+    scale_x_log10()
+
+  ggpubr::ggarrange(plotlist = list(N_rel_plot, N_pre_plot), nrow = 2)
 }
 
 # Plot clinical timeline + posterior times

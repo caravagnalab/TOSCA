@@ -120,9 +120,14 @@ get_k_step = function(x){
 
 get_max_th = function(x){
 
-  max_index = x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.index) %>% as.integer() %>% max() %>% as.character()
+  max_index = x$clinical_records %>% filter(Clinical.name %in% c("Therapy step", "Therapy cauchy", "Therapy driver"))
 
-  x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.index == max_index) %>% pull(Clinical.value.start)
+  if (nrow(max_index) > 0){
+    max_index = max_index %>% pull(Clinical.index) %>% as.integer() %>% max() %>% as.character()
+    return(x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.index == max_index) %>% pull(Clinical.value.start))
+  }else{
+    return(x$clinical_records %>% filter(Clinical.name=="Sample", Clinical.type == 1) %>% pull(Clinical.value.start))
+  }
   #min(dates)
 }
 
@@ -242,8 +247,10 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data[['exponential_growth']] = get_exponential_growth(x)
   data[['N_min']] = get_N_min(x)
   data[['N_max']] = get_N_max(x)
-  data[['alpha_mrca']] = get_prior_hyperparameters(x, name='mrca')[["alpha"]]
-  data[['beta_mrca']] = get_prior_hyperparameters(x, name='mrca')[["beta"]]
+  if (model %in% c('CNA', 'Driver')){
+    data[['alpha_mrca']] = get_prior_hyperparameters(x, name='mrca')[["alpha"]]
+    data[['beta_mrca']] = get_prior_hyperparameters(x, name='mrca')[["beta"]]
+  }
   # data[['alpha_eca']] = get_prior_hyperparameters(x, name='eca')[["alpha"]]
   # data[['beta_eca']] = get_prior_hyperparameters(x, name='eca')[["beta"]]
 
