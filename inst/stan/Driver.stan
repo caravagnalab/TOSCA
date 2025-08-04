@@ -1,15 +1,15 @@
 functions {
 
-  real lambda_therapy_single(real ti, real tf, real t_therapy_i, real t_therapy_f, real k) {
-  real a1 = k * (tf - t_therapy_i);
-  real a2 = k * (tf - t_therapy_f);
-  real a3 = k * (ti - t_therapy_i);
-  real a4 = k * (ti - t_therapy_f);
+  real lambda_therapy_single(real ti, real tf, real t_therapy_i, real t_therapy_f, real k_in,real k_out) {
+  real a1 = k_in * (tf - t_therapy_i);
+  real a2 = k_out * (tf - t_therapy_f);
+  real a3 = k_in * (ti - t_therapy_i);
+  real a4 = k_out * (ti - t_therapy_f);
 
-  real f1 = log_sum_exp(0, a1) / k;
-  real f2 = log_sum_exp(0, a2) / k;
-  real f3 = log_sum_exp(0, a3) / k;
-  real f4 = log_sum_exp(0, a4) / k;
+  real f1 = log_sum_exp(0, a1) / k_in;
+  real f2 = log_sum_exp(0, a2) / k_out;
+  real f3 = log_sum_exp(0, a3) / k_in;
+  real f4 = log_sum_exp(0, a4) / k_out;
 
   return f1 - f2 - f3 + f4;
   }
@@ -37,7 +37,7 @@ data{
   array[cycles_driver] real<lower=0> driver_end;
   int <lower=0> m_driver;
   real <lower=0> mu_driver_clock; // if driver alters basal mutation rate of clock-like
-  real <lower=0> mu_driver;
+
 
   // mutations associated to step-like therapies
   int <lower=0> n_th_step; // numero totale di terapie*cicli
@@ -62,7 +62,13 @@ data{
   // other parameters
   real <lower=0> omega_alpha;
   real <lower=0> omega_beta;
-  real <lower=0> k_step;
+  real <lower=0> mu_driver_alpha;
+  real <lower=0> mu_driver_beta;
+  // real <lower=0> k_step;
+  array[n_th_step_type] real <lower=0> k_step_in_th;
+  array[n_th_step_type] real <lower=0> k_step_out_th;
+  real <lower=0> k_step_in_driver;
+  real <lower=0> k_step_out_driver;
 
   real <lower=0> Sample_1;
   real <lower=0> Sample_2;
@@ -90,6 +96,7 @@ parameters{
   real <lower=t_eca, upper=Sample_1> t_mrca_primary;
   real <lower=0, upper=1> rho_mrca;
   real <lower=0, upper=1> rho_driver;
+  real <lower=0> mu_driver;
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   real <lower=0> omega;
@@ -100,7 +107,7 @@ transformed parameters{
 
   real <lower=max_therapy,upper = Sample_2> t_mrca = max_therapy + rho_mrca*(Sample_2-max_therapy);
   real <lower=t_eca,upper = t_mrca> t_driver = t_eca + rho_driver*(t_mrca-t_eca);
-
+  
   array[n_th_step_type] real lambda_th_step;
   array[n_th_cauchy_type] real lambda_th_cauchy;
 
@@ -118,7 +125,8 @@ if (n_th_step_type > 0) {
             t_eca, t_mrca,
             start_th_step[cycle],
             end_th_step[cycle],
-            k_step
+            k_step_in_th[th_type],
+            k_step_out_th[th_type]
           );
         }
 
@@ -143,7 +151,8 @@ if (n_th_step_type > 0) {
  
    real lambda_driver=0;
     for (c in 1:cycles_driver){
-    lambda_driver += lambda_therapy_single(t_driver,t_mrca, driver_start[c],driver_end[c],k_step);
+    lambda_driver += lambda_therapy_single(t_driver,t_mrca, 
+    driver_start[c],driver_end[c],k_step_in_driver,k_step_out_driver);
     }
   
 
@@ -166,6 +175,10 @@ model {
   }
 
   omega ~ gamma(omega_alpha, omega_beta);
+  
+  
+  
+  mu_driver ~ gamma(mu_driver_alpha, mu_driver_beta);
 
   // Negative Binomial shape parameters (inverse overdispersion)
   real shape_clock = 1 / phi_clock;
@@ -188,7 +201,8 @@ model {
     2 * l_diploid * omega * (mu_clock * (t_driver - t_eca) + mu_driver_clock * (t_mrca - t_driver)) + 0.1,
     shape_clock
   );
-
+  
+ 
   for (th_type in 1:n_th_step_type) {
     m_th_step[th_type] ~ neg_binomial_2(
       2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type] + 0.1,
@@ -212,11 +226,17 @@ model {
     m_driver ~ neg_binomial_2(
       2 * l_diploid * omega * mu_driver * lambda_driver + 0.1,
       shape_driver
-    );}
+    );
+}
 
-
-
-if (exponential_growth == 1) {
+  // if (exponential_growth == 1) {
+  //   target += -N_min[1] * exp(-omega * (Sample_1 - t_mrca_primary)) +
+  //     log(1 - exp(-(N_max[1] - N_min[1]) * exp(-omega * (Sample_1 - t_mrca_primary))));
+  //   target += -N_min[2] * exp(-omega * (Sample_2 - t_mrca)) +
+  //     log(1 - exp(-(N_max[2] - N_min[2]) * exp(-omega * (Sample_2 - t_mrca))));
+  // }
+  
+  if (exponential_growth == 1) {
    real lambda1 = exp(-omega * (Sample_1 - t_mrca_primary));
    // real lambda2 = exp(-omega * (Sample_2 - t_mrca));
    real lambda2 = exp(-omega * (Sample_2 - t_driver));
@@ -225,8 +245,6 @@ if (exponential_growth == 1) {
   // N_max[1] ~ exponential(lambda1);
   N_max[2] ~ exponential(lambda2);
 }
-
-  
   
   
 }
@@ -271,10 +289,11 @@ generated quantities {
     );
   } else {
     m_driver_rep = neg_binomial_2_rng(
-      2 * l_diploid * omega * mu_driver * lambda_driver,
+      2 * l_diploid * omega * mu_driver * lambda_driver + 0.1,
       shape_driver
     );
   }
+
 
   for (m in 1:n_th_step_type) {
     m_th_step_rep[m] = neg_binomial_2_rng(
@@ -294,6 +313,14 @@ generated quantities {
   real N_primary_rep = -1;
   real N_relapse_rep = -1;
 
+  //  if (exponential_growth == 1) {
+  //    
+  //    
+  //    N_relapse_rep = exponential_rng(exp(-omega*(Sample_2 - t_mrca)));
+  //    N_primary_rep = exponential_rng(exp(-omega*(Sample_1 - t_mrca_primary)));
+  //    
+  // }
+  
    if (exponential_growth == 1) {
      
      
@@ -302,6 +329,7 @@ generated quantities {
      N_primary_rep = exponential_rng(exp(-omega*(Sample_1 - t_mrca_primary)));
      
   }
+  
   
 }
 

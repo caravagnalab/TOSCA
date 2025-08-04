@@ -108,8 +108,10 @@ get_prior_hyperparameters = function(x, name){
   }
 }
 
-get_k_step = function(x){
-  x$parameters %>% filter(Parameter.name=='k_step') %>% pull(Parameter.value)
+get_k_step = function(x,what){
+
+  x$parameters %>% filter(Parameter.name==paste0('k_step_',what)) %>% pull(Parameter.value)
+   # x$parameters %>% filter(Parameter.name==paste0('k_step')) %>% pull(Parameter.value)
 }
 
 get_max_th = function(x){
@@ -176,13 +178,13 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
 
   }
   
-  if(model == "cumulative"){
+  if(model == "Driver_cumulative"){
     
-    data[["m_tail_driver"]] = get_m_driver_tail(x, type = "driver")
-    data[["m_tail_step"]] = get_m_driver_tail(x, type = "step")
-    data[["m_tail_cauchy"]] = get_m_driver_tail(x, type = "cauchy")
-    data[["f_min"]] = get_f(x)[["min"]]
-    data[["f_max"]] = get_f(x)[["max"]]
+    # data[["m_tail_driver"]] = get_m_driver_tail(x, type = "driver")
+    # data[["m_tail_step"]] = get_m_driver_tail(x, type = "step")
+    # data[["m_tail_cauchy"]] = get_m_driver_tail(x, type = "cauchy")
+    # data[["f_min"]] = get_ccf(x)[["min"]]
+    # data[["f_max"]] = get_ccf(x)[["max"]]
     data[["tau_driver"]] = get_tau(x,type = "driver")
     data[["tau_step"]] =  get_tau(x,type = "step")
     data[['driver_type']] = get_driver_type(x)
@@ -240,7 +242,11 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     data[['omega_beta']] = get_prior_hyperparameters(x, name='omega')[["beta"]]
   }
 
-  data[['k_step']] = get_k_step(x)
+  # data[['k_step']] = get_k_step(x)
+  data[['k_step_in_th']] = get_k_step(x,what = "in_th")
+  data[['k_step_out_th']] = get_k_step(x,what = "out_th")
+  data[['k_step_in_driver']] = get_k_step(x,what = "in_driver")
+  data[['k_step_out_driver']] = get_k_step(x,what = "out_driver")
   data[['Sample_1']] = get_sample(x, sample='1')
   data[['Sample_2']] = get_sample(x, sample='2')
   data[['max_therapy']] = get_max_th(x)
@@ -255,24 +261,24 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data
 }
 
-get_m_driver_tail = function(x, type = "driver"){
-  
-  v = paste0("m_tail_",type)  
-  
-  x$mutations  %>% filter(Mutation.name == v) %>% pull(Mutation.value)
-  
-  
-}
+# get_m_driver_tail = function(x, type = "driver"){
+#   
+#   v = paste0("m_tail_",type)  
+#   
+#   x$mutations  %>% filter(Mutation.name == v) %>% pull(Mutation.value)
+#   
+#   
+# }
 
-get_f = function(x){
-  
-  f = x$parameters  %>% filter(Parameter.name %in% c("f_min","f_max")) %>% pull(Parameter.value) 
-  
-  names(f) = c("min","max")
-  
-  f
-  
-}
+# get_ccf = function(x){
+#   
+#   f = x$parameters  %>% filter(Parameter.name %in% c("f_min","f_max")) %>% pull(Parameter.value) 
+#   
+#   names(f) = c("min","max")
+#   
+#   f
+#   
+# }
 
 get_tau = function(x,type = "driver"){
   
@@ -283,25 +289,15 @@ get_tau = function(x,type = "driver"){
   
 }
 
-get_prior_hyperparameters = function(x, name='mu_driver'){
-  
-  
-  v =  x$parameters  %>% filter(Parameter.name  %in% c("mu_driver_alpha","mu_driver_beta")) %>% 
-    pull(Parameter.value)   
-  
-  names(v) = c("alpha","beta")
-  
-  v
-  
-  
-}
+
+
 
 get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F) {
 
   if (model_name=='Driver' & fixed_omega & !fixed_mu) model_name = "Driver_fixed_omega"
   if (model_name=='Driver' & fixed_mu & !fixed_omega) model_name = "Driver_fixed_mu_driver"
   if (model_name=='Driver' & fixed_omega & fixed_mu) model_name = "Driver_fixed_mu_and_omega"
-  if (model_name=="cumulative") model_name = "Driver_cumulative"
+  if (model_name=="Driver_cumulative" & !fixed_omega & !fixed_mu) model_name = "Driver_cumulative"
   
   all_paths <- list(
     "Driver" = "Driver.stan",
@@ -309,7 +305,7 @@ get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F) {
     "Driver_fixed_omega" = "Driver_fixed_growth.stan",
     "Driver_fixed_mu_driver" = "Driver_fixed_mu_driver.stan",
     "CNA" = "CNA.stan",
-    "Driver_cumulative" = "Driver_cumulative_stan"
+    "Driver_cumulative" = "Driver_cumulative.stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")

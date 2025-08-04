@@ -16,9 +16,52 @@ functions {
 
 
 	real couchy_cdf_single(real location, real scale, real a,real b){
-    real d= ((1/pi()) * atan((b-location)/scale) + .5) - ((1/pi()) * atan((a-location)/scale) + .5);
+    real d = ((1/pi()) * atan((b-location)/scale) + .5) - ((1/pi()) * atan((a-location)/scale) + .5);
   return(d * pi() * scale);
+  
 	}
+	
+
+  // Smooth max using log-sum-exp
+  real smooth_max(real x, real y, real tau) {
+    return tau * log_sum_exp(x / tau, y / tau);
+  }
+
+  // Smooth min via negated smooth max
+  real smooth_min(real x, real y, real tau) {
+    return -smooth_max(-x, -y, tau);
+  }
+
+  // Smooth positive part using softplus (≈ max(0, x))
+  real smooth_positive(real x, real tau) {
+    return tau * log1p_exp(x / tau);
+  }
+
+  real mutation_integral(
+      real t_mrca,
+      real f_min,
+      real f_max,
+      real omega,
+      real mu,
+      real L,
+      real t1,
+      real t2,
+      real tau_smooth
+  ) {
+    real t_start = t_mrca + log1m(-f_max) / -omega; // = log(1/f_max)/omega
+    real t_end   = t_mrca + log1m(-f_min) / -omega;
+
+    real t_upper = smooth_min(t_end, t2, tau_smooth);
+    real t_lower = smooth_max(t_start, t1, tau_smooth);
+
+    real integral = exp(omega * t_upper) - exp(omega * t_lower);
+
+    // Clip to non-negative using smooth approximation
+    real clipped_integral = smooth_positive(integral, tau_smooth);
+
+    return 2 * L * mu * clipped_integral;
+  }
+
 
 }
 
@@ -28,6 +71,10 @@ data{
   int <lower=0> m_clock;
   real <lower=0> l_diploid;
   real <lower=0> mu_clock;
+  real <lower=0> mu_driver_clock;
+  real<lower=0, upper=1> f_min;
+  real<lower=0, upper=1> f_max;
+
 
 
   // mutations associated to driver
@@ -35,9 +82,10 @@ data{
   int <lower=0> cycles_driver;
   array[cycles_driver] real<lower=0> driver_start; // if driver have effect only associated to external therapy
   array[cycles_driver] real<lower=0> driver_end;
+  real <lower = 0> tau_driver;
   int <lower=0> m_driver;
-  real <lower=0> mu_driver_clock; // if driver alters basal mutation rate of clock-like
-  real <lower=0> mu_driver;
+  int <lower=0> m_tail_driver;
+   // if driver alters basal mutation rate of clock-like
 
   // mutations associated to step-like therapies
   int <lower=0> n_th_step; // numero totale di terapie*cicli
@@ -48,21 +96,28 @@ data{
   array[n_th_step_type] real<lower=0> alpha_th_step;
   array[n_th_step_type] real<lower=0> beta_th_step;
   array[n_th_step_type] int<lower=0> m_th_step;
+  array[n_th_step_type] real<lower=0> tau_step;
+  array[n_th_step_type] int<lower=0> m_tail_step;
+  array[n_th_step_type] real <lower=0> k_step_in_th;
+  array[n_th_step_type] real <lower=0> k_step_out_th;
 
   // mutations associated to cauchy
   int <lower=0> n_th_cauchy;
   int <lower=0> n_th_cauchy_type;
-  //vector<lower=0>[n_th_cauchy] cycles_th_cauchy;
   array[n_th_cauchy] real<lower=0> location_th_cauchy;
   array[n_th_cauchy] int<lower=0> type_th_cauchy; // vector with numbers identifying the therapy (1:n_th_cauchy)
   array[n_th_cauchy_type] real<lower=0> alpha_th_cauchy;
   array[n_th_cauchy_type] real<lower=0> beta_th_cauchy;
   array[n_th_cauchy_type] int<lower=0> m_th_cauchy;
+  array[n_th_cauchy_type] int<lower=0> m_tail_cauchy;
 
   // other parameters
   real <lower=0> omega_alpha;
   real <lower=0> omega_beta;
-  real <lower=0> k_step;
+  real <lower=0> k_step_in_driver;
+  real <lower=0> k_step_out_driver;
+  
+  real <lower=0> tau_smooth;
 
   real <lower=0> Sample_1;
   real <lower=0> Sample_2;
@@ -74,32 +129,37 @@ data{
   real <lower=0> alpha_mrca;
   real <lower=0> beta_mrca;
   
+  real <lower=0> mu_driver_alpha;
+  real <lower=0> mu_driver_beta;
   
   // Overdispersion parameters for all mutation types
   real<lower=0> phi_clock;
   real<lower=0> phi_driver;
   array[n_th_step_type] real <lower=0> phi_th_step;
   array[n_th_cauchy_type] real <lower=0> phi_th_cauchy;
-
-
+ 
 }
+
 
 parameters{
   
   real <lower=0, upper=Sample_1> t_eca;
   real <lower=t_eca, upper=Sample_1> t_mrca_primary;
   real <lower=0, upper=1> rho_mrca;
-  real <lower=0, upper=1> rho_driver;
+   real <lower=0, upper=1> rho_driver;
   array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   real <lower=0> omega;
+  real <lower=0> mu_driver;
   
 }
+
 
 transformed parameters{
 
   real <lower=max_therapy,upper = Sample_2> t_mrca = max_therapy + rho_mrca*(Sample_2-max_therapy);
   real <lower=t_eca,upper = t_mrca> t_driver = t_eca + rho_driver*(t_mrca-t_eca);
+ 
 
   array[n_th_step_type] real lambda_th_step;
   array[n_th_cauchy_type] real lambda_th_cauchy;
@@ -118,7 +178,8 @@ if (n_th_step_type > 0) {
             t_eca, t_mrca,
             start_th_step[cycle],
             end_th_step[cycle],
-            k_step
+            k_step_in_th[th_type],
+            k_step_out_th[th_type]
           );
         }
 
@@ -143,10 +204,59 @@ if (n_th_step_type > 0) {
  
    real lambda_driver=0;
     for (c in 1:cycles_driver){
-    lambda_driver += lambda_therapy_single(t_driver,t_mrca, driver_start[c],driver_end[c],k_step);
+    lambda_driver += lambda_therapy_single(t_driver,t_mrca, 
+    driver_start[c],driver_end[c],k_step_in_driver,k_step_out_driver);
     }
   
 
+
+// subclonal 
+
+ array[n_th_step_type] real lambda_tail_th_step;
+array[n_th_cauchy_type] real lambda_tail_th_cauchy;
+
+// Initialize
+for (i in 1:n_th_step_type)
+  lambda_tail_th_step[i] = 0;
+
+
+// Step therapy mutations
+if (n_th_step_type > 0) {
+  for (th_type in 1:n_th_step_type) {
+    for (cycle in 1:n_th_step) {
+      if (type_th_step[cycle] == th_type) {
+        // Add mutation integral for this therapy cycle
+        lambda_tail_th_step[th_type] += mutation_integral(
+          t_mrca,
+          f_min,
+          f_max,
+          omega,
+          mu_th_step[th_type],
+          l_diploid,
+          start_th_step[cycle],
+          end_th_step[cycle],
+          tau_smooth
+        );
+      }
+    }
+  }
+}
+
+
+   real lambda_tail_driver=0;
+    for (c in 1:cycles_driver){
+    lambda_tail_driver += mutation_integral(
+          t_mrca,
+          f_min,
+          f_max,
+          omega,
+          mu_driver,
+          l_diploid,
+          driver_start[c],
+          driver_end[c],
+          tau_smooth
+        );
+    }
 
 }
 
@@ -157,6 +267,7 @@ model {
   t_mrca_primary ~ uniform(t_eca, Sample_1);
   rho_mrca ~ beta(alpha_mrca, beta_mrca);
   rho_driver ~ uniform(0, 1);
+  t_driver ~ uniform(t_eca, t_mrca);
 
   for (m in 1:n_th_step_type) {
     mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
@@ -166,6 +277,7 @@ model {
   }
 
   omega ~ gamma(omega_alpha, omega_beta);
+  mu_driver ~ gamma(mu_driver_alpha, mu_driver_beta);
 
   // Negative Binomial shape parameters (inverse overdispersion)
   real shape_clock = 1 / phi_clock;
@@ -180,43 +292,60 @@ model {
 
   // Likelihood
   m_clock_primary ~ neg_binomial_2(
-    2 * l_diploid * omega * mu_clock * (t_mrca_primary - t_eca) + 0.1,
+    2 * l_diploid * omega * mu_clock * (t_mrca_primary - t_eca),
     shape_clock
   );
 
   m_clock ~ neg_binomial_2(
-    2 * l_diploid * omega * (mu_clock * (t_driver - t_eca) + mu_driver_clock * (t_mrca - t_driver)) + 0.1,
+    2 * l_diploid * omega * (mu_clock * (t_driver - t_eca) + mu_driver_clock * (t_mrca - t_driver)),
     shape_clock
   );
 
   for (th_type in 1:n_th_step_type) {
     m_th_step[th_type] ~ neg_binomial_2(
-      2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type] + 0.1,
+      2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type],
+      shape_th_step[th_type]
+    );
+     m_tail_step[th_type] ~ neg_binomial_2(
+      2 * l_diploid * omega * mu_th_step[th_type] * lambda_tail_th_step[th_type] + 1,
       shape_th_step[th_type]
     );
   }
 
   for (th_cauchy in 1:n_th_cauchy_type) {
     m_th_cauchy[th_cauchy] ~ neg_binomial_2(
-      2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy] + 0.1,
+      2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy],
       shape_th_cauchy[th_cauchy]
     );
+    
+    //  m_tail_cauchy[th_cauchy] ~ neg_binomial_2(
+    //   2 * l_diploid * omega * mu_clock * lambda_tail_th_cauchy[th_cauchy] + 1,
+    //   shape_th_cauchy[th_cauchy]
+    // );
   }
 
   if (driver_type == 0) {
     m_driver ~ neg_binomial_2(
-      2 * l_diploid * omega * mu_driver * (t_mrca - t_driver) + 0.1,
+      2 * l_diploid * omega * mu_driver * (t_mrca - t_driver),
+      shape_driver
+    );
+     m_tail_driver ~ neg_binomial_2(
+      2 * l_diploid * mu_driver * (1/f_min - 1/f_max),
       shape_driver
     );
   } else {
     m_driver ~ neg_binomial_2(
-      2 * l_diploid * omega * mu_driver * lambda_driver + 0.1,
+      2 * l_diploid * omega * mu_driver * lambda_driver,
       shape_driver
-    );}
+    );
+    m_tail_driver ~ neg_binomial_2(
+      2 * l_diploid * omega * mu_driver * lambda_tail_driver + 1,
+      shape_driver
+    );
+  
+}
 
-
-
-if (exponential_growth == 1) {
+  if (exponential_growth == 1) {
    real lambda1 = exp(-omega * (Sample_1 - t_mrca_primary));
    // real lambda2 = exp(-omega * (Sample_2 - t_mrca));
    real lambda2 = exp(-omega * (Sample_2 - t_driver));
@@ -225,74 +354,88 @@ if (exponential_growth == 1) {
   // N_max[1] ~ exponential(lambda1);
   N_max[2] ~ exponential(lambda2);
 }
-
-  
-  
   
 }
 
 generated quantities {
   
-  int<lower=0> m_clock_primary_rep;
-  int<lower=0> m_clock_rep;
-  int<lower=0> m_driver_rep;
+  int m_clock_primary_rep;
+  int m_clock_rep;
+  int m_driver_rep;
+  int m_tail_driver_rep;
+  array[n_th_step_type] int m_th_step_rep;
+  array[n_th_step_type] int m_tail_step_rep;
+  array[n_th_cauchy_type] int m_th_cauchy_rep;
+  // array[n_th_cauchy_type] int m_tail_cauchy_rep;
   
-  array[n_th_step_type] int<lower=0> m_th_step_rep;
-  array[n_th_cauchy_type] int<lower=0> m_th_cauchy_rep;
-
-  // Calculate shape parameters as in model block
+  
   real shape_clock = 1 / phi_clock;
   real shape_driver = 1 / phi_driver;
   array[n_th_step_type] real shape_th_step;
   array[n_th_cauchy_type] real shape_th_cauchy;
-
-  for (m in 1:n_th_step_type) {
+  
+   for (m in 1:n_th_step_type)
     shape_th_step[m] = 1 / phi_th_step[m];
-  }
-  for (ch in 1:n_th_cauchy_type) {
+  for (ch in 1:n_th_cauchy_type)
     shape_th_cauchy[ch] = 1 / phi_th_cauchy[ch];
-  }
 
-  // Sample posterior predictive replicates from neg_binomial_2_rng
+  // Generate predictive draws using the same means as in the model block
   m_clock_primary_rep = neg_binomial_2_rng(
     2 * l_diploid * omega * mu_clock * (t_mrca_primary - t_eca),
-    shape_clock
+    shape_clock 
   );
 
   m_clock_rep = neg_binomial_2_rng(
     2 * l_diploid * omega * (mu_clock * (t_driver - t_eca) + mu_driver_clock * (t_mrca - t_driver)),
-    shape_clock
+   shape_clock 
   );
+
+  for (th_type in 1:n_th_step_type) {
+    m_th_step_rep[th_type] = neg_binomial_2_rng(
+      2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type],
+      shape_th_step[th_type]
+    );
+
+    m_tail_step_rep[th_type] = neg_binomial_2_rng(
+      2 * l_diploid * omega * mu_th_step[th_type] * lambda_tail_th_step[th_type],
+      shape_th_step[th_type]
+    );
+  }
+
+  for (th_cauchy in 1:n_th_cauchy_type) {
+    m_th_cauchy_rep[th_cauchy] = neg_binomial_2_rng(
+      2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy],
+      shape_th_cauchy[th_cauchy]
+    );
+
+    // m_tail_cauchy_rep[th_cauchy] = neg_binomial_2_rng(
+    //   2 * l_diploid * omega * mu_clock * lambda_tail_th_cauchy[th_cauchy],
+    //   shape_th_cauchy[th_cauchy]
+    // );
+  }
 
   if (driver_type == 0) {
     m_driver_rep = neg_binomial_2_rng(
       2 * l_diploid * omega * mu_driver * (t_mrca - t_driver),
-      shape_driver
+      shape_driver 
+    );
+    m_tail_driver_rep = neg_binomial_2_rng(
+      2 * l_diploid * mu_driver * (1 / f_min - 1 / f_max),
+      shape_driver 
     );
   } else {
     m_driver_rep = neg_binomial_2_rng(
       2 * l_diploid * omega * mu_driver * lambda_driver,
-      shape_driver
+    shape_driver 
     );
-  }
-
-  for (m in 1:n_th_step_type) {
-    m_th_step_rep[m] = neg_binomial_2_rng(
-      2 * l_diploid * omega * mu_th_step[m] * lambda_th_step[m],
-      shape_th_step[m]
-    );
-  }
-
-  for (ch in 1:n_th_cauchy_type) {
-    m_th_cauchy_rep[ch] = neg_binomial_2_rng(
-      2 * l_diploid * omega * mu_clock * lambda_th_cauchy[ch],
-      shape_th_cauchy[ch]
+    m_tail_driver_rep = neg_binomial_2_rng(
+      2 * l_diploid * omega * mu_driver * lambda_tail_driver,
+     shape_driver 
     );
   }
   
-  
-  real N_primary_rep = -1;
-  real N_relapse_rep = -1;
+    real N_primary_rep = -1;
+    real N_relapse_rep = -1;
 
    if (exponential_growth == 1) {
      
@@ -302,7 +445,9 @@ generated quantities {
      N_primary_rep = exponential_rng(exp(-omega*(Sample_1 - t_mrca_primary)));
      
   }
-  
+
 }
+
+
 
 

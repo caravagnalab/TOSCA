@@ -153,11 +153,11 @@ plot_expected_N = function(x){
   N1 = rexp(n = nrow(posterior),rate = 1/N_exp_1)
   
 p1 =   ggplot() + CNAqc:::my_ggplot_theme() +
-    geom_histogram(aes(x=N1)) + scale_x_log10() + labs(x = "Tumor size at Primary")
+    geom_histogram(aes(x=N1)) + scale_x_log10() + labs(x = "Sample size at Primary")
   
   
 p2 =   ggplot() + CNAqc:::my_ggplot_theme() +
-    geom_histogram(aes(x=N2)) + scale_x_log10() + labs(x = "Tumor size at Relapse")
+    geom_histogram(aes(x=N2)) + scale_x_log10() + labs(x = "Sample size at Relapse")
 
 p1 * p2
   
