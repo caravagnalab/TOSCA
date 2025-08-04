@@ -144,7 +144,8 @@ check_ppc = function(x){
 
       if (v %in% c("m_th_step","m_th_cauchy", "m_alpha", "m_beta",
                    "m_alpha_tetraploid_step","m_beta_tetraploid_step",
-                   "m_alpha_tetraploid_cauchy","m_beta_tetraploid_cauchy")){
+                   "m_alpha_tetraploid_cauchy","m_beta_tetraploid_cauchy") &
+          x$tosca_fit$model_info$model_name != "WGD"){
 
         for (i in 1:length(true_value)){
           rep_draws = posterior[[paste0(v,"_rep[",i,"]")]]
@@ -368,21 +369,38 @@ plot_timing = function(x)
     ) + CNAqc:::my_ggplot_theme()+
     theme(legend.position = 'bottom')+
     scale_fill_manual(values = var_colors)
-  # +
-  #   geom_label(
-  #     data = endpoints,
-  #     aes(x = as.Date(convert_date_real(Clinical.value.start)), y = .1, label= paste0(Clinical.name, ' ',Clinical.type))
-  #   )
-  # +
-  #   geom_segment(
-  #     data = endpoints,
-  #     aes(x = as.Date(convert_date_real(Clinical.value.start)),
-  #         xend = as.Date(convert_date_real(Clinical.value.start)),
-  #         y=0,yend=.08),
-  #     linetype = 'dashed'
-  #   ) + CNAqc:::my_ggplot_theme()+
-  #   theme(legend.position = 'bottom')+
-  #   scale_fill_manual(values = get_inferred_times_colors())
+
+  if ("t_dormancy_start" %in% timing_estimates$variable){
+    MAP_dormancy_start = timing_estimates %>% filter(variable == "t_dormancy_start") %>% pull(value) %>% mean()
+    MAP_dormancy_end = timing_estimates %>% filter(variable == "t_dormancy_end") %>% pull(value) %>% mean()
+    timing_estimates = timing_estimates %>% filter(!(variable %in% c("t_dormancy_start","t_dormancy_end")))
+
+    posterior_plot = ggplot() +
+      geom_histogram(
+        data = timing_estimates %>% dplyr::rename(Date = value),
+        aes(Date, fill = variable, ..density..),
+        inherit.aes = FALSE,
+        bins = 150
+      ) +
+      geom_point(
+        data = endpoints,
+        aes(x = as.Date(convert_date_real(Clinical.value.start)), y = 0),
+        inherit.aes = FALSE,
+        size = 3
+      ) + CNAqc:::my_ggplot_theme()+
+      theme(legend.position = 'bottom')+
+      scale_fill_manual(values = var_colors)+
+      geom_rect(
+        aes(xmin = MAP_dormancy_start,
+            xmax = MAP_dormancy_end),
+        ymin = 0,
+        ymax = Inf,
+        fill = 'grey',
+        colour = "white",
+        size = 0.5,
+        alpha = .5
+      )
+  }
 
   posterior_plot = posterior_plot + geom_rect(
     aes(xmin = as.Date(convert_date_real(therapies$Clinical.value.start[1])),

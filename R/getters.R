@@ -200,7 +200,7 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     data[['coeff_beta']] = get_coeff_CNA(x)[["beta"]]
   }
 
-
+  if (model %in% c('Driver', 'CNA')){
     data[['n_th_step']]= get_n_th(x, name = 'Therapy step')
     data[['n_th_step_type']]= get_n_th_type(x, name = 'Therapy step')
     data[['start_th_step']] = start_th(x, type='Therapy step')
@@ -208,11 +208,13 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     data[['type_th_step']]= get_type_th_step(x, name='Therapy step')
     data[['alpha_th_step']]= get_prior_hyperparameters(x, name='mu_th_step')[["alpha"]]
     data[['beta_th_step']]= get_prior_hyperparameters(x, name='mu_th_step')[["beta"]]
+  }
 
-    if (model %in% c('Driver', 'CNA')){
+  if (model %in% c('Driver', 'CNA')){
       data[['m_th_step']]= get_mutation(x, name="m_th", type=NA, index=NA, source="step", coeff=NA) # get_m_th(x, type = 'step')
-    }
+  }
 
+  if (model %in% c('Driver', 'CNA')){
     # mutations associated to cauchy
     data[['n_th_cauchy']]= get_n_th(x, name = 'Therapy cauchy')
     data[['n_th_cauchy_type']]= get_n_th_type(x, name = 'Therapy cauchy')
@@ -223,14 +225,19 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     if (model %in% c('Driver', 'CNA')){
       data[['m_th_cauchy']]= get_mutation(x, name="m_th", type=NA, index=NA, source="cauchy", coeff=NA) #get_m_th(x, type = 'Cauchy')
     }
+  }
 
   if (model == 'WGD'){
-    data[['m_alpha_tetraploid_step']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="step", coeff="4")
-    data[['m_beta_tetraploid_step']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="step", coeff="4")
-    data[['m_alpha_tetraploid_cauchy']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="cauchy", coeff="4")
-    data[['m_beta_tetraploid_cauchy']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="cauchy", coeff="4")
-    data[['m_alpha_tetraploid_clock']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="clock", coeff="4")
-    data[['m_beta_tetraploid_clock']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="clock", coeff="4")
+    data[['m_alpha']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="clock", coeff="4")
+    data[['m_beta']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="clock", coeff="4")
+    data[['l_wgd']]= get_length(x, model="WGD")
+
+    # data[['m_alpha_tetraploid_step']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="step", coeff="4")
+    # data[['m_beta_tetraploid_step']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="step", coeff="4")
+    # data[['m_alpha_tetraploid_cauchy']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="cauchy", coeff="4")
+    # data[['m_beta_tetraploid_cauchy']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="cauchy", coeff="4")
+    # data[['m_alpha_tetraploid_clock']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="clock", coeff="4")
+    # data[['m_beta_tetraploid_clock']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="clock", coeff="4")
 
     # data[['alpha_cnloh_step']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="step", coeff="2")
     # data[['beta_cnloh_step']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="step", coeff="2")
@@ -239,7 +246,7 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     # data[['alpha_cnloh_clock']]= get_mutation(x, name="m_wgd", type="alpha", index=NA, source="clock", coeff="2")
     # data[['beta_cnloh_clock']]= get_mutation(x, name="m_wgd", type="beta", index=NA, source="clock", coeff="2")
 
-    data[['l_tetraploid']]= get_length(x, model="WGD")
+    #data[['l_tetraploid']]= get_length(x, model="WGD")
     # data[['l_cnloh']]= get_length(x, karyotype="2:0", model="WGD")
 
   }
@@ -255,22 +262,24 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data[['k_step']] = get_k_step(x)
   data[['Sample_1']] = get_sample(x, sample='1')
   data[['Sample_2']] = get_sample(x, sample='2')
-  data[['max_therapy']] = get_max_th(x)
+
+  if (model %in% c('Driver', 'CNA')){
+    data[['max_therapy']] = get_max_th(x)
+  }
+
+  if (model == "WGD"){
+    data[['chemo_start']] = start_chemo(x)
+    data[['chemo_end']] = end_chemo(x)
+  }
+
   data[['exponential_growth']] = get_exponential_growth(x)
   data[['N_min']] = get_N_min(x)
   data[['N_max']] = get_N_max(x)
+
   if (model %in% c('CNA', 'Driver')){
     data[['alpha_mrca']] = get_prior_hyperparameters(x, name='mrca')[["alpha"]]
     data[['beta_mrca']] = get_prior_hyperparameters(x, name='mrca')[["beta"]]
   }
-  if (model == "WGD"){
-    data[['chemo_start']] = start_chemo(x)
-    data[['chemo_end']] = end_chemo(x)
-    data[['alpha_s']] = get_prior_hyperparameters(x, name='s')[["alpha"]]
-    data[['beta_s']] = get_prior_hyperparameters(x, name='s')[["beta"]]
-  }
-  # data[['alpha_eca']] = get_prior_hyperparameters(x, name='eca')[["alpha"]]
-  # data[['beta_eca']] = get_prior_hyperparameters(x, name='eca')[["beta"]]
 
   data
 }
@@ -287,7 +296,7 @@ get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F) {
     "Driver_fixed_omega" = "Driver_fixed_growth.stan",
     "Driver_fixed_mu_driver" = "Driver_fixed_mu_driver.stan",
     "CNA" = "CNA.stan",
-    "WGD" = "WGD.stan"
+    "WGD" = "WGD_with_dormancy.stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")

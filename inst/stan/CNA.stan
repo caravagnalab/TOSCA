@@ -74,7 +74,7 @@ data{
 }
 
 parameters{
-  real <lower=Sample_1-2, upper=Sample_1 - 1e-8 > t_eca;
+  real <lower=0, upper=Sample_1 - 1e-8 > t_eca;
   real <lower=t_eca, upper=Sample_1 > t_mrca_primary;
   array[n_cna] real<lower=t_eca, upper=Sample_2 - 1e-8 > t_cna;
   real <lower=0, upper=1> rho_mrca;
