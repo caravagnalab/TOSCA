@@ -1,15 +1,15 @@
 functions {
 
-  real lambda_therapy_single(real ti, real tf, real t_therapy_i, real t_therapy_f, real k_in,real k_out) {
-  real a1 = k_in * (tf - t_therapy_i);
-  real a2 = k_out * (tf - t_therapy_f);
-  real a3 = k_in * (ti - t_therapy_i);
-  real a4 = k_out * (ti - t_therapy_f);
+  real lambda_therapy_single(real ti, real tf, real t_therapy_i, real t_therapy_f, real k) {
+  real a1 = k * (tf - t_therapy_i);
+  real a2 = k * (tf - t_therapy_f);
+  real a3 = k * (ti - t_therapy_i);
+  real a4 = k * (ti - t_therapy_f);
 
-  real f1 = log_sum_exp(0, a1) / k_in;
-  real f2 = log_sum_exp(0, a2) / k_out;
-  real f3 = log_sum_exp(0, a3) / k_in;
-  real f4 = log_sum_exp(0, a4) / k_out;
+  real f1 = log_sum_exp(0, a1) / k;
+  real f2 = log_sum_exp(0, a2) / k;
+  real f3 = log_sum_exp(0, a3) / k;
+  real f4 = log_sum_exp(0, a4) / k;
 
   return f1 - f2 - f3 + f4;
   }
@@ -64,11 +64,7 @@ data{
   real <lower=0> omega_beta;
   real <lower=0> mu_driver_alpha;
   real <lower=0> mu_driver_beta;
-  // real <lower=0> k_step;
-  array[n_th_step_type] real <lower=0> k_step_in_th;
-  array[n_th_step_type] real <lower=0> k_step_out_th;
-  real <lower=0> k_step_in_driver;
-  real <lower=0> k_step_out_driver;
+  real <lower=0> k_step;
 
   real <lower=0> Sample_1;
   real <lower=0> Sample_2;
@@ -107,7 +103,6 @@ transformed parameters{
 
   real <lower=max_therapy,upper = Sample_2> t_mrca = max_therapy + rho_mrca*(Sample_2-max_therapy);
   real <lower=t_eca,upper = t_mrca> t_driver = t_eca + rho_driver*(t_mrca-t_eca);
-  
   array[n_th_step_type] real lambda_th_step;
   array[n_th_cauchy_type] real lambda_th_cauchy;
 
@@ -125,8 +120,7 @@ if (n_th_step_type > 0) {
             t_eca, t_mrca,
             start_th_step[cycle],
             end_th_step[cycle],
-            k_step_in_th[th_type],
-            k_step_out_th[th_type]
+            k_step
           );
         }
 
@@ -152,7 +146,7 @@ if (n_th_step_type > 0) {
    real lambda_driver=0;
     for (c in 1:cycles_driver){
     lambda_driver += lambda_therapy_single(t_driver,t_mrca, 
-    driver_start[c],driver_end[c],k_step_in_driver,k_step_out_driver);
+    driver_start[c],driver_end[c],k_step);
     }
   
 
@@ -176,9 +170,7 @@ model {
 
   omega ~ gamma(omega_alpha, omega_beta);
   
-  
-  
-  mu_driver ~ gamma(mu_driver_alpha, mu_driver_beta);
+ mu_driver ~ gamma(mu_driver_alpha, mu_driver_beta);
 
   // Negative Binomial shape parameters (inverse overdispersion)
   real shape_clock = 1 / phi_clock;
@@ -243,7 +235,8 @@ model {
   target += -lambda1 * N_min[1] + log1m_exp(-lambda1 * (N_max[1] - N_min[1]));
   // target += -lambda2 * N_min[2] + log1m_exp(-lambda2 * (N_max[2] - N_min[2]));
   // N_max[1] ~ exponential(lambda1);
-  N_max[2] ~ exponential(lambda2);
+    N_max[2] ~ exponential(lambda2);
+  // target += normal_lpdf( log(N_max[2]) | omega*(Sample_2 - t_driver), 0.001);
 }
   
   
@@ -325,7 +318,8 @@ generated quantities {
      
      
      // N_relapse_rep = exponential_rng(exp(-omega*(Sample_2 - t_mrca)));
-     N_relapse_rep = exponential_rng(exp(-omega*(Sample_2 - t_driver)));
+      N_relapse_rep = exponential_rng(exp(-omega*(Sample_2 - t_driver)));
+     // log_N_relapse_rep = normal_rng( omega*(Sample_2 - t_driver), 0.05);
      N_primary_rep = exponential_rng(exp(-omega*(Sample_1 - t_mrca_primary)));
      
   }

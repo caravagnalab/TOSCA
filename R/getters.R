@@ -110,8 +110,8 @@ get_prior_hyperparameters = function(x, name){
 
 get_k_step = function(x,what){
 
-  x$parameters %>% filter(Parameter.name==paste0('k_step_',what)) %>% pull(Parameter.value)
-   # x$parameters %>% filter(Parameter.name==paste0('k_step')) %>% pull(Parameter.value)
+    # x$parameters %>% filter(Parameter.name==paste0('k_step_',what)) %>% pull(Parameter.value)
+     x$parameters %>% filter(Parameter.name==paste0('k_step')) %>% pull(Parameter.value)
 }
 
 get_max_th = function(x){
@@ -242,11 +242,11 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     data[['omega_beta']] = get_prior_hyperparameters(x, name='omega')[["beta"]]
   }
 
-  # data[['k_step']] = get_k_step(x)
-  data[['k_step_in_th']] = get_k_step(x,what = "in_th")
-  data[['k_step_out_th']] = get_k_step(x,what = "out_th")
-  data[['k_step_in_driver']] = get_k_step(x,what = "in_driver")
-  data[['k_step_out_driver']] = get_k_step(x,what = "out_driver")
+  data[['k_step']] = get_k_step(x)
+  # data[['k_step_in_th']] = get_k_step(x,what = "in_th")
+  # data[['k_step_out_th']] = get_k_step(x,what = "out_th")
+  # data[['k_step_in_driver']] = get_k_step(x,what = "in_driver")
+  # data[['k_step_out_driver']] = get_k_step(x,what = "out_driver")
   data[['Sample_1']] = get_sample(x, sample='1')
   data[['Sample_2']] = get_sample(x, sample='2')
   data[['max_therapy']] = get_max_th(x)
