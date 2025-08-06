@@ -159,7 +159,7 @@ get_N_max= function(x){
 
 
 ## Get data for inference
-get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
+get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu, dormancy){
 
   data = list()
   data[['m_clock_primary']] = get_mutation(x, name="m_clock", type="primary", index=NA, source=NA)
@@ -267,7 +267,7 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     data[['max_therapy']] = get_max_th(x)
   }
 
-  if (model == "WGD"){
+  if (model == "WGD" & dormancy){
     data[['chemo_start']] = start_chemo(x)
     data[['chemo_end']] = end_chemo(x)
   }
@@ -284,11 +284,12 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data
 }
 
-get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F) {
+get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F, dormancy=F) {
 
   if (model_name=='Driver' & fixed_omega & !fixed_mu) model_name = "Driver_fixed_omega"
   if (model_name=='Driver' & fixed_mu & !fixed_omega) model_name = "Driver_fixed_mu_driver"
   if (model_name=='Driver' & fixed_omega & fixed_mu) model_name = "Driver_fixed_mu_and_omega"
+  if (model_name=='WGD' & dormancy & fixed_mu) model_name = "WGD_with_dormancy"
 
   all_paths <- list(
     "Driver" = "Driver.stan",
@@ -296,7 +297,8 @@ get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F) {
     "Driver_fixed_omega" = "Driver_fixed_growth.stan",
     "Driver_fixed_mu_driver" = "Driver_fixed_mu_driver.stan",
     "CNA" = "CNA.stan",
-    "WGD" = "WGD_with_dormancy.stan"
+    "WGD_with_dormancy" = "WGD_with_dormancy.stan",
+    "WGD" = "WGD.stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")

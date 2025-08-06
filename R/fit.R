@@ -10,11 +10,12 @@ fit = function(
     model_name = 'Driver',
     fixed_omega = F,
     fixed_mu = F,
+    dormancy=F,
     verbose = F
     ){
 
-  data = get_inference_data(x, model=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu)
-  model = get_model(model_name=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu)
+  data = get_inference_data(x, model=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu, dormancy = dormancy)
+  model = get_model(model_name=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu, dormancy = dormancy)
 
   cat("\n--- Start Sampling ---\n")
 
@@ -29,7 +30,7 @@ fit = function(
     'posterior' = posterior::as_draws_df(fit$draws()),
     'summary' = fit$summary(),
     'diagnostic_summary' = fit$diagnostic_summary(),
-    'model_info' = list('model_name'=model_name, 'fixed_omega'=fixed_omega, 'fixed_mu'=fixed_mu)
+    'model_info' = list('model_name'=model_name, 'fixed_omega'=fixed_omega, 'fixed_mu'=fixed_mu, 'dormancy'=dormancy)
   )
 
   cat("\n--- End Sampling ---\n")

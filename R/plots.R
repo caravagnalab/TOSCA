@@ -128,9 +128,12 @@ check_ppc = function(x){
 
   posterior = get_inferred_parameters(x)#x$tosca_fit$posterior
   m_rep_draws = colnames(posterior)[grepl('_rep', colnames(posterior))]
-  training_data = get_inference_data(x, model = x$tosca_fit$model_info$model_name,
-                     fixed_omega = x$tosca_fit$model_info$fixed_omega,
-                    fixed_mu = x$tosca_fit$model_info$fixed_mu)
+  training_data = get_inference_data(x,
+                                     model = x$tosca_fit$model_info$model_name,
+                                     fixed_omega = x$tosca_fit$model_info$fixed_omega,
+                                     fixed_mu = x$tosca_fit$model_info$fixed_mu,
+                                     dormancy = x$tosca_fit$model_info$dormancy
+                    )
   variables = names(training_data)[grepl("m_", names(training_data))]
 
   ppc_df = data.frame()
@@ -249,7 +252,8 @@ plot_ppc = function(x){
   m_rep_draws = colnames(posterior)[grepl('_rep', colnames(posterior))]
   training_data = get_inference_data(x, model = x$tosca_fit$model_info$model_name,
                                      fixed_omega = x$tosca_fit$model_info$fixed_omega,
-                                     fixed_mu = x$tosca_fit$model_info$fixed_mu)
+                                     fixed_mu = x$tosca_fit$model_info$fixed_mu,
+                                     dormancy = x$tosca_fit$model_info$dormancy)
   variables = names(training_data)[grepl("m_", names(training_data))]
 
   ppc_plot_list = list()
