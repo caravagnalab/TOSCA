@@ -170,7 +170,7 @@ model {
 
   omega ~ gamma(omega_alpha, omega_beta);
   
- mu_driver ~ gamma(mu_driver_alpha, mu_driver_beta);
+  mu_driver ~ gamma(mu_driver_alpha, mu_driver_beta);
 
   // Negative Binomial shape parameters (inverse overdispersion)
   real shape_clock = 1 / phi_clock;
