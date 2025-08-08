@@ -43,8 +43,9 @@ data{
   array[n_th_step] real<lower=0> start_th_step;
   array[n_th_step] real<lower=0> end_th_step;
   array[n_th_step] int<lower=0> type_th_step; // vector with numbers identifying the therapy (1:n_th_step)
-  array[n_th_step_type] real<lower=0> alpha_th_step;
-  array[n_th_step_type] real<lower=0> beta_th_step;
+  // array[n_th_step_type] real<lower=0> alpha_th_step;
+  // array[n_th_step_type] real<lower=0> beta_th_step;
+  array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_step_type] int<lower=0> m_th_step;
 
   // mutations associated to cauchy
@@ -52,8 +53,9 @@ data{
   int <lower=0> n_th_cauchy_type;
   array[n_th_cauchy] real<lower=0> location_th_cauchy;
   array[n_th_cauchy] int<lower=0> type_th_cauchy; // vector with numbers identifying the therapy (1:n_th_cauchy)
-  array[n_th_cauchy_type] real<lower=0> alpha_th_cauchy;
-  array[n_th_cauchy_type] real<lower=0> beta_th_cauchy;
+  // array[n_th_cauchy_type] real<lower=0> alpha_th_cauchy;
+  // array[n_th_cauchy_type] real<lower=0> beta_th_cauchy;
+  array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   array[n_th_cauchy_type] int<lower=0> m_th_cauchy;
 
   // other parameters
@@ -71,6 +73,12 @@ data{
   real <lower=0> alpha_mrca;
   real <lower=0> beta_mrca;
 
+  // Overdispersion parameters for all mutation types
+  real<lower=0> phi_clock;
+  array[n_th_step_type] real <lower=0> phi_th_step;
+  array[n_th_cauchy_type] real <lower=0> phi_th_cauchy;
+  array[n_cna] real <lower=0> phi_cna;
+
 }
 
 parameters{
@@ -78,7 +86,7 @@ parameters{
   real <lower=t_eca, upper=Sample_1 > t_mrca_primary;
   array[n_cna] real<lower=t_eca, upper=Sample_2 - 1e-8 > t_cna;
   real <lower=0, upper=1> rho_mrca;
-  array[n_th_step_type] real<lower=0> mu_th_step;
+  // array[n_th_step_type] real<lower=0> mu_th_step;
   array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   real <lower=0> omega;
 }
@@ -166,38 +174,65 @@ model{
     t_cna[c] ~ uniform(t_eca, t_mrca);
   }
 
-  for (m in 1:n_th_step_type){
-      mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
-    }
+  // Negative Binomial shape parameters (inverse overdispersion)
+  real shape_clock = 1 / phi_clock;
+  array[n_th_step_type] real shape_th_step;
+  array[n_th_cauchy_type] real shape_th_cauchy;
+  array[n_cna] real <lower=0> phi_cna;
 
-  for (ch in 1:n_th_cauchy_type){
-      scales_th_cauchy[ch] ~ gamma(alpha_th_cauchy[ch], beta_th_cauchy[ch]);
-    }
+  for (m in 1:n_th_step_type)
+    shape_th_step[m] = 1 / phi_th_step[m];
+  for (ch in 1:n_th_cauchy_type)
+    shape_th_cauchy[ch] = 1 / phi_th_cauchy[ch];
+  for (cna in 1:n_cna)
+    shape_cna[cna] = 1 / phi_cna[cna];
+
+  // for (m in 1:n_th_step_type){
+  //     mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
+  //   }
+  //
+  // for (ch in 1:n_th_cauchy_type){
+  //     scales_th_cauchy[ch] ~ gamma(alpha_th_cauchy[ch], beta_th_cauchy[ch]);
+  //   }
 
 
   omega ~ gamma(omega_alpha, omega_beta);
 
   // Likelihood
-  m_clock_primary ~ poisson(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca));
-  m_clock ~ poisson(2*l_diploid*omega*mu_clock*(t_mrca-t_eca));
+  m_clock_primary ~ neg_binomial_2(
+    2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca) +.1,
+    shape_clock
+    );
+  m_clock ~ neg_binomial_2(
+    2*l_diploid*omega*mu_clock*(t_mrca-t_eca) +.1,
+    shape_clock
+    );
 
   // Step therapy mutations
   if (n_th_step_type > 0){
   for (th_type in 1:n_th_step_type){
-    m_th_step[th_type] ~ poisson(2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type]);
+    m_th_step[th_type] ~ neg_binomial_2(
+      2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type] +.1,
+      shape_th_step[th_type]
+      );
   }
   }
 
   // Cauchy therapy mutations
   if (n_th_cauchy_type > 0){
   for (th_cauchy in 1:n_th_cauchy_type){
-    m_th_cauchy[th_cauchy] ~ poisson(2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy]);
+    m_th_cauchy[th_cauchy] ~ neg_binomial_2(
+      2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy] +.1,
+      shape_th_cauchy[th_cauchy]
+    );
   }
   }
 
   for (c in 1:n_cna){
-    m_alpha[c] ~ poisson(lambda_alpha_clock[c] + lambda_alpha_th_step[c] + lambda_alpha_th_cauchy[c]);
-    m_beta[c] ~ poisson(lambda_beta_clock[c] + lambda_beta_th_step[c] + lambda_beta_th_cauchy[c]);
+    m_alpha[c] ~ neg_binomial_2(lambda_alpha_clock[c] + lambda_alpha_th_step[c] + lambda_alpha_th_cauchy[c] +.1,
+                                shape_cna[c]);
+    m_beta[c] ~ neg_binomial_2(lambda_beta_clock[c] + lambda_beta_th_step[c] + lambda_beta_th_cauchy[c] +.1,
+                               shape_cna[c]);
   }
 
   if (exponential_growth==1){
@@ -209,21 +244,21 @@ model{
 
 generated quantities{
 
-  int<lower =0> m_clock_primary_rep = poisson_rng(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca));
-  int<lower =0> m_clock_rep = poisson_rng(2*l_diploid*omega*mu_clock*(t_mrca-t_eca));
+  int<lower =0> m_clock_primary_rep = neg_binomial_2_rng(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca) +.1, shape_clock);
+  int<lower =0> m_clock_rep = neg_binomial_2_rng(2*l_diploid*omega*mu_clock*(t_mrca-t_eca) +.1, shape_clock);
 
   array[n_cna] int<lower=0> m_alpha_rep;
   array[n_cna] int<lower=0> m_beta_rep;
   for (c in 1:n_cna){
-    m_alpha_rep[c] = poisson_rng(lambda_alpha_clock[c] + lambda_alpha_th_step[c] + lambda_alpha_th_cauchy[c]);
-    m_beta_rep[c] = poisson_rng(lambda_beta_clock[c] + lambda_beta_th_step[c] + lambda_beta_th_cauchy[c]);
+    m_alpha_rep[c] = neg_binomial_2_rng(lambda_alpha_clock[c] + lambda_alpha_th_step[c] + lambda_alpha_th_cauchy[c] +.1, shape_cna[c]);
+    m_beta_rep[c] = neg_binomial_2_rng(lambda_beta_clock[c] + lambda_beta_th_step[c] + lambda_beta_th_cauchy[c] +.1, shape_cna[c]);
   }
 
   // Step therapy mutations
   array[n_th_step_type] int<lower=0> m_th_step_rep;
   if (n_th_step_type > 0){
   for (th_type in 1:n_th_step_type){
-    m_th_step_rep[th_type] = poisson_rng(2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type]);
+    m_th_step_rep[th_type] = neg_binomial_2_rng(2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type] +.1, shape_th_step[th_type]);
   }
   }
 
@@ -231,7 +266,7 @@ generated quantities{
   array[n_th_cauchy_type] int<lower=0> m_th_cauchy_rep;
   if (n_th_cauchy_type > 0){
   for (th_cauchy in 1:n_th_cauchy_type){
-    m_th_cauchy_rep[th_cauchy] = poisson_rng(2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy]);
+    m_th_cauchy_rep[th_cauchy] = neg_binomial_2_rng(2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy] +.1, shape_th_cauchy[th_cauchy]);
   }
   }
 
