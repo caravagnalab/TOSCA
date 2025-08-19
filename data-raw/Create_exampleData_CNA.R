@@ -97,14 +97,19 @@ exampleData_CNA = list(
                                     'mu_th_step_alpha','mu_th_step_beta',
                                     'coeff_CNA','coeff_CNA',
                                     'mu_clock','omega_alpha','omega_beta','k_step','N_min','N_max','N_min','N_max',
-                                    'exponential_growth', 'mrca_alpha','mrca_beta'),
+                                    'exponential_growth', 'mrca_alpha','mrca_beta',
+                                    "mu_th_step", "mu_th_step",
+                                    "phi_clock",
+                                    rep("phi_th_step",2),
+                                    rep("phi_cna",2)),
                'Parameter.value' = c(l_diploid,
                                      l_CNA1,l_CNA2,
                                      mu_th_step1_alpha,mu_th_step1_beta,
                                      mu_th_step2_alpha,mu_th_step2_beta,
                                      coeff_cna_1, coeff_cna_2,
-                                     mu_clock, omega_alpha, omega_beta, 10, N_min, N_max, N_min_sample_1, N_max_sample_1, 1,1,1),
-               'Parameter.index' = c(NA,'1','2','1','1','2','2', '1', '2', '1', '1', '2', '2', rep(NA,7))
+                                     mu_clock, omega_alpha, omega_beta, 10, N_min, N_max, N_min_sample_1, N_max_sample_1, 1,1,1,
+                                     mu_th_step_1, mu_th_step_2, rep(.1, 5)),
+               'Parameter.index' = c(NA,'1','2','1','1','2','2', '1', '2', '1', '1', '2', '2', rep(NA,7), "1", "2", NA, "1","2","1","2")
     )
 )
 

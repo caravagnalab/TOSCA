@@ -93,7 +93,7 @@ parameters{
   real <lower=0, upper=1> rho_mrca;
   real <lower=0, upper=1> rho_driver;
   // array[n_th_step_type] real<lower=0> mu_th_step;
-  array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
+  // array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   real <lower=0> omega;
 
 }

@@ -143,8 +143,8 @@ get_max_th = function(x){
   max_index = x$clinical_records %>% filter(Clinical.name %in% c("Therapy step", "Therapy cauchy", "Therapy driver"))
 
   if (nrow(max_index) > 0){
-    max_index = max_index %>% pull(Clinical.index) %>% as.integer() %>% max() %>% as.character()
-    return(x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.index == max_index) %>% pull(Clinical.value.start))
+    max_index = max_index %>% pull(Clinical.type) %>% as.integer() %>% max() %>% as.character()
+    return(min(x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>% pull(Clinical.value.start)))
   }else{
     return(x$clinical_records %>% filter(Clinical.name=="Sample", Clinical.type == 1) %>% pull(Clinical.value.start))
   }
@@ -335,9 +335,13 @@ get_inference_data_dormancy = function(x){
   data
 }
 
-get_inference_data = function(x, model, dormancy){
+get_inference_data = function(x, model, dormancy = F){
 
+  if (model == "CNA" & !dormancy) data = get_inference_data_cna(x)
+  if (model == "CNA" & dormancy) data = get_inference_data_dormancy(x)
+  if (model == "Driver") data = get_inference_data_driver(x)
 
+  data
 
 }
 
@@ -456,21 +460,14 @@ get_inference_data = function(x, model, dormancy){
 #   data
 # }
 
-get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F, dormancy=F) {
+get_model <- function(model_name='Driver', dormancy=F) {
 
-  if (model_name=='Driver' & fixed_omega & !fixed_mu) model_name = "Driver_fixed_omega"
-  if (model_name=='Driver' & fixed_mu & !fixed_omega) model_name = "Driver_fixed_mu_driver"
-  if (model_name=='Driver' & fixed_omega & fixed_mu) model_name = "Driver_fixed_mu_and_omega"
-  if (model_name=='WGD' & dormancy & fixed_mu) model_name = "WGD_with_dormancy"
+  if (model_name=='CNA' & dormancy) model_name = "CNA_dormancy"
 
   all_paths <- list(
     "Driver" = "Driver.stan",
-    "Driver_fixed_mu_and_omega" = "Driver_fixed_mut_rate_and_growth.stan",
-    "Driver_fixed_omega" = "Driver_fixed_growth.stan",
-    "Driver_fixed_mu_driver" = "Driver_fixed_mu_driver.stan",
     "CNA" = "CNA.stan",
-    "WGD_with_dormancy" = "WGD_with_dormancy.stan",
-    "WGD" = "WGD.stan"
+    "CNA_dormacy" = "CNA_with_dormacy"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")
