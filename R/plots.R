@@ -148,7 +148,7 @@ check_ppc = function(x){
       if (v %in% c("m_th_step","m_th_cauchy", "m_alpha", "m_beta",
                    "m_alpha_tetraploid_step","m_beta_tetraploid_step",
                    "m_alpha_tetraploid_cauchy","m_beta_tetraploid_cauchy") &
-          x$tosca_fit$model_info$model_name != "WGD"){
+          x$tosca_fit$model_info$model_name != "CNA"& x$tosca_fit$model_info$dormancy==F ){
 
         for (i in 1:length(true_value)){
           rep_draws = posterior[[paste0(v,"_rep[",i,"]")]]

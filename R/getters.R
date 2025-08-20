@@ -57,13 +57,13 @@ end_th_step = function(x){
 }
 
 start_chemo = function(x){
-  chemo_names = x$clinical_records$Clinical.name[grepl("Therapy", x$clinical_records$Clinical.name)]
+  chemo_names = x$clinical_records$Clinical.name[grepl("Chemotherapy", x$clinical_records$Clinical.name)]
   start = x$clinical_records %>% filter(Clinical.name %in% chemo_names) %>% pull(Clinical.value.start) #%>% arrange()
   start[1]
 }
 
 end_chemo = function(x){
-  chemo_names = x$clinical_records$Clinical.name[grepl("Therapy", x$clinical_records$Clinical.name)]
+  chemo_names = x$clinical_records$Clinical.name[grepl("Chemotherapy", x$clinical_records$Clinical.name)]
   end = x$clinical_records %>% filter(Clinical.name %in% chemo_names) %>% pull(Clinical.value.end) #%>% arrange()
   end[length(end)]
 }
@@ -175,11 +175,24 @@ get_phi = function(x, name){
 }
 
 get_extra_therapy = function(x){
-  if (nrow(x$clinical_records %>% filter(Clinical.name != "Sample")) > 0){
+  if (nrow(x$clinical_records %>% filter(!(Clinical.name %in% c("Sample", "Chemotherapy")))) > 0){
     1
   }else{
     0
   }
+}
+
+get_wgd = function(x){
+  if ("WGD" %in% x$mutations$Mutation.source) 1
+  else 0
+}
+
+get_n_clock = function(x){
+  get_mutation(x, name="m_clock", type="relapse", index=NA, source=NA) %>% length()
+}
+
+get_n_step = function(x){
+  get_mutation(x, name="m_th", type=NA, index=NA, source="step", coeff=NA) %>% length()
 }
 
 get_inference_data_driver = function(x){
@@ -296,7 +309,9 @@ get_inference_data_dormancy = function(x){
 
   data = list()
 
+  data[['wgd']] = get_wgd(x)
   data[['m_clock_primary']] = get_mutation(x, name="m_clock", type="primary", index=NA, source=NA)
+  data[["n_clock"]] = get_n_clock(x)
   data[['m_clock']] = get_mutation(x, name="m_clock", type="relapse", index=NA, source=NA)
   data[['l_diploid']] = get_length(x, model=NA)
   data[['mu_clock']] = get_mutation_rate(x, type = "clock")
@@ -308,6 +323,7 @@ get_inference_data_dormancy = function(x){
   data[['coeff_beta']] = get_coeff_CNA(x)[["beta"]]
 
   data[['extra_therapy']] = get_extra_therapy(x)
+  data[["n_steps"]] = get_n_step(x)
   data[['start_th_step']] = start_th(x, type='Therapy step')
   data[['end_th_step']] =  end_th_step(x)
   data[['mu_th_step']] = get_mutation_rate(x, type = "th_step")
@@ -467,7 +483,7 @@ get_model <- function(model_name='Driver', dormancy=F) {
   all_paths <- list(
     "Driver" = "Driver.stan",
     "CNA" = "CNA.stan",
-    "CNA_dormacy" = "CNA_with_dormacy"
+    "CNA_dormancy" = "CNA_with_dormancy.stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")
