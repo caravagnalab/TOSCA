@@ -198,30 +198,30 @@ model{
 
   if (!wgd){
   m_clock[1] ~  neg_binomial_2(
-    2*mu_clock*omega*l_diploid*((t_dormancy_start - t_eca) + (t_mrca-t_dormancy_end)),
+    2*mu_clock*omega*l_diploid*((t_dormancy_start - t_eca) + (t_mrca-t_dormancy_end)) +.1,
     shape_clock
   );
   }
 
   if (extra_therapy){
     m_th_step[1]  ~  neg_binomial_2(
-      2*mu_th_step[1]*omega*l_diploid*lambda_therapy(t_dormancy_end,t_mrca, start_th_step[1], end_th_step[1],k_step),
+      2*mu_th_step[1]*omega*l_diploid*lambda_therapy(t_dormancy_end,t_mrca, start_th_step[1], end_th_step[1],k_step) +.1,
       1/phi_th_step[1]
       );
 
     m_alpha ~  neg_binomial_2(coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca)
                                                          + mu_th_step[1]*lambda_therapy(t_eca, t_cna_tr, start_th_step[1] - delta(start_th_step[1], t_dormancy_start, t_dormancy_end, k_step),
-                                                                                                      end_th_step[1] - delta(end_th_step[1], t_dormancy_start, t_dormancy_end, k_step), k_step)),
+                                                                                                      end_th_step[1] - delta(end_th_step[1], t_dormancy_start, t_dormancy_end, k_step), k_step)) +.1,
                                   shape_cna);
     m_beta ~ neg_binomial_2(coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - t_dormancy_start) - t_cna_tr )
                                                       + mu_th_step[1]*lambda_therapy(t_cna_tr,t_mrca-(t_dormancy_end - t_dormancy_start), start_th_step[1] - delta(start_th_step[1],t_dormancy_start,t_dormancy_end,k_step),
-                                                                                                                                       end_th_step[1] - delta(end_th_step[1],t_dormancy_start,t_dormancy_end,k_step),k_step)),
+                                                                                                                                       end_th_step[1] - delta(end_th_step[1],t_dormancy_start,t_dormancy_end,k_step),k_step)) +.1,
                                 shape_cna);
 
   }else{
-    m_alpha ~  neg_binomial_2(coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca)),
+    m_alpha ~  neg_binomial_2(coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca)) +.1+.1,
                                   shape_cna);
-    m_beta ~ neg_binomial_2(coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - t_dormancy_start) - t_cna_tr )),
+    m_beta ~ neg_binomial_2(coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - t_dormancy_start) - t_cna_tr )) +.1,
                                 shape_cna);
 
   }
