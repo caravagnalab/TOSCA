@@ -69,12 +69,12 @@ data{
   real <lower=0> Sample_1;
   real <lower=0> Sample_2;
   real <lower=0> max_therapy;
-  int <lower=0, upper=1> exponential_growth;
+  array[2] int <lower=0, upper=1> exponential_growth;
   array[2] real<lower=0> N_min;
   array[2] real<lower=0> N_max;
 
-  real <lower=0> alpha_mrca;
-  real <lower=0> beta_mrca;
+  real <lower=0> mrca_alpha;
+  real <lower=0> mrca_beta;
   
   
   // Overdispersion parameters for all mutation types
@@ -158,7 +158,7 @@ model {
   // Priors
   t_eca ~ uniform(0, Sample_1);
   t_mrca_primary ~ uniform(t_eca, Sample_1);
-  rho_mrca ~ beta(alpha_mrca, beta_mrca);
+  rho_mrca ~ beta(mrca_alpha, mrca_beta);
   rho_driver ~ uniform(0, 1);
 
   for (m in 1:n_th_step_type) {
@@ -228,16 +228,22 @@ model {
   //     log(1 - exp(-(N_max[2] - N_min[2]) * exp(-omega * (Sample_2 - t_mrca))));
   // }
   
-  if (exponential_growth == 1) {
-   real lambda1 = exp(-omega * (Sample_1 - t_mrca_primary));
-   // real lambda2 = exp(-omega * (Sample_2 - t_mrca));
-   real lambda2 = exp(-omega * (Sample_2 - t_driver));
-  target += -lambda1 * N_min[1] + log1m_exp(-lambda1 * (N_max[1] - N_min[1]));
-  // target += -lambda2 * N_min[2] + log1m_exp(-lambda2 * (N_max[2] - N_min[2]));
+  if (exponential_growth[1] == 1) {
+    real lambda1 = exp(-omega * (Sample_1 - t_mrca_primary));
+    target += -lambda1 * N_min[1] + log1m_exp(-lambda1 * (N_max[1] - N_min[1]));
+    
+  }
+  
+  if(exponential_growth[2] == 1){
+    
+    real lambda2 = exp(-omega * (Sample_2 - t_mrca));
+    target += -lambda2 * N_min[2] + log1m_exp(-lambda2 * (N_max[2] - N_min[2]));
+    
+  }
+  
   // N_max[1] ~ exponential(lambda1);
-    N_max[2] ~ exponential(lambda2);
+    // N_max[2] ~ exponential(lambda2);
   // target += normal_lpdf( log(N_max[2]) | omega*(Sample_2 - t_driver), 0.001);
-}
   
   
 }
@@ -314,17 +320,19 @@ generated quantities {
   //    
   // }
   
-   if (exponential_growth == 1) {
+   if (exponential_growth[2] == 1) {
      
      
-     // N_relapse_rep = exponential_rng(exp(-omega*(Sample_2 - t_mrca)));
-      N_relapse_rep = exponential_rng(exp(-omega*(Sample_2 - t_driver)));
-     // log_N_relapse_rep = normal_rng( omega*(Sample_2 - t_driver), 0.05);
+     N_relapse_rep = exponential_rng(exp(-omega*(Sample_2 - t_mrca)));
+   }
+   
+   if (exponential_growth[1] == 1) {
+     
      N_primary_rep = exponential_rng(exp(-omega*(Sample_1 - t_mrca_primary)));
      
-  }
-  
-  
+   }
+     
+
 }
 
 

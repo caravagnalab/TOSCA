@@ -116,10 +116,18 @@ get_k_step = function(x,what){
 
 get_max_th = function(x){
 
+ th =  nrow(x$clinical_records %>% filter(Clinical.name!="Sample"))
+ 
+if(th > 0){
   max_index = x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.type) %>% as.integer() %>% 
     max() %>% as.character()
 
-  x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>% pull(Clinical.value.start) %>% min()
+  x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>% 
+    pull(Clinical.value.start) %>% min()
+}else{
+  
+  0
+}
   #min(dates)
 }
 
@@ -148,6 +156,7 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data[['m_clock']] = get_m_clock(x, type = "relapse")
   data[['l_diploid']] = get_l_diploid(x)
   data[['mu_clock']] = get_mu_clock(x)
+  
 
   if (model == 'Driver'){
   # mutations associated to driver
@@ -168,48 +177,23 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
       
       data[["phi_clock"]] = get_phi(x,type = "clock")
       data[["phi_driver"]] = get_phi(x,type = "driver")
+      
+      data[['mrca_alpha']] = get_prior_hyperparameters(x, name='mrca')[["alpha"]]
+      data[['mrca_beta']] = get_prior_hyperparameters(x, name='mrca')[["beta"]]
 
-      # if ('mu_driver_clock' %in% fixed_pars){
-      #   data[['mu_driver_clock']] = get_mu_driver_clock(x)
-      # }else{
-      #   data[['mu_driver_clock_alpha']] = get_prior_hyperparameters(x, name='mu_driver_clock')[["alpha"]]
-      #   data[['mu_driver_clock_beta']] = get_prior_hyperparameters(x, name='mu_driver_clock')[["beta"]]
-      # }
 
   }
   
-  if(model == "Driver_cumulative"){
-    
-    # data[["m_tail_driver"]] = get_m_driver_tail(x, type = "driver")
-    # data[["m_tail_step"]] = get_m_driver_tail(x, type = "step")
-    # data[["m_tail_cauchy"]] = get_m_driver_tail(x, type = "cauchy")
-    # data[["f_min"]] = get_ccf(x)[["min"]]
-    # data[["f_max"]] = get_ccf(x)[["max"]]
-    data[["tau_driver"]] = get_tau(x,type = "driver")
-    data[["tau_step"]] =  get_tau(x,type = "step")
-    data[['driver_type']] = get_driver_type(x)
-    data[['cycles_driver']] = get_cycles_drivers(x)
-    data[['driver_start']] = get_therapy_driver(x)[["start"]]
-    data[['driver_end']] = get_therapy_driver(x)[["end"]]
-    data[['m_driver']] = get_m_driver(x)
-    
-    data[['mu_driver_alpha']] = get_prior_hyperparameters(x, name='mu_driver')[["alpha"]]
-    data[['mu_driver_beta']] = get_prior_hyperparameters(x, name='mu_driver')[["beta"]]
-    
-    
-    data[['mu_driver_clock']] = get_mu_driver_clock(x)
-    
-    data[["phi_clock"]] = get_phi(x,type = "clock")
-    data[["phi_driver"]] = get_phi(x,type = "driver")
-    
-    
-  }
+ 
 
   if (model == 'CNA'){
     # mutations on CNA
     data[['n_cna']] = get_n_cna(x)
     data[['m_alpha']] = get_m_CNA(x, type = 'alpha')
     data[['m_beta']] = get_m_CNA(x, type = 'beta')
+    data[["phi_clock"]] = get_phi(x,type = "clock")
+    data[["phi_cna_alpha"]] = get_phi(x,type = "cna_alpha")
+    data[["phi_cna_beta"]] = get_phi(x,type = "cna_beta")
     data[['l_CNA']] = get_l_CNA(x)
     data[['coeff']] = get_coeff_CNA(x)
   }
@@ -253,12 +237,9 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data[['exponential_growth']] = get_exponential_growth(x)
   data[['N_min']] = get_N_min(x)
   data[['N_max']] = get_N_max(x)
-  data[['alpha_mrca']] = get_prior_hyperparameters(x, name='mrca')[["alpha"]]
-  data[['beta_mrca']] = get_prior_hyperparameters(x, name='mrca')[["beta"]]
-  # data[['alpha_eca']] = get_prior_hyperparameters(x, name='eca')[["alpha"]]
-  # data[['beta_eca']] = get_prior_hyperparameters(x, name='eca')[["beta"]]
 
   data
+  
 }
 
 # get_m_driver_tail = function(x, type = "driver"){

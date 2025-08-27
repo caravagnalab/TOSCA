@@ -84,7 +84,6 @@ get_parameters_of_model = function(model_name){
 
 }
 
-get_mutations_of_model = function(model_name){}
 
 # Posterior Predictive checks
 plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "relapse", NA), mut2 = c("m_driver","2",NA)){
@@ -92,12 +91,18 @@ plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "relapse", NA)
   estimates = get_inferred_parameters(x)
   mut1_real = get_mutation(x, mut1[1], mut1[2], mut1[3])
   mut2_real = get_mutation(x, mut2[1], mut2[2], mut2[3])
-  # to modify for alpha and beta!
-  if (mut1[1] == "m_CNA" | mut1[1] == "m_CNA"){
-    print("Error, you still need to write this!")
-  }
+ 
+  if(mut1[1] == "m_cna"){
+    rep_name1 = paste0("m_",mut1[2],"_rep","[",mut1[3],"]") 
+  }else{
   rep_name1 = paste0(mut1[1], "_rep")
-  rep_name2 = paste0(mut2[1], "_rep")
+  }
+  
+  if(mut2[1] == "m_cna"){
+    rep_name2 = paste0("m_",mut2[2],"_rep","[",mut2[3],"]") 
+  }else{
+    rep_name2 = paste0(mut2[1], "_rep")
+  }
 
   ppc = estimates %>% dplyr::select(rep_name1,rep_name2)
 
@@ -144,24 +149,35 @@ plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "relapse", NA)
       ) + xlab(mut1[1]) + ylab(mut2[1])+
     theme(legend.position = "none")
 
-  }
+}
+
 plot_expected_N = function(x){
+  
   posterior = get_inferred_parameters(x) %>% as_tibble()
+  exp_grow = x$parameters %>% filter(Parameter.name %in% c("exponential_growth")) %>% pull(Parameter.value)
   N_exp_1 = exp(-posterior$omega*(posterior$t_mrca_primary-get_sample(x, sample ='1')))
   N_exp_2 = exp(-posterior$omega*(posterior$t_mrca-get_sample(x, sample ='2')))
   N2 = rexp(n = nrow(posterior),rate = 1/N_exp_2)
   N1 = rexp(n = nrow(posterior),rate = 1/N_exp_1)
-  
+
+if(exp_grow[1] == 1){
 p1 =   ggplot() + CNAqc:::my_ggplot_theme() +
-    geom_histogram(aes(x=N1)) + scale_x_log10() + labs(x = "Sample size at Primary")
-  
+    geom_histogram(aes(x=N1)) + scale_x_log10() + labs(x = "Tumor size at Primary")
+}else{
+  p1 = ggplot()
+}
+
+if(exp_grow[2] == 1){
   
 p2 =   ggplot() + CNAqc:::my_ggplot_theme() +
-    geom_histogram(aes(x=N2)) + scale_x_log10() + labs(x = "Sample size at Relapse")
+    geom_histogram(aes(x=N2)) + scale_x_log10() + labs(x = "Tumor size at Relapse")
+}else{
+  p2 = ggplot()
+}
 
-p1 * p2
+list(p1,p2)
   
-  
+
 }
 
 
@@ -179,14 +195,14 @@ plot_timing = function(x)
     dplyr::select(starts_with('t_')) %>% 
     apply(2, convert_date_real) %>%
     as_tibble()
-  times = timing_estimates$variable %>% unique()
+  times = timing_estimates$variable %>% unique() %>% as.vector()
 
   for (i in 1:ncol(timing_estimates)){
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
   }
 
   timing_estimates = timing_estimates %>% reshape2::melt() %>% as_tibble()
-  var_colors = ggsci::pal_npg()(ncol(timing_estimates))
+  var_colors = ggsci::pal_npg()(timing_estimates$variable %>% unique() %>% length())
   names(var_colors) = times
 
   posterior_plot = ggplot() +
@@ -203,7 +219,7 @@ plot_timing = function(x)
       size = 3
     ) + CNAqc:::my_ggplot_theme()+
     theme(legend.position = 'bottom')+
-    scale_fill_manual(values = get_inferred_times_colors())
+    scale_fill_manual(values = var_colors)
   # +
   #   geom_label(
   #     data = endpoints,
