@@ -10,21 +10,22 @@
 #' @examples
 init = function(mutations, parameters, samples, therapies){
 
-  dfs = c(mutations, parameters, samples, therapies)
+  dfs = list(mutations, parameters, samples, therapies)
   dfs_names = c("mutations", "parameters", "samples", "therapies")
 
   for (df in dfs){
+    #print(df)
     if (!is.data.frame(df)) {
       stop("Input must be a data.frame.")
     }
   }
 
   for (t in 1:length(dfs)){
-    check_required_cols(dfs[t], type=dfs_names[t])
+    check_required_cols(dfs[[t]], type=dfs_names[t])
   }
 
-  transformed_input = check_genomic_input(mutations, parameters)
   transformed_clinical_records = check_clinical_input(samples, therapies)
+  transformed_input = check_genomic_input(mutations, parameters, transformed_clinical_records)
   transformed_mutations = transformed_input[[1]]
   transformed_parameters = transformed_input[[2]]
 
@@ -56,7 +57,7 @@ check_clinical_input = function(samples, therapies){
 
   therapies = therapies %>% dplyr::arrange(Start)
 
-  add_therapy_type = function(clinical_records, therapies, type){
+  add_therapy_name = function(clinical_records, therapies, type){
 
     therapy_names = therapies %>% filter(Type == type) %>% pull(Name) %>% unique()
     n_therapy_types = length(therapy_names)
@@ -94,7 +95,7 @@ check_clinical_input = function(samples, therapies){
   return(clinical_records)
 }
 
-check_genomic_input = function(mutations, parameters, therapies){
+check_genomic_input = function(mutations, parameters, transformed_clinical_records){
 
   mutations_new = data.frame()
   parameters_new = data.frame()
@@ -102,7 +103,8 @@ check_genomic_input = function(mutations, parameters, therapies){
   l_diploid = mutations %>% filter(Karyptype=="1:1") %>% pull(Length) %>% max()
   l_CNA = mutations %>% filter(Karyptype!="1:1") %>% pull(Length) %>% unique()
   n_cna = length(l_CNA)
-  drug_names = therapies %>% dplyr::arrange(Start) %>% pull(Name) %>% unique()
+  drug_names = transformed_clinical_records %>% filter(Clinical.name == "Therapy step") %>%
+    dplyr::arrange(Clinical.value.start) %>% pull(Clinical.original.name) %>% unique()
 
   for (m in 1:nrow(mutations)){
 
@@ -150,7 +152,9 @@ check_genomic_input = function(mutations, parameters, therapies){
   parameters_lengths = data.frame("Parameter.name"= "l_diploid","Parameter.value"=l_diploid,"Parameter.index"=NA)
   if (n_cna > 0){
     for (n in 1:n_cna){
-      parameters_lengths = data.frame("Parameter.name"= "l_CNA","Parameter.value"=l_CNA[n],"Parameter.index"=as.character(n))
+      parameters_lengths = rbind(
+        parameters_lengths,
+        data.frame("Parameter.name"= "l_CNA","Parameter.value"=l_CNA[n],"Parameter.index"=as.character(n)))
     }
   }
   # add coefficients
@@ -159,12 +163,34 @@ check_genomic_input = function(mutations, parameters, therapies){
     for (n in 1:n_cna){
       karyo = mutations %>% filter(Length==l_CNA[n]) %>% pull(Karyptype) %>% unique()
       if (karyo == "2:0") coeff="2" else coeff="4"
-      parameters_coeff = data.frame("Parameter.name"= "coeff","Parameter.value"=coeff,"Parameter.index"=as.character(n))
+      parameters_coeff = rbind(
+        parameters_coeff,
+        data.frame("Parameter.name"= "coeff","Parameter.value"=coeff,"Parameter.index"=as.character(n)))
     }
   }
+  # check compulsory parameters
+  if (!("mu_clock" %in% parameters$Name)) {
+    stop(paste("Missing required parameter: mu_clock"))
+  }
   # add compulsory parameters if not present
-  if ("m_driver" %in% mutations_new$Mutation.name)
+  # apart from mu_clock, which is compulsory, all mu, if not proveded are approximated
+  # based on the number of mutation and the exposure time
+  if ("m_driver" %in% mutations_new$Mutation.name & !("m_driver_clock" %in% parameters$Name)){}
+  for (th in drug_names){
+    th_index = transformed_clinical_records %>% filter(Clinical.original.name==th) %>% pull(Clinical.type) %>% unique()
+    parameters %>% filter(Name=="mu_th_step", Index==th_index) %>% nrow()
+  }
 
+  colnames(parameters) = colnames(parameters_lengths)
+
+  parameters_new = rbind(
+    parameters,
+    parameters_lengths,
+    parameters_coeff,
+    missing_parameters
+  )
+
+  return(list(mutations_new, parameters_new))
     }
 
 check_required_cols = function(df, type){
@@ -179,31 +205,31 @@ check_required_cols = function(df, type){
   }
 }
 
-check_mandatory_parameters = function(parameters){
-
-  required_params <- c("mu_clock", )
-  missing_params <- setdiff(required_params, df$Name)
-  if (length(missing_params) > 0) {
-    stop(paste("Missing required parameter(s):", paste(missing_params, collapse = ", ")))
-  }
-
-  # 4. Extract values
-  a_val <- df$Value[df$Name == "a"]
-  b_val <- df$Value[df$Name == "b"]
-
-  # 5. Validate "a" is integer
-  if (length(a_val) != 1 || is.na(a_val) || a_val %% 1 != 0) {
-    stop("'a' must be a single integer value.")
-  }
-
-  # 6. Validate "b" is numeric
-  if (length(b_val) != 1 || is.na(b_val) || !is.numeric(b_val)) {
-    stop("'b' must be a single numeric value.")
-  }
-
-  # If all checks pass, return TRUE (or the validated values)
-  return(TRUE)
-}
+# check_mandatory_parameters = function(parameters){
+#
+#   required_params <- c("mu_clock", )
+#   missing_params <- setdiff(required_params, df$Name)
+#   if (length(missing_params) > 0) {
+#     stop(paste("Missing required parameter(s):", paste(missing_params, collapse = ", ")))
+#   }
+#
+#   # 4. Extract values
+#   a_val <- df$Value[df$Name == "a"]
+#   b_val <- df$Value[df$Name == "b"]
+#
+#   # 5. Validate "a" is integer
+#   if (length(a_val) != 1 || is.na(a_val) || a_val %% 1 != 0) {
+#     stop("'a' must be a single integer value.")
+#   }
+#
+#   # 6. Validate "b" is numeric
+#   if (length(b_val) != 1 || is.na(b_val) || !is.numeric(b_val)) {
+#     stop("'b' must be a single numeric value.")
+#   }
+#
+#   # If all checks pass, return TRUE (or the validated values)
+#   return(TRUE)
+# }
 
 
 
