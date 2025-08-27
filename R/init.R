@@ -21,6 +21,8 @@ init = function(mutations, parameters, samples, therapies){
   }
 
   for (t in 1:length(dfs)){
+    #print(dfs_names[t])
+    #print(dfs[t])
     check_required_cols(dfs[[t]], type=dfs_names[t])
   }
 
@@ -59,7 +61,7 @@ check_clinical_input = function(samples, therapies){
 
   add_therapy_name = function(clinical_records, therapies, type){
 
-    therapy_names = therapies %>% filter(Type == type) %>% pull(Name) %>% unique()
+    therapy_names = therapies %>% filter(Class == type) %>% pull(Name) %>% unique()
     n_therapy_types = length(therapy_names)
 
     if (n_therapy_types > 0){
@@ -73,8 +75,8 @@ check_clinical_input = function(samples, therapies){
         sub_df = therapies %>% filter(Name==therapy_names[t])
         for (tt in 1:nrow(sub_df)){
           new_entry = data.frame(
-            "Clinical.name"	= "Therapy step",
-            "Clinical.type"	= type,
+            "Clinical.name"	= type,
+            "Clinical.type"	= t,
             "Clinical.value.start"= TOSCA:::convert_real_date(sub_df$Start[tt]),
             "Clinical.value.end" = TOSCA:::convert_real_date(sub_df$End[tt]),
             "Clinical.index"=as.character(tt),
@@ -88,9 +90,9 @@ check_clinical_input = function(samples, therapies){
     return(clinical_records)
   }
 
-  clinical_records = add_therapy_type(clinical_records, therapies, type="Mutagenic")
-  clinical_records = add_therapy_type(clinical_records, therapies, type="Driver responsive")
-  clinical_records = add_therapy_type(clinical_records, therapies, type="Chemotherapy inducing dormancy")
+  clinical_records = add_therapy_name(clinical_records, therapies, type="Mutagenic")
+  clinical_records = add_therapy_name(clinical_records, therapies, type="Driver responsive")
+  clinical_records = add_therapy_name(clinical_records, therapies, type="Chemotherapy inducing dormancy")
 
   return(clinical_records)
 }
@@ -106,6 +108,7 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
   drug_names = transformed_clinical_records %>% filter(Clinical.name == "Therapy step") %>%
     dplyr::arrange(Clinical.value.start) %>% pull(Clinical.original.name) %>% unique()
 
+  ### Create mutations dataframe
   for (m in 1:nrow(mutations)){
 
     # source
@@ -148,6 +151,10 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
 
   }
 
+
+  ### Create Parameters dataframe
+  colnames(parameters) = c("Parameter.name","Parameter.value","Parameter.index")
+
   # add lengths
   parameters_lengths = data.frame("Parameter.name"= "l_diploid","Parameter.value"=l_diploid,"Parameter.index"=NA)
   if (n_cna > 0){
@@ -157,6 +164,7 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
         data.frame("Parameter.name"= "l_CNA","Parameter.value"=l_CNA[n],"Parameter.index"=as.character(n)))
     }
   }
+
   # add coefficients
   parameters_coeff = data.frame()
   if (n_cna > 0){
@@ -168,26 +176,115 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
         data.frame("Parameter.name"= "coeff","Parameter.value"=coeff,"Parameter.index"=as.character(n)))
     }
   }
+
   # check compulsory parameters
-  if (!("mu_clock" %in% parameters$Name)) {
-    stop(paste("Missing required parameter: mu_clock"))
-  }
+  if (!("mu_clock" %in% parameters$Parameter.name)) stop(paste("Missing required parameter: mu_clock"))
+  mu_clock = parameters %>% filter("Parameter.name" == "mu_clock") %>% pull("Parameter.value")
+
   # add compulsory parameters if not present
-  # apart from mu_clock, which is compulsory, all mu, if not proveded are approximated
+  # apart from mu_clock, which is compulsory, all mu, if not provided are approximated
   # based on the number of mutation and the exposure time
-  if ("m_driver" %in% mutations_new$Mutation.name & !("m_driver_clock" %in% parameters$Name)){}
+  get_omega_approximation = function(transformed_clinical_records){
+    if ("omega_alpha" %in% parameters$Parameter.name){
+      omega_alpha = parameters %>% filter(Parameter.name=="omega_alpha") %>% pull(Parameter.value)
+      omega_beta = parameters %>% filter(Parameter.name=="omega_beta") %>% pull(Parameter.value)
+      omega = omega_alpha/omega_beta
+    }
+    sample_1= transformed_clinical_records %>% filter(Clinical.name == "Sample", Clinical.type == "1") %>% pull(Clinical.value.start)
+    sample_2= transformed_clinical_records %>% filter(Clinical.name == "Sample", Clinical.type == "2") %>% pull(Clinical.value.start)
+    omega_lb = log(10e6) / (sample_2 - sample_1)
+    omega_ub = log(10e10) / (sample_2-(sample_2 - 30/365))
+    omega = mean(c(omega_alpha_lb, omega_alpha_ub))
+    return(omega)
+  }
+  if (!("omaga_alpha" %in% parameters$Name)){
+    omega_alpha_approx = get_omega_approximation(transformed_clinical_records) / 10
+    omega_beta_approx = .1
+    parameters = rbind(parameters,
+                       data.frame("Parameter.name"= c("omega_alpha", "omega_beta"),
+                                  "Parameter.value"=c(omega_alpha_approx, omega_beta_approx),"Parameter.index"=c(NA,NA)))
+  }
+  if ("m_driver" %in% mutations_new$Mutation.name & !("mu_clock_driver" %in% parameters$Name)){
+    parameters = rbind(parameters, data.frame("Parameter.name"= c("mu_clock_driver"),
+                                              "Parameter.value"=mu_clock,"Parameter.index"= NA))
+  }
+  if ("m_driver" %in% mutations_new$Mutation.name & !("mu_driver" %in% parameters$Name)){
+    exposure_lb = transformed_clinical_records %>% filter(Clinical.type=="Driver") %>% pull(Clinical.value.start)
+    exposure_lb = exposure_lb[1]
+    exposure_ub = transformed_clinical_records %>% filter(Clinical.type=="Driver") %>% pull(Clinical.value.end)
+    exposure_ub = exposure_ub[length(exposure_ub)]
+
+    m_driver = mutations_new %>% filter(Mutation.name=="m_driver") %>% pull(Mutation.value)
+    omega = get_omega_approximation(transformed_clinical_records)
+    mu_driver = m_driver / (2*l_diploid*omega*(exposure_ub-exposure_lb))
+
+    parameters = rbind(parameters, data.frame("Parameter.name"= c("mu_driver", "omega_beta"),
+                                  "Parameter.value"=c(omega_alpha_approx, omega_beta_approx),"Parameter.index"=c(NA,NA)))
+  }
   for (th in drug_names){
     th_index = transformed_clinical_records %>% filter(Clinical.original.name==th) %>% pull(Clinical.type) %>% unique()
-    parameters %>% filter(Name=="mu_th_step", Index==th_index) %>% nrow()
-  }
+    if (parameters %>% filter(Parameter.name=="mu_th_step", Parameter.index==th_index) %>% nrow()==0){
+      exposure_lb = transformed_clinical_records %>% filter(Clinical.original.name==th) %>% pull(Clinical.value.start)
+      exposure_lb = exposure_lb[1]
+      exposure_ub = transformed_clinical_records %>% filter(Clinical.original.name==th) %>% pull(Clinical.value.end)
+      exposure_ub = exposure_ub[length(exposure_ub)]
 
-  colnames(parameters) = colnames(parameters_lengths)
+      m_th = mutations_new %>% filter(Mutation.name=="m_th", Mutation.index==th_index) %>% pull(Mutation.value)
+      omega = get_omega_approximation(transformed_clinical_records)
+      mu_driver = m_driver / (2*l_diploid*omega*(exposure_ub-exposure_lb))
+
+      parameters = rbind(parameters, data.frame("Parameter.name"= c("mu_driver", "omega_beta"),
+                                                "Parameter.value"=c(omega_alpha_approx, omega_beta_approx),"Parameter.index"=c(NA,NA)))
+    }
+  }
+  if (!("k_step" %in% parameters$Name)) {
+    parameters = rbind(parameters, data.frame("Parameter.name"= "k_step",
+                                              "Parameter.value"=10,"Parameter.index"=NA))
+  }
+  if (!("N_min" %in% parameters$Name)) {
+    parameters = rbind(parameters, data.frame("Parameter.name"= c("N_min","N_min","N_max","N_max"),
+                                              "Parameter.value"=c(1e6,1e6,1e10,1e10),
+                                              "Parameter.index"=c("1","2","1","2")))
+  }
+  if (!("exponential_growth" %in% parameters$Name)) {
+    parameters = rbind(parameters, data.frame("Parameter.name"= "exponential_growth",
+                                              "Parameter.value"=1,"Parameter.index"=NA))
+  }
+  if (!("alpha_mrca" %in% parameters$Name)) {
+    parameters = rbind(parameters, data.frame("Parameter.name"= c("alpha_mrca","beta_mrca"),
+                                              "Parameter.value"=c(1,1),"Parameter.index"=c(1,1)))
+  }
+  if (!("phi_driver" %in% parameters$Name)) {
+    parameters = rbind(parameters, data.frame("Parameter.name"= "phi_driver",
+                                              "Parameter.value"=0.05,"Parameter.index"=NA))
+  }
+  for (th in drug_names){
+    th_index = transformed_clinical_records %>% filter(Clinical.original.name==th) %>% pull(Clinical.type) %>% unique()
+    if (parameters %>% filter(Parameter.name=="phi_th_step", Parameter.index==th_index) %>% nrow()==0){
+      parameters = rbind(parameters, data.frame("Parameter.name"= "phi_th_step",
+                                                "Parameter.value"=0.05,"Parameter.index"=th_index))
+    }
+  }
+  n_phi_cna = sum(parameters$Name == "phi_cna")
+  if (n_phi_cna!=n_cna) {
+    for (c in 1:n_cna){
+      index = mutations_new %>% filter(Mutation.name=="m_cna") %>% pull(Mutation.index) %>% unique()
+      index = index[c]
+      if (parameters %>% filter(Parameter.name=="phi_th_step", Parameter.index==th_index) %>% nrow()==0){
+        parameters = rbind(parameters, data.frame("Parameter.name"= "phi_cna",
+                                                  "Parameter.value"=0.05,"Parameter.index"=index))
+      }
+    }
+  }
+  if (!("phi_clock" %in% parameters$Name)) {
+    parameters = rbind(parameters, data.frame("Parameter.name"= "phi_clock",
+                                              "Parameter.value"=0.05,"Parameter.index"=NA))
+  }
 
   parameters_new = rbind(
     parameters,
     parameters_lengths,
-    parameters_coeff,
-    missing_parameters
+    parameters_coeff
   )
 
   return(list(mutations_new, parameters_new))
@@ -197,8 +294,8 @@ check_required_cols = function(df, type){
   if (type == "samples") required_cols <- c("Name", "Date")
   if (type == "parameters") required_cols <- c("Name", "Value","Index")
   if (type == "mutations") required_cols <- c( "Name","Length","Karyptype","Type","Value")
-  if (type == "therapies") required_cols <- c( "Name","Type","Start","End")
-  required_cols <- c("Name", "Value")
+  if (type == "therapies") required_cols <- c( "Name","Class","Start","End")
+  #required_cols <- c("Name", "Value")
   missing_cols <- setdiff(required_cols, colnames(df))
   if (length(missing_cols) > 0) {
     stop(paste("Missing required column(s):", paste(missing_cols, collapse = ", ")))

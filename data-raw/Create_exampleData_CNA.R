@@ -79,7 +79,7 @@ exampleData_CNA = list(
                                  TOSCA:::convert_date_real(Sample_2))),
   "Therapies" = data.frame(
                         "Name"=c("Drug 1", "Drug 1", "Drug 2"),
-                        "Type"= c("Mutagenic","Mutagenic","Mutagenic"),
+                        "Class"= c("Mutagenic","Mutagenic","Mutagenic"),
                         "Start"=c(TOSCA:::convert_date_real(step_1_start_cycle_1),
                                   TOSCA:::convert_date_real(step_1_start_cycle_2),
                                   TOSCA:::convert_date_real(step_2_start_cycle_1)),
