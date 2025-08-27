@@ -10,11 +10,12 @@ fit = function(
     model_name = 'Driver',
     fixed_omega,
     fixed_mu,
+    dormancy,
     seed
     ){
 
-  data = get_inference_data(x, model=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu)
-  model = get_model(model_name=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu)
+  data = get_inference_data(x, model=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu, dormancy = dormancy)
+  model = get_model(model_name=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu, dormancy = dormancy)
 
   fit <- model$sample(data = data,
                       iter_warmup = warm_up,

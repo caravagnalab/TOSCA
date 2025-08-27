@@ -59,8 +59,8 @@ start_th = function(x, type='Therapy step'){
   x$clinical_records %>% filter(Clinical.name==type) %>% pull(Clinical.value.start)
 }
 
-end_th_step = function(x){
-  x$clinical_records %>% filter(Clinical.name=='Therapy step') %>% pull(Clinical.value.end)
+end_th = function(x,type='Therapy step'){
+  x$clinical_records %>% filter(Clinical.name==type) %>% pull(Clinical.value.end)
 }
 
 get_type_th_step = function(x, name='Therapy step'){
@@ -147,7 +147,7 @@ get_N_max= function(x){
 
 
 ## Get data for inference
-get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
+get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu, dormancy){
 
   data = list()
 
@@ -180,9 +180,10 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
       
       data[['mrca_alpha']] = get_prior_hyperparameters(x, name='mrca')[["alpha"]]
       data[['mrca_beta']] = get_prior_hyperparameters(x, name='mrca')[["beta"]]
+      
+      data[['max_therapy']] = get_max_th(x)
 
-
-  }
+ }
   
  
 
@@ -201,7 +202,7 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data[['n_th_step']]= get_n_th(x, name = 'Therapy step')
   data[['n_th_step_type']]= get_n_th_type(x, name = 'Therapy step')
   data[['start_th_step']] = start_th(x, type='Therapy step')
-  data[['end_th_step']] =  end_th_step(x)
+  data[['end_th_step']] =  end_th(x)
   data[['type_th_step']]= get_type_th_step(x, name='Therapy step')
   data[['alpha_th_step']]= get_prior_hyperparameters(x, name='mu_th_step')[["alpha"]]
   data[['beta_th_step']]= get_prior_hyperparameters(x, name='mu_th_step')[["beta"]]
@@ -209,14 +210,14 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
   data[["phi_th_step"]] = get_phi(x, type = "step")
 
   # mutations associated to cauchy
-  data[['n_th_cauchy']]= get_n_th(x, name = 'Therapy cauchy')
-  data[['n_th_cauchy_type']]= get_n_th_type(x, name = 'Therapy cauchy')
-  data[['location_th_cauchy']]= start_th(x, type='Therapy cauchy')
-  data[['type_th_cauchy']]= get_type_th_step(x, name='Therapy cauchy')
-  data[['alpha_th_cauchy']]= get_prior_hyperparameters(x, name='scale_th_cauchy')[["alpha"]]
-  data[['beta_th_cauchy']]= get_prior_hyperparameters(x, name='scale_th_cauchy')[["beta"]]
-  data[['m_th_cauchy']]= get_m_th(x, type = 'Cauchy')
-  data[["phi_th_cauchy"]] = get_phi(x, type = 'Cauchy')
+  # data[['n_th_cauchy']]= get_n_th(x, name = 'Therapy cauchy')
+  # data[['n_th_cauchy_type']]= get_n_th_type(x, name = 'Therapy cauchy')
+  # data[['location_th_cauchy']]= start_th(x, type='Therapy cauchy')
+  # data[['type_th_cauchy']]= get_type_th_step(x, name='Therapy cauchy')
+  # data[['alpha_th_cauchy']]= get_prior_hyperparameters(x, name='scale_th_cauchy')[["alpha"]]
+  # data[['beta_th_cauchy']]= get_prior_hyperparameters(x, name='scale_th_cauchy')[["beta"]]
+  # data[['m_th_cauchy']]= get_m_th(x, type = 'Cauchy')
+  # data[["phi_th_cauchy"]] = get_phi(x, type = 'Cauchy')
 
   # other parameters
   if (fixed_omega==T){
@@ -225,15 +226,17 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu){
     data[['omega_alpha']] = get_prior_hyperparameters(x, name='omega')[["alpha"]]
     data[['omega_beta']] = get_prior_hyperparameters(x, name='omega')[["beta"]]
   }
+  
+  if(dormancy == T){
+    
+    data[['chemo_start']] = start_th(x, type='Chemotherapy')
+    data[['chemo_end']] = end_th(x, type='Chemotherapy')
+    
+  }
 
   data[['k_step']] = get_k_step(x)
-  # data[['k_step_in_th']] = get_k_step(x,what = "in_th")
-  # data[['k_step_out_th']] = get_k_step(x,what = "out_th")
-  # data[['k_step_in_driver']] = get_k_step(x,what = "in_driver")
-  # data[['k_step_out_driver']] = get_k_step(x,what = "out_driver")
   data[['Sample_1']] = get_sample(x, sample='1')
   data[['Sample_2']] = get_sample(x, sample='2')
-  data[['max_therapy']] = get_max_th(x)
   data[['exponential_growth']] = get_exponential_growth(x)
   data[['N_min']] = get_N_min(x)
   data[['N_max']] = get_N_max(x)
@@ -273,20 +276,19 @@ get_tau = function(x,type = "driver"){
 
 
 
-get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F) {
+get_model <- function(model_name='Driver', fixed_omega = F, fixed_mu = F, dormancy = F) {
 
   if (model_name=='Driver' & fixed_omega & !fixed_mu) model_name = "Driver_fixed_omega"
   if (model_name=='Driver' & fixed_mu & !fixed_omega) model_name = "Driver_fixed_mu_driver"
-  if (model_name=='Driver' & fixed_omega & fixed_mu) model_name = "Driver_fixed_mu_and_omega"
-  if (model_name=="Driver_cumulative" & !fixed_omega & !fixed_mu) model_name = "Driver_cumulative"
+  if (model_name=='CNA' & ! dormancy) model_name = "CNA"
+  if (model_name=='CNA' & dormancy) model_name = "CNA_dormancy"
+  
   
   all_paths <- list(
     "Driver" = "Driver.stan",
-    "Driver_fixed_mu_and_omega" = "Driver_fixed_mut_rate_and_growth.stan",
-    "Driver_fixed_omega" = "Driver_fixed_growth.stan",
     "Driver_fixed_mu_driver" = "Driver_fixed_mu_driver.stan",
     "CNA" = "CNA.stan",
-    "Driver_cumulative" = "Driver_cumulative.stan"
+    "CNA_dormancy" = "CNA_dormancy.stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")

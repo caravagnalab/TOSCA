@@ -1,5 +1,5 @@
 functions {
-
+  
   real lambda_therapy_single(real ti, real tf, real t_therapy_i, real t_therapy_f, real k) {
   real a1 = k * (tf - t_therapy_i);
   real a2 = k * (tf - t_therapy_f);
@@ -12,32 +12,35 @@ functions {
   real f4 = log_sum_exp(0, a4) / k;
 
   return f1 - f2 - f3 + f4;
+  
   }
 
+real delta(real t, real dorm_s, real dorm_e, real k) {
+  real shift_weight = inv_logit(-k * (t - dorm_e));
+  return t - (t - dorm_e) * shift_weight - dorm_s;
+}
 
-	real cauchy_cdf_single(real location, real scale, real a,real b){
-    real d= ((1/pi()) * atan((b-location)/scale) + .5) - ((1/pi()) * atan((a-location)/scale) + .5);
-  return(d * pi() * scale);
-  
-	}
+ real traslation(real t, real dorm_start, real dorm_end) {
+    real t_cn = t;
+    if (t > dorm_start) t_cn = t_cn + dorm_end - dorm_start;
+    return t_cn;
+  }
 
 }
 
 data{
-  // Clock-like mutations
-  int <lower=0> m_clock_primary;
-  int <lower=0> m_clock;
-  real <lower=0> l_diploid;
-  real <lower=0> mu_clock;
 
-  // mutations on CNA
-  int <lower=0> n_cna;
-  array[n_cna] int<lower=0> m_alpha;
-  array[n_cna] int<lower=0> m_beta;
-  array[n_cna] real<lower=0> l_CNA;
-  array[n_cna] int<lower=2,upper = 4> coeff;
+ int <lower=1> n_cna;
+ int <lower=0> m_clock_primary;
+ int <lower=0> m_clock;
+ real <lower=0> l_diploid;
+ real <lower=0> mu_clock;
 
-  // mutations associated to step-like therapies
+ array[n_cna] int <lower=0> m_alpha;
+ array[n_cna] int <lower=0> m_beta;
+ array[n_cna] real <lower=0> l_CNA;
+ array[n_cna] int <lower=2,upper = 4> coeff;
+
   int <lower=0> n_th_step; // numero totale di terapie*cicli
   int <lower=0> n_th_step_type; // numero di tipi di terapia
   array[n_th_step] real<lower=0> start_th_step;
@@ -47,32 +50,43 @@ data{
   array[n_th_step_type] real<lower=0> beta_th_step;
   array[n_th_step_type] int<lower=0> m_th_step;
 
-  // other parameters
-  real <lower=0> omega_alpha;
+
+	real <lower=0> omega_alpha;
   real <lower=0> omega_beta;
   real <lower=0> k_step;
 
   real <lower=0> Sample_1;
   real <lower=0> Sample_2;
+  real <lower=0> chemo_start;
+  real <lower=0> chemo_end;
+
   array[2] int <lower=0, upper=1> exponential_growth;
   array[2] real<lower=0> N_min;
   array[2] real<lower=0> N_max;
 
-  real<lower=0> phi_clock;
-  array[n_th_step_type] real <lower=0> phi_th_step;
-  array[n_cna] real<lower=0> phi_cna_alpha;
-  array[n_cna] real<lower=0> phi_cna_beta;
+  // Overdispersion parameters for all mutation types
+   real<lower=0> phi_clock;
+   array[n_th_step_type] real <lower=0> phi_th_step;
+   array[n_cna] real<lower=0> phi_cna_alpha;
+   array[n_cna] real<lower=0> phi_cna_beta;
+  
+}
 
+transformed data{
+  
+real t_dormancy_start = chemo_start;  
+  
 }
 
 parameters{
-  
-  real <lower=0, upper= Sample_1 > t_eca;
-  real <lower=t_eca, upper = Sample_1 > t_mrca_primary;
-  real <lower=t_eca, upper = Sample_2 > t_mrca;
-  array[n_cna] real <lower = t_eca, upper = t_mrca > t_cna;
+
+  real <lower=0, upper= Sample_1> t_eca;
+  real <lower=t_eca, upper= Sample_1> t_mrca_primary;
+  real <lower= chemo_end, upper= Sample_2> t_dormancy_end;
+  real <lower= t_dormancy_end, upper= Sample_2> t_mrca;
+  array[n_cna] real <lower= t_eca, upper= t_mrca - (t_dormancy_end - t_dormancy_start)> t_cna_tr;
+  real <lower= 0> omega;
   array[n_th_step_type] real<lower=0> mu_th_step;
-  real <lower=0> omega;
   
 }
 
@@ -97,8 +111,8 @@ transformed parameters {
   // CLOCK-LIKE mutations
   for (c in 1:n_cna) {
     real scale = l_CNA[c] * omega * mu_clock;
-    real alpha = t_cna[c] - t_eca;
-    real beta  = t_mrca - t_cna[c];
+    real alpha = t_cna_tr[c] - t_eca;
+    real beta  = t_mrca-(t_dormancy_end - t_dormancy_start) - t_cna_tr[c];
 
     if (coeff[c] == 2) {
       lambda_alpha_clock[c] += 1.0 * scale * alpha;
@@ -117,11 +131,20 @@ transformed parameters {
     for (th_type in 1:n_th_step_type) {
       for (cycle in 1:n_th_step) {
         if (type_th_step[cycle] == th_type) {
-          lambda_th_step[th_type] += lambda_therapy_single(t_eca, t_mrca, start_th_step[cycle], end_th_step[cycle], k_step);
-
-          for (c in 1:n_cna) {
-            real alpha = lambda_therapy_single(t_eca, t_cna[c], start_th_step[cycle], end_th_step[cycle], k_step);
-            real beta  = lambda_therapy_single(t_cna[c], t_mrca, start_th_step[cycle], end_th_step[cycle], k_step);
+          lambda_th_step[th_type] += lambda_therapy_single(t_dormancy_end, t_mrca, start_th_step[cycle], 
+              end_th_step[cycle], k_step);
+              
+  
+   for (c in 1:n_cna) {
+            real alpha = lambda_therapy_single(t_eca, t_cna_tr[c], 
+            start_th_step[cycle] - delta(start_th_step[cycle], t_dormancy_start, t_dormancy_end, k_step), 
+            end_th_step[cycle] - delta(start_th_step[cycle], t_dormancy_start, t_dormancy_end, k_step), 
+                           k_step);
+            real beta  = lambda_therapy_single(t_cna_tr[c], t_mrca-(t_dormancy_end - t_dormancy_start), 
+            start_th_step[cycle] - delta(start_th_step[cycle], t_dormancy_start, t_dormancy_end, k_step), 
+            end_th_step[cycle] - delta(start_th_step[cycle], t_dormancy_start, t_dormancy_end, k_step), 
+            k_step);
+            
             real scale = l_CNA[c] * omega * mu_th_step[th_type];
 
             if (coeff[c] == 2) {
@@ -140,29 +163,24 @@ transformed parameters {
     }
   }
 
- 
+  
 }
 
-model {
+model{
   
-  // Priors
   t_eca ~ uniform(0, Sample_1);
   t_mrca_primary ~ uniform(t_eca, Sample_1);
-  t_mrca ~ uniform(t_eca, Sample_2);
+  t_dormancy_end ~ uniform(chemo_end, Sample_2);
+  t_mrca ~ uniform(t_dormancy_end, Sample_2);
+
+  omega ~ gamma(omega_alpha,omega_beta);
   
-  for (c in 1:n_cna){
-    t_cna[c] ~ uniform(t_eca, t_mrca);
-  }
-  
-  for (m in 1:n_th_step_type){
+    for (m in 1:n_th_step_type){
     mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
   }
   
- 
-  
-  omega ~ gamma(omega_alpha, omega_beta);
-  
-  // Global shapes
+
+   // Global shapes
   real shape_clock    = 1 / phi_clock;
   
   // Therapy shapes
@@ -176,52 +194,51 @@ model {
   for (m in 1:n_th_step_type)
   shape_th_step[m] = 1 / phi_th_step[m];
   
-  
+ 
   // Compute CNA shapes
   for (c in 1:n_cna) {
     shape_cna_alpha[c] = 1 / phi_cna_alpha[c];
     shape_cna_beta[c]  = 1 / phi_cna_beta[c];
   }
   
-  
-  // Likelihood: clock-like mutations
-  m_clock_primary ~ neg_binomial_2(
-    2 * l_diploid * omega * mu_clock * (t_mrca_primary - t_eca) + 0.1,
-    shape_clock
+
+m_clock_primary ~ neg_binomial_2(
+  2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca) +.1,
+  shape_clock
   );
 
-if(m_clock > 0){
-  m_clock ~ neg_binomial_2(
-    2 * l_diploid * omega * (
-      mu_clock * (t_mrca - t_eca) 
-    ) + 0.1,
+if (m_clock > 0){
+  m_clock ~  neg_binomial_2(
+    2*mu_clock*omega*l_diploid*((t_dormancy_start - t_eca) + (t_mrca-t_dormancy_end)) +.1,
     shape_clock
-  );
+    );
 }
 
-  // Step therapy mutations
-  if (n_th_step_type > 0) {
-    for (th_type in 1:n_th_step_type) {
-      m_th_step[th_type] ~ neg_binomial_2(
-        2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type] + 0.1,
-        shape_th_step[th_type]
-      );
-    }
-  }
+    if (n_th_step_type > 0) {
+        for (th_type in 1:n_th_step_type) {
+          m_th_step[th_type] ~ neg_binomial_2(
+            2 * l_diploid * omega * mu_th_step[th_type] * lambda_th_step[th_type] + 0.1,
+            shape_th_step[th_type]
+            );
+        }
+      }
 
 
-  // CNA-associated mutations (alpha and beta)
   for (c in 1:n_cna) {
+    
+   t_cna_tr[c] ~ uniform(t_eca, t_mrca - (t_dormancy_end - t_dormancy_start) );
+  
     m_alpha[c] ~ neg_binomial_2(
-      lambda_alpha_clock[c] + lambda_alpha_th_step[c] +  0.1,
+      lambda_alpha_clock[c] + lambda_alpha_th_step[c] + 0.1,
       shape_cna_alpha[c]
     );
 
     m_beta[c] ~ neg_binomial_2(
-      lambda_beta_clock[c] + lambda_beta_th_step[c] +  0.1,
+      lambda_beta_clock[c] + lambda_beta_th_step[c] + 0.1,
       shape_cna_beta[c]
     );
-  }
+    
+}
   
   
     
@@ -240,9 +257,18 @@ if(m_clock > 0){
   
 }
 
-
 generated quantities {
+  
+  
+  array[n_cna] real <lower = t_eca,upper = t_mrca> t_cna;
+  
+  for (c in 1:n_cna){
+    
+   t_cna[c] = traslation(t_cna_tr[c], t_dormancy_start, t_dormancy_end);
 
+}
+
+  
   // Posterior predictive distributions
   int m_clock_primary_rep;
   int m_clock_rep;
@@ -257,8 +283,10 @@ generated quantities {
   array[n_cna] real log_lik_alpha;
   array[n_cna] real log_lik_beta;
 
+  // Derived quantities
+  real dormancy_duration = t_dormancy_end - t_dormancy_start;
  
- // Shape parameters
+  // Shape parameters
   real shape_clock = 1 / phi_clock;
   array[n_th_step_type] real shape_th_step;
   array[n_cna] real shape_cna_alpha;
@@ -286,13 +314,13 @@ generated quantities {
 
   if (m_clock > 0) {
     m_clock_rep = neg_binomial_2_rng(
-      2 * l_diploid * omega * mu_clock * (t_mrca - t_eca) + 0.1,
+      2 * mu_clock * omega * l_diploid * ((t_dormancy_start - t_eca) + (t_mrca - t_dormancy_end)) + 0.1,
       shape_clock
     );
 
     log_lik_m_clock = neg_binomial_2_lpmf(
       m_clock | 
-      2 * l_diploid * omega * mu_clock * (t_mrca - t_eca) + 0.1,
+      2 * mu_clock * omega * l_diploid * ((t_dormancy_start - t_eca) + (t_mrca - t_dormancy_end)) + 0.1,
       shape_clock
     );
   } else {
@@ -319,7 +347,7 @@ generated quantities {
     log_lik_beta[c]  = neg_binomial_2_lpmf(m_beta[c]  | mean_beta,  shape_cna_beta[c]);
 
   }
-
+  
   // Log-likelihood terms for branching process (exponential growth)
   array[2] real log_lik_branching;
   log_lik_branching[1] = 0;
@@ -335,6 +363,8 @@ generated quantities {
     log_lik_branching[2] = -lambda2 * N_min[2] + log1m_exp(-lambda2 * (N_max[2] - N_min[2]));
   }
   
+  
+   
   real total_log_lik;
   
    // Total log-likelihood sum
