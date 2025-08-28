@@ -321,6 +321,21 @@ generated quantities {
   }
 
   // Log-likelihood terms for branching process (exponential growth)
+  
+   real N_primary_rep = -1;
+   real N_relapse_rep = -1;
+  
+  if (exponential_growth[2] == 1) {
+    
+     N_relapse_rep = exponential_rng(exp(-omega*(Sample_2 - t_mrca)));
+  }
+  
+  if (exponential_growth[1] == 1) {
+    
+    N_primary_rep = exponential_rng(exp(-omega*(Sample_1 - t_mrca_primary)));
+    
+  }
+  
   array[2] real log_lik_branching;
   log_lik_branching[1] = 0;
   log_lik_branching[2] = 0;

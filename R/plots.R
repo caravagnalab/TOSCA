@@ -155,10 +155,12 @@ plot_expected_N = function(x){
   
   posterior = get_inferred_parameters(x) %>% as_tibble()
   exp_grow = x$parameters %>% filter(Parameter.name %in% c("exponential_growth")) %>% pull(Parameter.value)
-  N_exp_1 = exp(-posterior$omega*(posterior$t_mrca_primary-get_sample(x, sample ='1')))
-  N_exp_2 = exp(-posterior$omega*(posterior$t_mrca-get_sample(x, sample ='2')))
-  N2 = rexp(n = nrow(posterior),rate = 1/N_exp_2)
-  N1 = rexp(n = nrow(posterior),rate = 1/N_exp_1)
+  # N_exp_1 = exp(-posterior$omega*(posterior$t_mrca_primary-get_sample(x, sample ='1')))
+  # N_exp_2 = exp(-posterior$omega*(posterior$t_mrca-get_sample(x, sample ='2')))
+  # N2 = rexp(n = nrow(posterior),rate = 1/N_exp_2)
+  # N1 = rexp(n = nrow(posterior),rate = 1/N_exp_1)
+  N1 = posterior %>% pull(N_primary_rep)
+  N2 = posterior %>% pull(N_relapse_rep)
 
 if(exp_grow[1] == 1){
 p1 =   ggplot() + CNAqc:::my_ggplot_theme() +
