@@ -87,7 +87,7 @@ exampleData_CNA = list(
                                 TOSCA:::convert_date_real(step_1_end_cycle_2),
                                 TOSCA:::convert_date_real(step_2_end_cycle_1))),
   "Mutations" = data.frame(
-    "Name" = c("m_clock_primary", "m_clock", "m_alpha_1", "m_beta_1", "m_alpha_2", "m_beta_2", "m_drug_1", "m_drug_2"),
+    "Name" = c("sbs1_primary", "sbs1_relapse", "pre_cna_1", "post_cna_1", "pre_cna_2", "post_cna_2", "m_drug_1", "m_drug_2"),
     "Length" = c(l_diploid, l_diploid, l_CNA1, l_CNA1, l_CNA2, l_CNA2, l_diploid, l_diploid),
     "Karyptype" = c("1:1","1:1", "2:0", "2:0", "2:2", "2:2", "1:1", "1:1"),
     "Type"=c("clock-like primary", "clock-like relapse", "alpha", "beta", "alpha", "beta", "Drug 1", "Drug 2"),

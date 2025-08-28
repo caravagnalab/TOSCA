@@ -117,7 +117,7 @@ plot_prior_vs_posterior = function(x, model){
 
   parameter_plots = lapply(parameters, function(p){
     # print(p)
-    plot_prior_vs_posterior_single_parameter(x, p) + ggtitle(p)
+    plot_prior_vs_posterior_single_parameter(x, p) #+ ggtitle(p)
   })
 
   ggpubr::ggarrange(plotlist = parameter_plots, nrow=1, ncol = length(parameters))
@@ -139,16 +139,14 @@ check_ppc = function(x){
   ppc_df = data.frame()
 
   for (v in variables){
-    # print(v)
+    #print(v)
 
     true_value = training_data[[v]]
 
     if (length(true_value)>0){
 
-      if (v %in% c("m_th_step","m_th_cauchy", "m_alpha", "m_beta",
-                   "m_alpha_tetraploid_step","m_beta_tetraploid_step",
-                   "m_alpha_tetraploid_cauchy","m_beta_tetraploid_cauchy") &
-          x$tosca_fit$model_info$model_name != "CNA"& x$tosca_fit$model_info$dormancy==F ){
+      if (v %in% c("m_th_step","m_th_cauchy", "m_alpha", "m_beta") &
+          x$tosca_fit$model_info$dormancy==F ){
 
         for (i in 1:length(true_value)){
           rep_draws = posterior[[paste0(v,"_rep[",i,"]")]]
@@ -157,8 +155,10 @@ check_ppc = function(x){
           # cat(paste0(v, '_', i,':'))
           # cat(sprintf("Approximate posterior predictive coverage: %.1f%%\n", coverage * 100))
           # cat('\n')
+          original_name = get_original_mutation_name(x, name = v, index = i)
           ppc_df = rbind(ppc_df,
                          data.frame(
+                           "name" = original_name,
                            "variable" = paste0(v,"_",i),
                            "true_value"=true_value[i],
                            "ppc_coverage"=coverage,
@@ -174,8 +174,12 @@ check_ppc = function(x){
       # cat(paste0(v, ':'))
       # cat(sprintf("Approximate posterior predictive coverage: %.1f%%\n", coverage * 100))
       # cat('\n')
+
+      original_name = get_original_mutation_name(x, name = v, index = NA)
+
       ppc_df = rbind(ppc_df,
                      data.frame(
+                       "name" = original_name,
                        "variable" = v,
                        "true_value"=true_value,
                        "ppc_coverage"=coverage,
@@ -186,7 +190,7 @@ check_ppc = function(x){
     }
   }
 
-  return(ppc_df %>% select(variable, pass))
+  return(ppc_df %>% select(name, pass))
 
 }
 
@@ -200,6 +204,13 @@ plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
   # rep_name2 = paste0(mut2[1], "_rep")
 
   ppc = estimates %>% dplyr::select(rep_name1,rep_name2)
+
+  n1 = strsplit(rep_name1, "_rep")[[1]][1]
+  n2 = strsplit(rep_name2, "_rep")[[1]][1]
+  if (grepl("\\[", rep_name1)) index1 = strsplit(strsplit(rep_name1, "\\[")[[1]][2], "\\]")[[1]][1] else index1 = NA
+  if (grepl("\\[", rep_name2)) index2 = strsplit(strsplit(rep_name2, "\\[")[[1]][2], "\\]")[[1]][1] else index2 = NA
+  original_name_1 = get_original_mutation_name(x, n1, index1)
+  original_name_2 = get_original_mutation_name(x, n2, index2)
 
   ppc = ppc %>%
       dplyr::rename('m_rep_1' = rep_name1,
@@ -241,7 +252,7 @@ plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
       guides(
         fill = 'none',
         alpha = 'none'
-      ) + xlab(rep_name1) + ylab(rep_name2)+
+      ) + xlab(original_name_1) + ylab(original_name_2)+
     theme(legend.position = "none")
 
   }

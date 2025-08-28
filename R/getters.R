@@ -76,13 +76,13 @@ get_type_th_step = function(x, name='Therapy step'){
 ## Get parameters
 get_length = function(x, model=NA){
   if (is.na(model)){
-    return(x$parameters %>% filter(Parameter.name=="l_diploid") %>% pull(Parameter.value))
+    return(x$parameters %>% filter(Parameter.name=="l_diploid") %>% pull(Parameter.value) %>% unique() %>% as.double())
   }
   if (model=="CNA"){
-    return(x$parameters %>% filter(Parameter.name=="l_CNA") %>% pull(Parameter.value))
+    return(x$parameters %>% filter(Parameter.name=="l_CNA") %>% pull(Parameter.value) %>% unique() %>% as.double())
   }
   if (model=="WGD"){
-    return(x$parameters %>% filter(Parameter.name=="l_tetraploid") %>% pull(Parameter.value))
+    return(x$parameters %>% filter(Parameter.name=="l_tetraploid") %>% pull(Parameter.value) %>% as.double())
   }
   # if (karyotype=="2:0" & model=="WGD"){
   #   return(x$parameters %>% filter(Parameter.name=="l_cnloh") %>% pull(Parameter.value))
@@ -112,7 +112,7 @@ get_mutation_rate = function(x, type, index=NA){
   # index = 1...n_th_step_type
   mu = x$parameters %>% filter(Parameter.name==paste0("mu_", type))
   if (!is.na(index)) mu = mu %>% filter(Parameter.index==index)
-  mu %>% pull(Parameter.value)
+  mu %>% pull(Parameter.value) %>% as.double()
 }
 
 get_driver_type = function(x){
@@ -126,16 +126,16 @@ get_cycles_drivers = function(x){
 get_prior_hyperparameters = function(x, name){
   # name = mu_driver*, mu_th_step*, scale_th_cauchy*, omega*, mrca*, s*
   if (name %in% x$parameters$Parameter.name){
-    x$parameters %>% filter(Parameter.name==name) %>% pull(Parameter.value)
+    x$parameters %>% filter(Parameter.name==name) %>% pull(Parameter.value) %>% as.double()
   }else{
-    alpha= x$parameters %>% filter(Parameter.name==paste0(name,'_alpha')) %>% pull(Parameter.value)
-    beta= x$parameters %>% filter(Parameter.name==paste0(name,'_beta')) %>% pull(Parameter.value)
+    alpha= x$parameters %>% filter(Parameter.name==paste0(name,'_alpha')) %>% pull(Parameter.value) %>% as.double()
+    beta= x$parameters %>% filter(Parameter.name==paste0(name,'_beta')) %>% pull(Parameter.value) %>% as.double()
     list('alpha'=alpha, 'beta'=beta)
   }
 }
 
 get_k_step = function(x){
-  x$parameters %>% filter(Parameter.name=='k_step') %>% pull(Parameter.value)
+  x$parameters %>% filter(Parameter.name=='k_step') %>% pull(Parameter.value) %>% as.double()
 }
 
 get_max_th = function(x){
@@ -152,26 +152,26 @@ get_max_th = function(x){
 }
 
 get_exponential_growth = function(x){
-  x$parameters %>% filter(Parameter.name=='exponential_growth') %>% pull(Parameter.value)
+  x$parameters %>% filter(Parameter.name=='exponential_growth') %>% pull(Parameter.value) %>% as.integer()
 }
 
 get_N_min = function(x){
-  N_min = x$parameters %>% filter(Parameter.name=='N_min') %>% pull(Parameter.value)
+  N_min = x$parameters %>% filter(Parameter.name=='N_min') %>% pull(Parameter.value) %>% as.double()
   if (length(N_min) < 2){return(c(N_min, N_min))}else{N_min}
 }
 
 get_N_max= function(x){
-  N_max = x$parameters %>% filter(Parameter.name=='N_max') %>% pull(Parameter.value)
+  N_max = x$parameters %>% filter(Parameter.name=='N_max') %>% pull(Parameter.value) %>% as.double()
   if (length(N_max) < 2){return(c(N_max, N_max))}else{N_max}
 }
 
 get_cauchy_scales = function(x){
-  x$parameters %>% filter(Parameter.name == "cauchy_scales") %>% pull(Parameter.value)
+  x$parameters %>% filter(Parameter.name == "cauchy_scales") %>% pull(Parameter.value) %>% as.double()
 }
 
 get_phi = function(x, name){
   # name : th_cauchy, th_step, cna, clock, driver
-  x$parameters %>% filter(Parameter.name == paste0("phi_",name)) %>% pull(Parameter.value)
+  x$parameters %>% filter(Parameter.name == paste0("phi_",name)) %>% pull(Parameter.value) %>% as.double()
 }
 
 get_extra_therapy = function(x){
@@ -502,6 +502,16 @@ get_inferred_parameters = function(x){
 get_inferred_times_colors = function(){
   c("t_eca"="#ae4532ff", "t_driver"="#d48b3eff", "t_mrca"="#7876adff",
     "t_cna"="#dc5895ff", "t_wgd"="#438455ff")
+}
+
+get_original_mutation_name = function(x, name, index){
+  if (name == "m_clock_primary") original_name = x$mutations %>% filter(Mutation.name=="m_clock", Mutation.type=="primary") %>% pull(Mutation.original.name)
+  if (name == "m_clock") original_name = x$mutations %>% filter(Mutation.name=="m_clock", Mutation.type=="relapse") %>% pull(Mutation.original.name)
+  if (name == "m_alpha") original_name = x$mutations %>% filter(Mutation.name=="m_cna", Mutation.type=="alpha", Mutation.index == index) %>% pull(Mutation.original.name)
+  if (name == "m_beta") original_name = x$mutations %>% filter(Mutation.name=="m_cna", Mutation.type=="beta", Mutation.index == index) %>% pull(Mutation.original.name)
+  if (name == "m_th_step") original_name = x$mutations %>% filter(Mutation.name=="m_th", Mutation.index == index) %>% pull(Mutation.original.name)
+  if (name == "m_driver") original_name = x$mutations %>% filter(Mutation.name=="m_driver") %>% pull(Mutation.original.name)
+  return(original_name)
 }
 
 ## Get inferred times

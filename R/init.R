@@ -32,9 +32,12 @@ init = function(mutations, parameters, samples, therapies){
   transformed_parameters = transformed_input[[2]]
 
   x = list(
-    'input_mutations' = mutations, 'mutations' = transformed_mutations,
-    'input_clinical_records' = clinical_records, 'clinical_records' = transformed_clinical_records,
-    'input_parameters' = parameters, 'parameters' = transformed_parameters
+    'clinical_records' = transformed_clinical_records,
+    'mutations' = transformed_mutations,
+    'parameters' = transformed_parameters,
+    "inputs" = list('input_mutations' = mutations,
+                    'input_samples' = samples, "input_therapies"="therapies",
+                    'input_parameters' = parameters)
     )
 
   class(x)= "TOSCA"
@@ -194,10 +197,10 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
     sample_2= transformed_clinical_records %>% filter(Clinical.name == "Sample", Clinical.type == "2") %>% pull(Clinical.value.start)
     omega_lb = log(10e6) / (sample_2 - sample_1)
     omega_ub = log(10e10) / (sample_2-(sample_2 - 30/365))
-    omega = mean(c(omega_alpha_lb, omega_alpha_ub))
+    omega = mean(c(omega_lb, omega_ub))
     return(omega)
   }
-  if (!("omaga_alpha" %in% parameters$Name)){
+  if (!("omega_alpha" %in% parameters$Parameter.name)){
     omega_alpha_approx = get_omega_approximation(transformed_clinical_records) / 10
     omega_beta_approx = .1
     parameters = rbind(parameters,
@@ -237,24 +240,24 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
                                                 "Parameter.value"=c(omega_alpha_approx, omega_beta_approx),"Parameter.index"=c(NA,NA)))
     }
   }
-  if (!("k_step" %in% parameters$Name)) {
+  if (!("k_step" %in% parameters$Parameter.name)) {
     parameters = rbind(parameters, data.frame("Parameter.name"= "k_step",
                                               "Parameter.value"=10,"Parameter.index"=NA))
   }
-  if (!("N_min" %in% parameters$Name)) {
+  if (!("N_min" %in% parameters$Parameter.name)) {
     parameters = rbind(parameters, data.frame("Parameter.name"= c("N_min","N_min","N_max","N_max"),
                                               "Parameter.value"=c(1e6,1e6,1e10,1e10),
                                               "Parameter.index"=c("1","2","1","2")))
   }
-  if (!("exponential_growth" %in% parameters$Name)) {
+  if (!("exponential_growth" %in% parameters$Parameter.name)) {
     parameters = rbind(parameters, data.frame("Parameter.name"= "exponential_growth",
                                               "Parameter.value"=1,"Parameter.index"=NA))
   }
-  if (!("alpha_mrca" %in% parameters$Name)) {
-    parameters = rbind(parameters, data.frame("Parameter.name"= c("alpha_mrca","beta_mrca"),
+  if (!("mrca_alpha" %in% parameters$Parameter.name)) {
+    parameters = rbind(parameters, data.frame("Parameter.name"= c("mrca_alpha","mrca_beta"),
                                               "Parameter.value"=c(1,1),"Parameter.index"=c(1,1)))
   }
-  if (!("phi_driver" %in% parameters$Name)) {
+  if (!("phi_driver" %in% parameters$Parameter.name)) {
     parameters = rbind(parameters, data.frame("Parameter.name"= "phi_driver",
                                               "Parameter.value"=0.05,"Parameter.index"=NA))
   }
@@ -265,7 +268,7 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
                                                 "Parameter.value"=0.05,"Parameter.index"=th_index))
     }
   }
-  n_phi_cna = sum(parameters$Name == "phi_cna")
+  n_phi_cna = sum(parameters$Parameter.name == "phi_cna")
   if (n_phi_cna!=n_cna) {
     for (c in 1:n_cna){
       index = mutations_new %>% filter(Mutation.name=="m_cna") %>% pull(Mutation.index) %>% unique()
@@ -276,7 +279,7 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
       }
     }
   }
-  if (!("phi_clock" %in% parameters$Name)) {
+  if (!("phi_clock" %in% parameters$Parameter.name)) {
     parameters = rbind(parameters, data.frame("Parameter.name"= "phi_clock",
                                               "Parameter.value"=0.05,"Parameter.index"=NA))
   }

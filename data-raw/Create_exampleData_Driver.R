@@ -38,33 +38,36 @@ N_min = N1*.9
 N_max = N2*1.1
 
 exampleData_Driver = list(
-  'Clinical Timepoints' =
-    data.frame(
-      'Clinical.name'= c('Sample','Sample','Therapy driver','Therapy driver'),
-      'Clinical.type'= c('1','2', '2','2'), # Driver == 1 endogeno, ==2 esogeno
-      'Clinical.value.start'= c(Sample_1, Sample_2, step_1_start_cycle_1, step_1_start_cycle_2),
-      'Clinical.value.end'= c(NA, NA, step_1_end_cycle_1, step_1_end_cycle_2),
-      'Clinical.index' = c(NA, NA, '1','2')
-    ),
-  'Mutations' =
-    data.frame(
-      'Mutation.name'= c('m_clock', 'm_clock','m_driver'),
-      'Mutation.type'= c('primary', 'relapse','2'),
-      'Mutation.index'= c(NA, NA, NA),
-      'Mutation.value'= c(m_clock_primary, m_clock, m_driver),
-      'Mutation.coeff'= rep(NA,3),
-      'Mutation.source'= c('clock','clock','driver')
-    ),
-  'Parameters' =
-    data.frame('Parameter.name' = c('l_diploid','mu_clock','mu_clock_driver','mu_driver_alpha','mu_driver_beta','omega_alpha','omega_beta','k_step','N_min','N_max','exponential_growth', 'mrca_alpha','mrca_beta',
-                                    "mu_driver_clock", "mu_driver", "phi_clock","phi_driver"),
-               'Parameter.value' = c(l_diploid, mu_clock, mu_clock_driver, mu_driver_alpha, mu_driver_beta, omega_alpha, omega_beta, 10, N_min, N_max, 1,1,1,
-                                     mu_clock_driver, mu_driver,.1,.1),
-               'Parameter.index' = c(rep(NA, 17))
-               )
-)
+  "Samples" = data.frame(
+    "Name"=c("Diagnosis", "Relapse"),
+    "Date"=c(TOSCA:::convert_date_real(Sample_1),
+             TOSCA:::convert_date_real(Sample_2))),
+  "Therapies" = data.frame(
+    "Name"=c('Timolozomide','Timolozomide'),
+    "Class"= c("Driver responsive","Driver responsive"),
+    "Start"=c(TOSCA:::convert_date_real(step_1_start_cycle_1),
+              TOSCA:::convert_date_real(step_1_start_cycle_2)),
+    "End"=c(TOSCA:::convert_date_real(step_1_end_cycle_1),
+            TOSCA:::convert_date_real(step_1_end_cycle_2))),
 
-#saveRDS(exampleData, file = "exampleData.rds")
+  "Mutations" = data.frame(
+    "Name" = c("sbs1_primary", "sbs1_relapse", "sbs11"),
+    "Length" = c(l_diploid, l_diploid, l_diploid),
+    "Karyptype" = c("1:1","1:1", "1:1"),
+    "Type"=c("clock-like primary", "clock-like relapse", "driver"),
+    "Value"=c(m_clock_primary, m_clock, m_clock)
+  ),
+
+  'Parameters' =
+    data.frame('Name' = c('l_diploid','mu_clock','mu_clock_driver','mu_driver_alpha','mu_driver_beta','omega_alpha','omega_beta','k_step','N_min','N_max','exponential_growth', 'mrca_alpha','mrca_beta',
+                                    "mu_driver_clock", "mu_driver", "phi_clock","phi_driver"),
+               'Value' = c(l_diploid, mu_clock, mu_clock_driver, mu_driver_alpha, mu_driver_beta, omega_alpha, omega_beta, 10, N_min, N_max, 1,1,1,
+                                     mu_clock_driver, mu_driver,.1,.1),
+               'Index' = c(rep(NA, 17)))
+    )
+
+
+
 
 usethis::use_data(exampleData_Driver, overwrite = TRUE)
 
