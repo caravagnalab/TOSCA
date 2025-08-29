@@ -2,21 +2,33 @@
 % Please edit documentation in R/init.R
 \name{init}
 \alias{init}
-\title{Initialise a TOSCA object}
+\title{Initialise TOSCA object}
 \usage{
-init(
-  mutations,
-  clinical_records,
-  parameters,
-  delta_omega = 0.02,
-  growth_rate_variance = 10
-)
+init(mutations, parameters, samples, therapies)
 }
 \arguments{
-\item{mutations}{dataframe containing input mutations}
+\item{mutations}{data.frame with the information on mutation falling on the timed branches.
+1. Name (str), name of choosing for the cluster of mutations
+2. Length (int), length of the genomic segment they sit on
+3. Karyptype (str), karyotype of the genomic segment they sit as "Major:minor" (ex "1:1")
+4. Type (str), one between the following: "clock-like primary", "clock-like relapse", "alpha", "beta", "driver", the name of the mutagenic drug to which they are associated as reported in the therapies dataframe
+5. Value (int), number of mutations}
 
-\item{parameters}{}
+\item{parameters}{data.frame with the parameters required for inference.
+1. Name (str),
+2. Value (real),
+3. Index (int)}
+
+\item{samples}{data.frame with the name and collection date of the longitudinal samples.
+1. Name (str), name of the sample
+2. Date (date) date of collection in the format "YYYY-mm-dd"}
+
+\item{therapies}{data.frame with the name and exposure period to therapies affecting the mutation accumulation process.
+1. Name (str)
+2. Class (str), one of the following : "Mutagenic", "Driver responsive", "Chemotherapy inducing dormancy"
+3. Start (date), start of the cicle of therapy in the format "YYYY-mm-dd"
+4. End (date), end of the cicle of therapy in the format "YYYY-mm-dd"}
 }
 \description{
-Initialise a TOSCA object
+Initialise TOSCA object
 }

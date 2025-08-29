@@ -1,4 +1,13 @@
 # Plot Prior vs Posterior - all parameters
+
+#' Return prior distribution type for each parameter
+#'
+#' @param par Name of the parameter of interest.
+#'
+#' @return Name of the prior distribution used in the model.
+#' @export
+#'
+#' @examples
 get_prior_distribution_type = function(par){
   prior_distributions = data.frame(
     'parameter'= c("t_eca","t_driver","t_mrca", "mrca", "omega", "mu_driver","s"),
@@ -10,6 +19,16 @@ get_prior_distribution_type = function(par){
 }
 
 # need to adjust this function for parameters with multiple entries!
+
+#' Prior vs Posterior distribution of inferred parameter
+#'
+#' @param x TOSCA object
+#' @param parameter parameter name
+#'
+#' @return ggplot
+#' @export
+#'
+#' @examples
 plot_prior_vs_posterior_single_parameter = function(x, parameter){
 
   posterior = get_inferred_parameters(x)
@@ -89,7 +108,15 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
   return(density_post_vs_prior)
 }
 
-plot_prior_vs_posterior = function(x, model){
+#' Produce collective plot of prior vs posterior for all inferred parameters
+#'
+#' @param x TOSCA obj
+#'
+#' @return plot
+#' @export
+#'
+#' @examples
+plot_prior_vs_posterior = function(x){
   parameters = c()
   posterior = get_inferred_parameters(x)
 
@@ -124,6 +151,14 @@ plot_prior_vs_posterior = function(x, model){
 }
 
 # Posterior Predictive checks
+#' Posterior Predictive checks
+#'
+#' @param x TOSCA object
+#'
+#' @return dataframe with columns: name, the name of the mutation cluster, pass: whether the ppc test was passed, i.e. the real number of mutations falls within 1 sd from the mean of the posterior predictive distribution
+#' @export
+#'
+#' @examples
 check_ppc = function(x){
 
   posterior = get_inferred_parameters(x)#x$tosca_fit$posterior
@@ -194,6 +229,18 @@ check_ppc = function(x){
 
 }
 
+#' Plot the posterior predictive distribution and compares it to the real number of mutations
+#'
+#' @param x TOSCA object
+#' @param mut1_real real value of the first mutation type of interest
+#' @param mut2_real real value of the second mutation type of interest
+#' @param rep_name1 name of the posterior predictive variable corresponding to the first mutation type of interest, as reported in the model
+#' @param rep_name2 name of the posterior predictive variable corresponding to the second mutation type of interest, as reported in the model
+#'
+#' @return plot
+#' @export
+#'
+#' @examples
 plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
 
   estimates = get_inferred_parameters(x)
@@ -257,6 +304,14 @@ plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
 
   }
 
+#' Plot posterior predictive checks
+#'
+#' @param x TOSCA object
+#'
+#' @return plot of the posterior predictive distribution versus the real value of all mutation groups provided in input
+#' @export
+#'
+#' @examples
 plot_ppc = function(x){
 
   posterior = get_inferred_parameters(x)
@@ -328,23 +383,43 @@ plot_ppc = function(x){
 
   }
 
+#' Posterior distribution of the number of cells collected in the first and second samples.
+#'
+#' @param x TOSCA object
+#'
+#' @return Posterior distribution of the number of cells collected in the first and second samples, considering the growth rate (omega) and the time of birth of the MRCA (t_mrca) of each sample.
+#' @export
+#'
+#' @examples
 plot_expected_N = function(x){
 
   posterior = get_inferred_parameters(x) %>% as_tibble()
   N_rel = exp(posterior$omega*(get_sample(x, sample ='2')-posterior$t_mrca))
   N_pre = exp(posterior$omega*(get_sample(x, sample ='1')-posterior$t_mrca_primary))
 
+  primary_name = x$clinical_records %>% filter(Clinical.name == "Sample", Clinical.type == "1") %>% pull(Clinical.original.name)
+  relapse_name = x$clinical_records %>% filter(Clinical.name == "Sample", Clinical.type == "2") %>% pull(Clinical.original.name)
+
   N_rel_plot = ggplot() + CNAqc:::my_ggplot_theme() +
     geom_histogram(aes(x=log(N_rel)))+
-    scale_x_log10()
+    scale_x_log10() +
+    xlab(paste0("Tumor size at ", relapse_name, "\n(log-scale)"))
   N_pre_plot = ggplot() + CNAqc:::my_ggplot_theme() +
     geom_histogram(aes(x=log(N_pre)))+
-    scale_x_log10()
+    xlab(paste0("Tumor size at ", primary_name, "\n(log-scale)"))
 
   ggpubr::ggarrange(plotlist = list(N_rel_plot, N_pre_plot), nrow = 2)
 }
 
 # Plot clinical timeline + posterior times
+#' Posterior distribution of the inferred times
+#'
+#' @param x
+#'
+#' @return Posterior distributio plot of the inferred times, mapped on the clinical history
+#' @export
+#'
+#' @examples
 plot_timing = function(x)
 {
   clinical_timeline = x$clinical_records
@@ -366,8 +441,12 @@ plot_timing = function(x)
 
   timing_estimates = timing_estimates %>% reshape2::melt() %>% as_tibble()
   times = timing_estimates$variable %>% unique()
-  var_colors = ggsci::pal_npg()(length(times))
-  names(var_colors) = times
+  therapy_names = therapies$Clinical.original.name %>% unique()
+  var_colors = ggsci::pal_npg()(length(times)+length(therapy_names))
+  times_colors = var_colors[1:length(times)]
+  names(times_colors) = times
+  clinical_colors = var_colors[length(times)+1:length(therapy_names)]
+  names(clinical_colors) = therapy_names
 
   posterior_plot = ggplot() +
     geom_histogram(
@@ -383,7 +462,7 @@ plot_timing = function(x)
       size = 3
     ) + CNAqc:::my_ggplot_theme()+
     theme(legend.position = 'bottom')+
-    scale_fill_manual(values = var_colors)
+    scale_fill_manual(values = times_colors)
 
   if ("t_dormancy_start" %in% timing_estimates$variable){
     MAP_dormancy_start = timing_estimates %>% filter(variable == "t_dormancy_start") %>% pull(value) %>% mean()
@@ -417,38 +496,53 @@ plot_timing = function(x)
       )
   }
 
+  therapies = therapies %>% mutate(Duration = Clinical.value.end-Clinical.value.start) %>% mutate(short=ifelse(Duration < 30/365, T, F))
+  new_col = data.frame(Clinical.original.name = names(clinical_colors), colors = clinical_colors)
+  therapies = left_join(therapies,new_col, by="Clinical.original.name")
+
   posterior_plot = posterior_plot + geom_rect(
-    aes(xmin = as.Date(convert_date_real(therapies$Clinical.value.start[1])),
-        xmax = as.Date(convert_date_real(therapies$Clinical.value.end[1]))),
+    data = therapies %>% filter(short == F),
+    aes(xmin = as.Date(convert_date_real(Clinical.value.start)),
+        xmax = as.Date(convert_date_real(Clinical.value.end)),
+        color=colors),
     ymin = 0,
     ymax = Inf,
-    fill = 'indianred',
+    fill = c,
     colour = "white",
     size = 0.5,
     alpha = .5
-  )
+  ) +
+    geom_segment(
+      data = therapies %>% filter(short == T),
+      aes(x=as.Date(convert_date_real(Clinical.value.start)),
+          xend=as.Date(convert_date_real(Clinical.value.start)),
+          y=0, yend=Inf, color=colors), alpha=.5)
 
-  posterior_plot +
-    geom_segment(data = therapies[2:nrow(therapies),],
-               aes(x=as.Date(convert_date_real(Clinical.value.start)),
-                   xend=as.Date(convert_date_real(Clinical.value.start)),
-                   y=0, yend=Inf), color = "indianred", alpha=.5)
+  for (th in 1:nrow(therapies)){
+    c = clinical_colors[[therapies$Clinical.original.name[th]]]
+    if (therapies$color[th] == F){
+    posterior_plot = posterior_plot + geom_rect(
+      data = therapies %>% filter(color == F),
+      aes(xmin = as.Date(convert_date_real(therapies$Clinical.value.start[th])),
+          xmax = as.Date(convert_date_real(therapies$Clinical.value.end[th]))),
+      ymin = 0,
+      ymax = Inf,
+      fill = c,
+      colour = "white",
+      size = 0.5,
+      alpha = .5
+    )
+    }else{
 
-  # for (th in 2:nrow(therapies)){
-  #   posterior_plot = posterior_plot +
-  #     geom_vline(
-  #     aes(
-  #       xintercept = as.Date(convert_date_real(therapies$Clinical.value.start[th])),
-  #       #xmax = as.Date(convert_date_real(therapies$Clinical.value.end[th]))),
-  #     #ymin = 0,
-  #     #ymax = Inf,
-  #     #fill = 'indianred',
-  #     colour = "indianred",
-  #     size = 0.5,
-  #     alpha = .5
-  #   ))
-  # }
-  # posterior_plot
+      posterior_plot = posterior_plot +
+      geom_segment(
+                 aes(x=as.Date(convert_date_real(therapies$Clinical.value.start[th])),
+                     xend=as.Date(convert_date_real(therapies$Clinical.value.start[th])),
+                     y=0, yend=Inf), color = c, alpha=.5)
+    }
+  }
+
+
 }
 
 ## Diagnostics
@@ -469,7 +563,7 @@ get_convergence =function(x){
   r_hat<- as.data.frame(x$tosca_fit$summary)$rhat
   if ( sum(r_hat < 1.1) == length(r_hat)){return(TRUE)}else{return(FALSE)}
 }
-get_diverget_transition = function(patient){}
+#get_diverget_transition = function(patient){}
 
 
 
