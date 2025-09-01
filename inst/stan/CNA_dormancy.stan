@@ -27,19 +27,19 @@ real delta(real t, real dorm_s, real dorm_e, real k) {
   }
   
 
-  real smooth_mrca_weight(real t_mrca_tr,
-                          real chemo_start,
-                          real omega,
-                          real k) {
-                            
-    // Smooth transition weight using logistic
-    real w = inv_logit(k * (t_mrca_tr - chemo_start));  // goes from 0 to 1
-    
-    real r = exp(-omega*(chemo_start - t_mrca_tr));
-    
-    // Smooth interpolation: r_mean when t_mrca_tr << chemo_start, 1 when t_mrca_tr >> chemo_start
-    return (1 - w) * r + w * 1;
- 
+real smooth_mrca_weight(real t_mrca_tr,
+real chemo_start,
+real omega,
+real k) {
+  
+  // Smooth transition weight using logistic
+  real w = inv_logit(k * (t_mrca_tr - chemo_start));  // goes from 0 to 1
+  
+  real r = exp(-omega*(chemo_start - t_mrca_tr));
+  
+  // Smooth interpolation: r_mean when t_mrca_tr << chemo_start, 1 when t_mrca_tr >> chemo_start
+  return (1 - w) * r + w * 1;
+  
 }
 
 
