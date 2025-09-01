@@ -29,6 +29,22 @@ init(mutations, parameters, samples, therapies)
 3. Start (date), start of the cicle of therapy in the format "YYYY-mm-dd"
 4. End (date), end of the cicle of therapy in the format "YYYY-mm-dd"}
 }
+\value{
+TOSCA object
+}
 \description{
 Initialise TOSCA object
+}
+\examples{
+library(TOSCA)
+library(dplyr)
+library(ggplot2)
+data("exampleData_CNA")
+mutations = exampleData_CNA$Mutations
+parameters = exampleData_CNA$Parameters
+samples = exampleData_CNA$Samples
+therapies = exampleData_CNA$Therapies
+
+x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
+
 }

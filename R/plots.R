@@ -116,6 +116,18 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
 #' @export
 #'
 #' @examples
+#' library(TOSCA)
+#' library(dplyr)
+#' library(ggplot2)
+#' data("exampleData_CNA")
+#' mutations = exampleData_CNA$Mutations
+#' parameters = exampleData_CNA$Parameters
+#' samples = exampleData_CNA$Samples
+#' therapies = exampleData_CNA$Therapies
+#'
+#' x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
+#' fit = TOSCA::fit(x, model_name='CNA', n_iterations = 1000, n_chains = 4, warm_up = 500)
+#' plot_prior_vs_posterior(fit)
 plot_prior_vs_posterior = function(x){
   parameters = c()
   posterior = get_inferred_parameters(x)
@@ -312,6 +324,18 @@ plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
 #' @export
 #'
 #' @examples
+#' library(TOSCA)
+#' library(dplyr)
+#' library(ggplot2)
+#' data("exampleData_CNA")
+#' mutations = exampleData_CNA$Mutations
+#' parameters = exampleData_CNA$Parameters
+#' samples = exampleData_CNA$Samples
+#' therapies = exampleData_CNA$Therapies
+#'
+#' x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
+#' fit = TOSCA::fit(x, model_name='CNA', n_iterations = 1000, n_chains = 4, warm_up = 500)
+#' plot_ppc(fit)
 plot_ppc = function(x){
 
   posterior = get_inferred_parameters(x)
@@ -420,6 +444,18 @@ plot_expected_N = function(x){
 #' @export
 #'
 #' @examples
+#' library(TOSCA)
+#' library(dplyr)
+#' library(ggplot2)
+#' data("exampleData_CNA")
+#' mutations = exampleData_CNA$Mutations
+#' parameters = exampleData_CNA$Parameters
+#' samples = exampleData_CNA$Samples
+#' therapies = exampleData_CNA$Therapies
+#'
+#' x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
+#' fit = TOSCA::fit(x, model_name='CNA', n_iterations = 1000, n_chains = 4, warm_up = 500)
+#' plot_timing(fit)
 plot_timing = function(x)
 {
   clinical_timeline = x$clinical_records
@@ -447,11 +483,13 @@ plot_timing = function(x)
   names(times_colors) = times
   clinical_colors = var_colors[length(times)+1:length(therapy_names)]
   names(clinical_colors) = therapy_names
+  times_colors_df = data.frame("variable" = names(times_colors), "color"=times_colors)
+  timing_estimates = left_join(timing_estimates, times_colors_df, by = "variable")
 
   posterior_plot = ggplot() +
     geom_histogram(
       data = timing_estimates %>% dplyr::rename(Date = value),
-      aes(Date, fill = variable, ..density..),
+      aes(Date, fill = color, ..density..),
       inherit.aes = FALSE,
       bins = 150
     ) +
@@ -460,9 +498,19 @@ plot_timing = function(x)
       aes(x = as.Date(convert_date_real(Clinical.value.start)), y = 0),
       inherit.aes = FALSE,
       size = 3
-    ) + CNAqc:::my_ggplot_theme()+
+    ) +
+    CNAqc:::my_ggplot_theme()+
     theme(legend.position = 'bottom')+
-    scale_fill_manual(values = times_colors)
+    scale_fill_identity()
+    #scale_fill_manual(values = times_colors)
+
+  hist_data <- ggplot_build(posterior_plot)$data[[1]]
+  ymin <- 0
+  ymax <- max(hist_data$y)
+
+  # 5% above bottom
+  ylab_pos <- ymin + 0.1 * (ymax - ymin)
+
 
   if ("t_dormancy_start" %in% timing_estimates$variable){
     MAP_dormancy_start = timing_estimates %>% filter(variable == "t_dormancy_start") %>% pull(value) %>% mean()
@@ -504,10 +552,10 @@ plot_timing = function(x)
     data = therapies %>% filter(short == F),
     aes(xmin = as.Date(convert_date_real(Clinical.value.start)),
         xmax = as.Date(convert_date_real(Clinical.value.end)),
-        color=colors),
+        fill=colors),
     ymin = 0,
     ymax = Inf,
-    fill = c,
+    #fill = c,
     colour = "white",
     size = 0.5,
     alpha = .5
@@ -516,32 +564,69 @@ plot_timing = function(x)
       data = therapies %>% filter(short == T),
       aes(x=as.Date(convert_date_real(Clinical.value.start)),
           xend=as.Date(convert_date_real(Clinical.value.start)),
-          y=0, yend=Inf, color=colors), alpha=.5)
+          y=0, yend=Inf, color=colors), alpha=.5)  +
+    guides(color = "none")
 
-  for (th in 1:nrow(therapies)){
-    c = clinical_colors[[therapies$Clinical.original.name[th]]]
-    if (therapies$color[th] == F){
-    posterior_plot = posterior_plot + geom_rect(
-      data = therapies %>% filter(color == F),
-      aes(xmin = as.Date(convert_date_real(therapies$Clinical.value.start[th])),
-          xmax = as.Date(convert_date_real(therapies$Clinical.value.end[th]))),
-      ymin = 0,
-      ymax = Inf,
-      fill = c,
-      colour = "white",
-      size = 0.5,
-      alpha = .5
+  posterior_plot = posterior_plot +
+    geom_segment(
+      data = endpoints,
+      aes(x = as.Date(convert_date_real(Clinical.value.start)),
+          xend = as.Date(convert_date_real(Clinical.value.start)),
+          y=0,
+          yend = ylab_pos),
+      size = .5, linetype="dashed"
+    )+
+    geom_label(
+      data = endpoints,
+      aes(x = as.Date(convert_date_real(Clinical.value.start)), y = ylab_pos, label=Clinical.original.name),
+      size = 3
     )
-    }else{
 
-      posterior_plot = posterior_plot +
-      geom_segment(
-                 aes(x=as.Date(convert_date_real(therapies$Clinical.value.start[th])),
-                     xend=as.Date(convert_date_real(therapies$Clinical.value.start[th])),
-                     y=0, yend=Inf), color = c, alpha=.5)
-    }
-  }
+  library(cowplot)
 
+  custom_legend_therapies <- ggplot(legend_therapies, aes(x=1, y=Therapy)) +
+    geom_point(aes(color=Color), shape=15, size=4) +
+    geom_text(aes(label=Therapy), hjust=0,  size = 4, nudge_x = 1e-13) +   # small nudge
+    scale_color_identity() +
+    theme_void() +
+    theme(legend.position="none")
+
+  vector_y = rep(c(1,2), nrow(legend_times)/2)
+  if (!(nrow(legend_times) %% 2 == 0 )) vector_y=c(vector_y, 1)
+
+  custom_legend_times <- ggplot(legend_times %>% mutate(n = 1:nrow(legend_times) -1) %>%
+                                  mutate(x = round(n/2-.1,0), y = vector_y),
+                                aes(x=x, y=vector_y)) +
+    geom_point(aes(color=Color), shape=15, size=4) +
+    geom_text(aes(label=Times), hjust=0, size = 4, nudge_x = 1e-13) +     # small nudge
+    scale_color_identity() +
+    theme_void() +
+    theme(legend.position="none")
+
+  patchwork::wrap_plots(posterior_plot,
+                        custom_legend_therapies,
+                        custom_legend_times,
+                        design =
+                          "AAAAAAA
+                           AAAAAAA
+                           AAAAAAA
+                           AAAAAAA
+                           AAAAAAA
+                           #BBCCC#")
+
+
+  # stack them below the plot
+  final_plot <- plot_grid(
+    posterior_plot,
+    custom_legend_therapies,
+    custom_legend_times,
+    ncol=1,
+    rel_heights=c(4,1,1)
+  )
+
+  final_plot
+
+  posterior_plot
 
 }
 

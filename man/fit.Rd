@@ -16,17 +16,24 @@ fit(
 )
 }
 \arguments{
-\item{x}{Tosca object}
+\item{x}{TOSCA object}
 
-\item{n_iterations}{int, number of iteration of each MCMC chain}
+\item{n_iterations}{Number of iteration of each MCMC chain. The default is 10000.}
 
-\item{n_chains}{int, number of chains}
+\item{n_chains}{A positive integer specifying the number of Markov chains. The default is 4.}
 
-\item{warm_up}{A positive integer specifying the number of warmup (aka burnin) iterations per chain}
+\item{warm_up}{A positive integer specifying the number of warmup (aka burnin) iterations per chain. The default is 5000.}
 
 \item{cores}{Number of cores to use when executing the chains in parallel}
 
-\item{verbose}{}
+\item{model_name}{Name of the model: "CNA" or "Driver"}
+
+\item{dormancy}{Boolean specifying if the model should include dormancy (available only for "CNA" model). The default is F}
+
+\item{verbose}{Boolen specifying if the fit function should output the iterations progression. The default is F.}
+}
+\value{
+TOSCA object
 }
 \description{
 Infer the timing of the events of interest fitting the appropriate TOSCA model
