@@ -164,7 +164,7 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
                        data.frame("Parameter.name"= c("omega_alpha", "omega_beta"),
                                   "Parameter.value"=c(omega_alpha_approx, omega_beta_approx),"Parameter.index"=c(NA,NA)))
   }
-  if ("m_driver" %in% mutations_new$Mutation.name & !("mu_clock_driver" %in% parameters$Name)){
+  if ("m_driver" %in% mutations_new$Mutation.name & !("mu_clock_driver" %in% parameters$Parameter.name)){
     parameters = rbind(parameters, data.frame("Parameter.name"= c("mu_clock_driver"),
                                               "Parameter.value"=mu_clock,"Parameter.index"= NA))
   }
