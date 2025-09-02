@@ -168,7 +168,7 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
     parameters = rbind(parameters, data.frame("Parameter.name"= c("mu_clock_driver"),
                                               "Parameter.value"=mu_clock,"Parameter.index"= NA))
   }
-  if ("m_driver" %in% mutations_new$Mutation.name & !("mu_driver" %in% parameters$Name)){
+  if ("m_driver" %in% mutations_new$Mutation.name & !("mu_driver" %in% parameters$Parameter.name)){
     cycles_of_driver = transformed_clinical_records %>% dplyr::filter(Clinical.type=="Driver")
     exposure = 0
     for (c in 1:length()){
