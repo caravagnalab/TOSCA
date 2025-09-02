@@ -168,14 +168,19 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
                                               "Parameter.value"=mu_clock,"Parameter.index"= NA))
   }
   if ("m_driver" %in% mutations_new$Mutation.name & !("mu_driver" %in% parameters$Name)){
-    exposure_lb = transformed_clinical_records %>% dplyr::filter(Clinical.type=="Driver") %>% dplyr::pull(Clinical.value.start)
-    exposure_lb = exposure_lb[1]
-    exposure_ub = transformed_clinical_records %>% dplyr::filter(Clinical.type=="Driver") %>% dplyr::pull(Clinical.value.end)
-    exposure_ub = exposure_ub[length(exposure_ub)]
+    cycles_of_driver = transformed_clinical_records %>% dplyr::filter(Clinical.type=="Driver")
+    exposure = 0
+    for (c in 1:length()){
+      exposure_lb = transformed_clinical_records %>% dplyr::filter(Clinical.type=="Driver") %>% dplyr::pull(Clinical.value.start)
+      exposure_lb = exposure_lb[c]
+      exposure_ub = transformed_clinical_records %>% dplyr::filter(Clinical.type=="Driver") %>% dplyr::pull(Clinical.value.end)
+      exposure_ub = exposure_ub[c]
+      exposure = exposure + (exposure_ub-exposure_lb)
+    }
 
     m_driver = mutations_new %>% dplyr::filter(Mutation.name=="m_driver") %>% dplyr::pull(Mutation.value)
     omega = get_omega_approximation(transformed_clinical_records)
-    mu_driver = m_driver / (2*l_diploid*omega*(exposure_ub-exposure_lb))
+    mu_driver = m_driver / (2*l_diploid*omega*(exposure))
 
     parameters = rbind(parameters, data.frame("Parameter.name"= c("mu_driver", "omega_beta"),
                                               "Parameter.value"=c(omega_alpha_approx, omega_beta_approx),"Parameter.index"=c(NA,NA)))
