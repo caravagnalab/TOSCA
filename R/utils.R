@@ -139,7 +139,7 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
 
   # check compulsory parameters
   if (!("mu_clock" %in% parameters$Parameter.name)) stop(paste("Missing required parameter: mu_clock"))
-  mu_clock = parameters %>% dplyr::filter("Parameter.name" == "mu_clock") %>% dplyr::pull("Parameter.value")
+  mu_clock = parameters %>% dplyr::filter(Parameter.name == "mu_clock") %>% dplyr::pull(Parameter.value)
 
   # add compulsory parameters if not present
   # apart from mu_clock, which is compulsory, all mu, if not provided are approximated
