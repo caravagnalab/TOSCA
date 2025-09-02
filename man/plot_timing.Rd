@@ -7,7 +7,7 @@
 plot_timing(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{TOSCA object}
 }
 \value{
 Posterior distributio plot of the inferred times, mapped on the clinical history

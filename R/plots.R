@@ -22,18 +22,13 @@ get_prior_distribution_type = function(par){
 #'
 eplot = function (){
   ggplot2::ggplot(data = data.frame(x = 0, y = 0, label = "X"),
-                  ggplot2::aes(x = x, y = y, label = label)) + CNAqc:::my_ggplot_theme() +
+                  ggplot2::aes(x = x, y = y, label = label)) + my_ggplot_theme() +
     ggplot2::theme(panel.border = ggplot2::element_rect(colour = "black",
                                                         fill = NA, linetype = "dashed"), panel.background = ggplot2::element_rect(fill = "gainsboro"),
                    axis.title = ggplot2::element_blank(), axis.text = ggplot2::element_blank(),
                    axis.ticks = ggplot2::element_blank(), axis.line = ggplot2::element_blank())
 }
 
-#' Customized ggplot theme
-#'
-#' @param cex
-#'
-#' @return Customized ggplot theme
 my_ggplot_theme = function (cex = 1)
 {
   cex_opt = getOption("CNAqc_cex", default = 1)
@@ -295,7 +290,7 @@ plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
 
   ggplot2::ggplot(ppc,ggplot2::aes(m_rep_1, m_rep_2, color= pp, alpha = n), size=.05) +
       ggplot2::geom_point() +
-      CNAqc:::my_ggplot_theme() +
+      my_ggplot_theme() +
     ggplot2::scale_color_gradient(
         high = "goldenrod",
         low = "purple4"
@@ -451,7 +446,7 @@ plot_expected_N = function(x){
 # Plot clinical timeline + posterior times
 #' Posterior distribution of the inferred times
 #'
-#' @param x
+#' @param x TOSCA object
 #'
 #' @return Posterior distributio plot of the inferred times, mapped on the clinical history
 #' @export

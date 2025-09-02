@@ -12,4 +12,5 @@
 #' @importFrom cmdstanr cmdstan_model
 #' @importFrom rlang .data
 #' @importFrom scales identity_pal
+#' @importFrom ggplot2 draw_key_point draw_key_polygon
 NULL
