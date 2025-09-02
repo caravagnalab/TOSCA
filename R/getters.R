@@ -15,74 +15,74 @@
 # }
 
 get_n_cna = function(x){
-  (x$mutations %>% filter(Mutation.name=='m_cna') %>% nrow())/2
+  (x$mutations %>% dplyr::filter(Mutation.name=='m_cna') %>% nrow())/2
 }
 
 get_mutation = function(x, name, type=NA, index=NA, source=NA, coeff=NA){
-  m = x$mutations %>% filter(Mutation.name==name)
-  if (!is.na(type)) m = m %>% filter(Mutation.type == type)
-  if (!is.na(index)) m = m %>% filter(Mutation.index == index)
-  if (!is.na(source)) m = m %>% filter(Mutation.source == source)
-  if (!is.na(coeff)) m = m %>% filter(Mutation.coeff == coeff)
-  m %>% pull(Mutation.value) %>% as.integer()
+  m = x$mutations %>% dplyr::filter(Mutation.name==name)
+  if (!is.na(type)) m = m %>% dplyr::filter(Mutation.type == type)
+  if (!is.na(index)) m = m %>% dplyr::filter(Mutation.index == index)
+  if (!is.na(source)) m = m %>% dplyr::filter(Mutation.source == source)
+  if (!is.na(coeff)) m = m %>% dplyr::filter(Mutation.coeff == coeff)
+  m %>% dplyr::pull(Mutation.value) %>% as.integer()
 }
 
 ## Get Clinical Data
 get_sample = function(x, sample='1'){
-  x$clinical_records %>% filter(Clinical.name=='Sample', Clinical.type==sample) %>% pull(Clinical.value.start)
+  x$clinical_records %>% dplyr::filter(Clinical.name=='Sample', Clinical.type==sample) %>% dplyr::pull(Clinical.value.start)
 }
 
 get_therapy_driver = function(x){
-  start = x$clinical_records %>% filter(Clinical.name=='Therapy driver') %>% pull(Clinical.value.start)
-  end = x$clinical_records %>% filter(Clinical.name=='Therapy driver') %>% pull(Clinical.value.end)
+  start = x$clinical_records %>% dplyr::filter(Clinical.name=='Therapy driver') %>% dplyr::pull(Clinical.value.start)
+  end = x$clinical_records %>% dplyr::filter(Clinical.name=='Therapy driver') %>% dplyr::pull(Clinical.value.end)
   list('start'=start,'end'=end)
 }
 
 get_n_th = function(x, name = 'Therapy step'){
-  x$clinical_records %>% filter(Clinical.name==name) %>% nrow()
+  x$clinical_records %>% dplyr::filter(Clinical.name==name) %>% nrow()
 }
 
 get_n_th_type = function(x, name = 'Therapy step'){
-  n_th_type = length(x$clinical_records %>% filter(Clinical.name== name) %>% pull(Clinical.type) %>% unique() )
+  n_th_type = length(x$clinical_records %>% filter(Clinical.name== name) %>% dplyr::pull(Clinical.type) %>% unique() )
   if (is.null(n_th_type)){n_th_type=0}
   n_th_type
 }
 
 start_th = function(x, type='Therapy step'){
-  x$clinical_records %>% filter(Clinical.name==type) %>% pull(Clinical.value.start)
+  x$clinical_records %>% dplyr::filter(Clinical.name==type) %>% dplyr::pull(Clinical.value.start)
 }
 
 end_th_step = function(x){
-  x$clinical_records %>% filter(Clinical.name=='Therapy step') %>% pull(Clinical.value.end)
+  x$clinical_records %>% dplyr::filter(Clinical.name=='Therapy step') %>% dplyr::pull(Clinical.value.end)
 }
 
 start_chemo = function(x){
   chemo_names = x$clinical_records$Clinical.name[grepl("Chemotherapy", x$clinical_records$Clinical.name)]
-  start = x$clinical_records %>% filter(Clinical.name %in% chemo_names) %>% pull(Clinical.value.start) #%>% arrange()
+  start = x$clinical_records %>% dplyr::filter(Clinical.name %in% chemo_names) %>% dplyr::pull(Clinical.value.start) #%>% arrange()
   start[1]
 }
 
 end_chemo = function(x){
   chemo_names = x$clinical_records$Clinical.name[grepl("Chemotherapy", x$clinical_records$Clinical.name)]
-  end = x$clinical_records %>% filter(Clinical.name %in% chemo_names) %>% pull(Clinical.value.end) #%>% arrange()
+  end = x$clinical_records %>% dplyr::filter(Clinical.name %in% chemo_names) %>% dplyr::pull(Clinical.value.end) #%>% arrange()
   end[length(end)]
 }
 
 get_type_th_step = function(x, name='Therapy step'){
-  as.integer(x$clinical_records %>% filter(Clinical.name==name) %>% pull(Clinical.type) )#%>% unique()
+  as.integer(x$clinical_records %>% dplyr::filter(Clinical.name==name) %>% dplyr::pull(Clinical.type) )#%>% unique()
 }
 
 
 ## Get parameters
 get_length = function(x, model=NA){
   if (is.na(model)){
-    return(x$parameters %>% filter(Parameter.name=="l_diploid") %>% pull(Parameter.value) %>% unique() %>% as.double())
+    return(x$parameters %>% dplyr::filter(Parameter.name=="l_diploid") %>% dplyr::pull(Parameter.value) %>% unique() %>% as.double())
   }
   if (model=="CNA"){
-    return(x$parameters %>% filter(Parameter.name=="l_CNA") %>% pull(Parameter.value) %>% unique() %>% as.double())
+    return(x$parameters %>% dplyr::filter(Parameter.name=="l_CNA") %>% dplyr::pull(Parameter.value) %>% unique() %>% as.double())
   }
   if (model=="WGD"){
-    return(x$parameters %>% filter(Parameter.name=="l_tetraploid") %>% pull(Parameter.value) %>% as.double())
+    return(x$parameters %>% dplyr::filter(Parameter.name=="l_tetraploid") %>% dplyr::pull(Parameter.value) %>% as.double())
   }
   # if (karyotype=="2:0" & model=="WGD"){
   #   return(x$parameters %>% filter(Parameter.name=="l_cnloh") %>% pull(Parameter.value))
@@ -90,7 +90,7 @@ get_length = function(x, model=NA){
 }
 
 get_coeff_CNA = function(x){
-  coeff_beta = x$parameters %>% filter(Parameter.name=="coeff_CNA") %>% pull(Parameter.value)
+  coeff_beta = x$parameters %>% dplyr::filter(Parameter.name=="coeff_CNA") %>% dplyr::pull(Parameter.value)
   coeff_alpha = c()
   for (c in coeff_beta){
     if (c=="2"){coeff_alpha=c(coeff_alpha, 1)}
@@ -110,72 +110,72 @@ get_coeff_CNA = function(x){
 get_mutation_rate = function(x, type, index=NA){
   # type = clock, clock_driver, driver, th
   # index = 1...n_th_step_type
-  mu = x$parameters %>% filter(Parameter.name==paste0("mu_", type))
-  if (!is.na(index)) mu = mu %>% filter(Parameter.index==index)
-  mu %>% pull(Parameter.value) %>% as.double()
+  mu = x$parameters %>% dplyr::filter(Parameter.name==paste0("mu_", type))
+  if (!is.na(index)) mu = mu %>% dplyr::filter(Parameter.index==index)
+  mu %>% dplyr::pull(Parameter.value) %>% as.double()
 }
 
 get_driver_type = function(x){
-  (x$mutations %>% filter(Mutation.name=='m_driver') %>% pull(Mutation.type) %>% as.integer()) -1
+  (x$mutations %>% dplyr::filter(Mutation.name=='m_driver') %>% dplyr::pull(Mutation.type) %>% as.integer()) -1
 }
 
 get_cycles_drivers = function(x){
-  x$clinical_records %>% filter(Clinical.name=='Therapy driver') %>% nrow()
+  x$clinical_records %>% dplyr::filter(Clinical.name=='Therapy driver') %>% nrow()
 }
 
 get_prior_hyperparameters = function(x, name){
   # name = mu_driver*, mu_th_step*, scale_th_cauchy*, omega*, mrca*, s*
   if (name %in% x$parameters$Parameter.name){
-    x$parameters %>% filter(Parameter.name==name) %>% pull(Parameter.value) %>% as.double()
+    x$parameters %>% dplyr::filter(Parameter.name==name) %>% dplyr::pull(Parameter.value) %>% as.double()
   }else{
-    alpha= x$parameters %>% filter(Parameter.name==paste0(name,'_alpha')) %>% pull(Parameter.value) %>% as.double()
-    beta= x$parameters %>% filter(Parameter.name==paste0(name,'_beta')) %>% pull(Parameter.value) %>% as.double()
+    alpha= x$parameters %>% dplyr::filter(Parameter.name==paste0(name,'_alpha')) %>% dplyr::pull(Parameter.value) %>% as.double()
+    beta= x$parameters %>% dplyr::filter(Parameter.name==paste0(name,'_beta')) %>% dplyr::pull(Parameter.value) %>% as.double()
     list('alpha'=alpha, 'beta'=beta)
   }
 }
 
 get_k_step = function(x){
-  x$parameters %>% filter(Parameter.name=='k_step') %>% pull(Parameter.value) %>% as.double()
+  x$parameters %>% dplyr::filter(Parameter.name=='k_step') %>% dplyr::pull(Parameter.value) %>% as.double()
 }
 
 get_max_th = function(x){
 
-  max_index = x$clinical_records %>% filter(Clinical.name %in% c("Therapy step", "Therapy cauchy", "Therapy driver"))
+  max_index = x$clinical_records %>% dplyr::filter(Clinical.name %in% c("Therapy step", "Therapy cauchy", "Therapy driver"))
 
   if (nrow(max_index) > 0){
-    max_index = max_index %>% pull(Clinical.type) %>% as.integer() %>% max() %>% as.character()
-    return(min(x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>% pull(Clinical.value.start)))
+    max_index = max_index %>% dplyr::pull(Clinical.type) %>% as.integer() %>% max() %>% as.character()
+    return(min(x$clinical_records %>% dplyr::filter(Clinical.name!="Sample", Clinical.type == max_index) %>% dplyr::pull(Clinical.value.start)))
   }else{
-    return(x$clinical_records %>% filter(Clinical.name=="Sample", Clinical.type == 1) %>% pull(Clinical.value.start))
+    return(x$clinical_records %>% dplyr::filter(Clinical.name=="Sample", Clinical.type == 1) %>% dplyr::pull(Clinical.value.start))
   }
   #min(dates)
 }
 
 get_exponential_growth = function(x){
-  x$parameters %>% filter(Parameter.name=='exponential_growth') %>% pull(Parameter.value) %>% as.integer()
+  x$parameters %>% dplyr::filter(Parameter.name=='exponential_growth') %>% dplyr::pull(Parameter.value) %>% as.integer()
 }
 
 get_N_min = function(x){
-  N_min = x$parameters %>% filter(Parameter.name=='N_min') %>% pull(Parameter.value) %>% as.double()
+  N_min = x$parameters %>% dplyr::filter(Parameter.name=='N_min') %>% dplyr::pull(Parameter.value) %>% as.double()
   if (length(N_min) < 2){return(c(N_min, N_min))}else{N_min}
 }
 
 get_N_max= function(x){
-  N_max = x$parameters %>% filter(Parameter.name=='N_max') %>% pull(Parameter.value) %>% as.double()
+  N_max = x$parameters %>% dplyr::filter(Parameter.name=='N_max') %>% dplyr::pull(Parameter.value) %>% as.double()
   if (length(N_max) < 2){return(c(N_max, N_max))}else{N_max}
 }
 
 get_cauchy_scales = function(x){
-  x$parameters %>% filter(Parameter.name == "cauchy_scales") %>% pull(Parameter.value) %>% as.double()
+  x$parameters %>% dplyr::filter(Parameter.name == "cauchy_scales") %>% dplyr::pull(Parameter.value) %>% as.double()
 }
 
 get_phi = function(x, name){
   # name : th_cauchy, th_step, cna, clock, driver
-  x$parameters %>% filter(Parameter.name == paste0("phi_",name)) %>% pull(Parameter.value) %>% as.double()
+  x$parameters %>% dplyr::filter(Parameter.name == paste0("phi_",name)) %>% dplyr::pull(Parameter.value) %>% as.double()
 }
 
 get_extra_therapy = function(x){
-  if (nrow(x$clinical_records %>% filter(!(Clinical.name %in% c("Sample", "Chemotherapy")))) > 0){
+  if (nrow(x$clinical_records %>% dplyr::filter(!(Clinical.name %in% c("Sample", "Chemotherapy")))) > 0){
     1
   }else{
     0

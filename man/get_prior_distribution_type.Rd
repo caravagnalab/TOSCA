@@ -10,7 +10,7 @@ get_prior_distribution_type(par)
 \item{par}{Name of the parameter of interest.}
 }
 \value{
-Name of the prior distribution used in the model.
+Name of the prior distribution used in the model
 }
 \description{
 Return prior distribution type for each parameter

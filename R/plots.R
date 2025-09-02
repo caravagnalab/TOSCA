@@ -4,8 +4,7 @@
 #'
 #' @param par Name of the parameter of interest.
 #'
-#' @return Name of the prior distribution used in the model.
-#' @export
+#' @return Name of the prior distribution used in the model
 #'
 #' @examples
 get_prior_distribution_type = function(par){
@@ -14,11 +13,38 @@ get_prior_distribution_type = function(par){
     'prior_distribution' = c("uniform", "uniform", "uniform", "beta", "gamma", "gamma","beta")
   )
 
-  prior_distributions %>% filter(parameter == par) %>% pull(prior_distribution)
+  prior_distributions %>% dplyr::filter(parameter == par) %>% dplyr::pull(prior_distribution)
 
 }
 
-# need to adjust this function for parameters with multiple entries!
+#' Empty plot
+#'
+#' @return Creates and empty plot
+#'
+#' @examples
+eplot = function (){
+  ggplot2::ggplot(data = data.frame(x = 0, y = 0, label = "X"),
+                  ggplot2::aes(x = x, y = y, label = label)) + CNAqc:::my_ggplot_theme() +
+    ggplot2::theme(panel.border = ggplot2::element_rect(colour = "black",
+                                                        fill = NA, linetype = "dashed"), panel.background = ggplot2::element_rect(fill = "gainsboro"),
+                   axis.title = ggplot2::element_blank(), axis.text = ggplot2::element_blank(),
+                   axis.ticks = ggplot2::element_blank(), axis.line = ggplot2::element_blank())
+}
+
+#' Customized ggplot theme
+#'
+#' @param cex
+#'
+#' @return Customized ggplot theme
+#'
+#' @examples
+my_ggplot_theme = function (cex = 1)
+{
+  cex_opt = getOption("CNAqc_cex", default = 1)
+  ggplot2::theme_light(base_size = 10 * cex_opt) + ggplot2::theme(legend.position = "bottom",
+                                                                  legend.key.size = ggplot2::unit(0.3 * cex_opt, "cm"),
+                                                                  panel.background = ggplot2::element_rect(fill = "white"))
+}
 
 #' Prior vs Posterior distribution of inferred parameter
 #'
@@ -33,7 +59,7 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
 
   posterior = get_inferred_parameters(x)
 
-  if (!(parameter %in% colnames(posterior)) & parameter != "mrca") return(CNAqc:::eplot())
+  if (!(parameter %in% colnames(posterior)) & parameter != "mrca") return(eplot())
 
   if (grepl("\\[", parameter)){
     prior = "gamma"
@@ -48,8 +74,8 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
 
       }
 
-  if (prior == 'gamma') draws = rgamma(1000000, alpha, beta)
-  if (prior == 'beta') draws = rbeta(1000000, alpha, beta)
+  if (prior == 'gamma') draws = stats::rgamma(1000000, alpha, beta)
+  if (prior == 'beta') draws = stats::rbeta(1000000, alpha, beta)
 
   if (parameter == "mrca") { posterior = as.data.frame(posterior[["rho_mrca"]]) } else { posterior = as.data.frame(posterior[[parameter]]) }
 
@@ -58,11 +84,11 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
 
   if (lb < 1e-10 & ub>2){
     density_post_vs_prior = ggplot2::ggplot() +
-      CNAqc:::my_ggplot_theme() +
-      geom_histogram(data= posterior, aes(x= posterior[,1], y = ..density..),
+      my_ggplot_theme() +
+      ggplot2::geom_histogram(data= posterior, ggplot2::aes(x= posterior[,1], y = ..density..),
                      bins = 100,
                      alpha= .6)+
-      geom_vline(
+      ggplot2::geom_vline(
         xintercept = mean(posterior[,1]),
         color = 'indianred3',
         linetype = 'dashed',
@@ -70,13 +96,13 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
       )
   }else{
     density_post_vs_prior = ggplot2::ggplot() +
-      geom_density(aes(x = draws), alpha=.6, color= 'white', fill= 'grey') +
+      ggplot2::geom_density(ggplot2::aes(x = draws), alpha=.6, color= 'white', fill= 'grey') +
       # ggplot2::theme_bw() +
-      CNAqc:::my_ggplot_theme() +
-      geom_histogram(data= posterior, aes(x= posterior[,1], y = ..density..),
+      my_ggplot_theme() +
+      ggplot2::geom_histogram(data= posterior, ggplot2::aes(x= posterior[,1], y = ..density..),
                      bins = 100,
                      alpha= .6)+
-      geom_vline(
+      ggplot2::geom_vline(
         xintercept = mean(posterior[,1]),
         color = 'indianred3',
         linetype = 'dashed',
@@ -168,7 +194,6 @@ plot_prior_vs_posterior = function(x){
 #' @param x TOSCA object
 #'
 #' @return dataframe with columns: name, the name of the mutation cluster, pass: whether the ppc test was passed, i.e. the real number of mutations falls within 1 sd from the mean of the posterior predictive distribution
-#' @export
 #'
 #' @examples
 check_ppc = function(x){
@@ -237,7 +262,7 @@ check_ppc = function(x){
     }
   }
 
-  return(ppc_df %>% select(name, pass))
+  return(ppc_df %>% dplyr::select(name, pass))
 
 }
 
@@ -274,45 +299,45 @@ plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
   ppc = ppc %>%
       dplyr::rename('m_rep_1' = rep_name1,
                     'm_rep_2' = rep_name2) %>%
-      mutate(pp = (abs(m_rep_1 - mut1_real) + abs(m_rep_1 - mut2_real) )) %>%
-      group_by(m_rep_1, m_rep_2, pp) %>%
-      summarise(n = n())
+    dplyr::mutate(pp = (abs(m_rep_1 - mut1_real) + abs(m_rep_1 - mut2_real) )) %>%
+    dplyr::group_by(m_rep_1, m_rep_2, pp) %>%
+    dplyr::summarise(n = n())
 
-  ggplot(ppc,aes(m_rep_1, m_rep_2, color= pp, alpha = n), size=.05) +
+  ggplot2::ggplot(ppc,ggplot2::aes(m_rep_1, m_rep_2, color= pp, alpha = n), size=.05) +
       ggplot2::geom_point() +
       CNAqc:::my_ggplot_theme() +
-      scale_color_gradient(
+    ggplot2::scale_color_gradient(
         high = "goldenrod",
         low = "purple4"
       )+
-      geom_point(
+    ggplot2::geom_point(
         data =
           data.frame(x = mut1_real, y = mut2_real),
-        aes(x = x, y = y),
+        ggplot2::aes(x = x, y = y),
         inherit.aes = FALSE,
         color = 'indianred3',
         size = 3,
         alpha = 1
       ) +
-      geom_vline(
+    ggplot2::geom_vline(
         xintercept = mut1_real,
         color = 'indianred3',
         linetype = 'dashed',
         size = .5
       ) +
-      geom_hline(
+    ggplot2::geom_hline(
         yintercept = mut2_real,
         color = 'indianred3',
         linetype = 'dashed',
         size = .5
       ) +
-      ylab(bquote(.(rlang::sym('m'))['cl'])) +
-      scale_alpha(range = c(.5, 1)) +
-      guides(
+    ggplot2::ylab(bquote(.(rlang::sym('m'))['cl'])) +
+    ggplot2::scale_alpha(range = c(.5, 1)) +
+    ggplot2::guides(
         fill = 'none',
         alpha = 'none'
-      ) + xlab(original_name_1) + ylab(original_name_2)+
-    theme(legend.position = "none")
+      ) + ggplot2::xlab(original_name_1) + ggplot2::ylab(original_name_2)+
+    ggplot2::theme(legend.position = "none")
 
   }
 
@@ -417,20 +442,20 @@ plot_ppc = function(x){
 #' @examples
 plot_expected_N = function(x){
 
-  posterior = get_inferred_parameters(x) %>% as_tibble()
+  posterior = get_inferred_parameters(x) %>% dplyr::as_tibble()
   N_rel = exp(posterior$omega*(get_sample(x, sample ='2')-posterior$t_mrca))
   N_pre = exp(posterior$omega*(get_sample(x, sample ='1')-posterior$t_mrca_primary))
 
-  primary_name = x$clinical_records %>% filter(Clinical.name == "Sample", Clinical.type == "1") %>% pull(Clinical.original.name)
-  relapse_name = x$clinical_records %>% filter(Clinical.name == "Sample", Clinical.type == "2") %>% pull(Clinical.original.name)
+  primary_name = x$clinical_records %>% dplyr::filter(Clinical.name == "Sample", Clinical.type == "1") %>% dplyr::pull(Clinical.original.name)
+  relapse_name = x$clinical_records %>% dplyr::filter(Clinical.name == "Sample", Clinical.type == "2") %>% dplyr::pull(Clinical.original.name)
 
-  N_rel_plot = ggplot() + CNAqc:::my_ggplot_theme() +
-    geom_histogram(aes(x=log(N_rel)))+
-    scale_x_log10() +
-    xlab(paste0("Tumor size at ", relapse_name, "\n(log-scale)"))
-  N_pre_plot = ggplot() + CNAqc:::my_ggplot_theme() +
-    geom_histogram(aes(x=log(N_pre)))+
-    xlab(paste0("Tumor size at ", primary_name, "\n(log-scale)"))
+  N_rel_plot = ggplot2::ggplot() + my_ggplot_theme() +
+    ggplot2::geom_histogram(ggplot2::aes(x=log(N_rel)))+
+    ggplot2::scale_x_log10() +
+    ggplot2::xlab(paste0("Tumor size at ", relapse_name, "\n(log-scale)"))
+  N_pre_plot = ggplot2::ggplot() + my_ggplot_theme() +
+    ggplot2::geom_histogram(ggplot2::aes(x=log(N_pre)))+
+    ggplot2::xlab(paste0("Tumor size at ", primary_name, "\n(log-scale)"))
 
   ggpubr::ggarrange(plotlist = list(N_rel_plot, N_pre_plot), nrow = 2)
 }
@@ -461,21 +486,21 @@ plot_timing = function(x)
   clinical_timeline = x$clinical_records
   estimates = get_inferred_parameters(x)
 
-  endpoints = clinical_timeline %>% filter(Clinical.name=="Sample")
-  therapies = clinical_timeline %>% filter(Clinical.name!="Sample")
+  endpoints = clinical_timeline %>% dplyr::filter(Clinical.name=="Sample")
+  therapies = clinical_timeline %>% dplyr::filter(Clinical.name!="Sample")
 
   # 1. time posterior plot
   timing_estimates = estimates %>%
     dplyr::select(starts_with('t_')) %>%
     apply(2, convert_date_real) %>%
-    as_tibble()
+    dplyr::as_tibble()
   #times = timing_estimates$variable %>% unique()
 
   for (i in 1:ncol(timing_estimates)){
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
   }
 
-  timing_estimates = timing_estimates %>% reshape2::melt() %>% as_tibble()
+  timing_estimates = timing_estimates %>% reshape2::melt() %>% dplyr::as_tibble()
   times = timing_estimates$variable %>% unique()
   therapy_names = therapies$Clinical.original.name %>% unique()
   var_colors = ggsci::pal_npg()(length(times)+length(therapy_names))
@@ -484,27 +509,27 @@ plot_timing = function(x)
   clinical_colors = var_colors[length(times)+1:length(therapy_names)]
   names(clinical_colors) = therapy_names
   times_colors_df = data.frame("variable" = names(times_colors), "color"=times_colors)
-  timing_estimates = left_join(timing_estimates, times_colors_df, by = "variable")
+  timing_estimates = dplyr::left_join(timing_estimates, times_colors_df, by = "variable")
 
-  posterior_plot = ggplot() +
-    geom_histogram(
+  posterior_plot = ggplot2::ggplot() +
+    ggplot2::geom_histogram(
       data = timing_estimates %>% dplyr::rename(Date = value),
-      aes(Date, fill = color, ..density..),
+      ggplot2::aes(Date, fill = color, ..density..),
       inherit.aes = FALSE,
       bins = 150
     ) +
-    geom_point(
+    ggplot2::geom_point(
       data = endpoints,
-      aes(x = as.Date(convert_date_real(Clinical.value.start)), y = 0),
+      ggplot2::aes(x = as.Date(convert_date_real(Clinical.value.start)), y = 0),
       inherit.aes = FALSE,
       size = 3
     ) +
-    CNAqc:::my_ggplot_theme()+
-    theme(legend.position = 'bottom')+
-    scale_fill_identity()
+    my_ggplot_theme()+
+    ggplot2::theme(legend.position = 'bottom')+
+    ggplot2::scale_fill_identity()
     #scale_fill_manual(values = times_colors)
 
-  hist_data <- ggplot_build(posterior_plot)$data[[1]]
+  hist_data <- ggplot2::ggplot_build(posterior_plot)$data[[1]]
   ymin <- 0
   ymax <- max(hist_data$y)
 
@@ -513,27 +538,27 @@ plot_timing = function(x)
 
 
   if ("t_dormancy_start" %in% timing_estimates$variable){
-    MAP_dormancy_start = timing_estimates %>% filter(variable == "t_dormancy_start") %>% pull(value) %>% mean()
-    MAP_dormancy_end = timing_estimates %>% filter(variable == "t_dormancy_end") %>% pull(value) %>% mean()
-    timing_estimates = timing_estimates %>% filter(!(variable %in% c("t_dormancy_start","t_dormancy_end")))
+    MAP_dormancy_start = timing_estimates %>% dplyr::filter(variable == "t_dormancy_start") %>% dplyr::pull(value) %>% mean()
+    MAP_dormancy_end = timing_estimates %>% dplyr::filter(variable == "t_dormancy_end") %>% dplyr::pull(value) %>% mean()
+    timing_estimates = timing_estimates %>% dplyr::filter(!(variable %in% c("t_dormancy_start","t_dormancy_end")))
 
-    posterior_plot = ggplot() +
-      geom_histogram(
+    posterior_plot = ggplot2::ggplot() +
+      ggplot2::geom_histogram(
         data = timing_estimates %>% dplyr::rename(Date = value),
-        aes(Date, fill = variable, ..density..),
+        ggplot2::aes(Date, fill = variable, ..density..),
         inherit.aes = FALSE,
         bins = 150
       ) +
-      geom_point(
+      ggplot2::geom_point(
         data = endpoints,
-        aes(x = as.Date(convert_date_real(Clinical.value.start)), y = 0),
+        ggplot2::aes(x = as.Date(convert_date_real(Clinical.value.start)), y = 0),
         inherit.aes = FALSE,
         size = 3
-      ) + CNAqc:::my_ggplot_theme()+
-      theme(legend.position = 'bottom')+
-      scale_fill_manual(values = var_colors)+
-      geom_rect(
-        aes(xmin = MAP_dormancy_start,
+      ) + my_ggplot_theme()+
+      ggplot2::theme(legend.position = 'bottom')+
+      ggplot2::scale_fill_manual(values = var_colors)+
+      ggplot2::geom_rect(
+        ggplot2::aes(xmin = MAP_dormancy_start,
             xmax = MAP_dormancy_end),
         ymin = 0,
         ymax = Inf,
@@ -544,13 +569,13 @@ plot_timing = function(x)
       )
   }
 
-  therapies = therapies %>% mutate(Duration = Clinical.value.end-Clinical.value.start) %>% mutate(short=ifelse(Duration < 30/365, T, F))
+  therapies = therapies %>% dplyr::mutate(Duration = Clinical.value.end-Clinical.value.start) %>% dplyr::mutate(short=ifelse(Duration < 30/365, T, F))
   new_col = data.frame(Clinical.original.name = names(clinical_colors), colors = clinical_colors)
-  therapies = left_join(therapies,new_col, by="Clinical.original.name")
+  therapies = dplyr::left_join(therapies,new_col, by="Clinical.original.name")
 
-  posterior_plot = posterior_plot + geom_rect(
-    data = therapies %>% filter(short == F),
-    aes(xmin = as.Date(convert_date_real(Clinical.value.start)),
+  posterior_plot = posterior_plot + ggplot2::geom_rect(
+    data = therapies %>% dplyr::filter(short == F),
+    ggplot2::aes(xmin = as.Date(convert_date_real(Clinical.value.start)),
         xmax = as.Date(convert_date_real(Clinical.value.end)),
         fill=colors),
     ymin = 0,
@@ -560,94 +585,103 @@ plot_timing = function(x)
     size = 0.5,
     alpha = .5
   ) +
-    geom_segment(
-      data = therapies %>% filter(short == T),
-      aes(x=as.Date(convert_date_real(Clinical.value.start)),
+    ggplot2::geom_segment(
+      data = therapies %>% dplyr::filter(short == T),
+      ggplot2::aes(x=as.Date(convert_date_real(Clinical.value.start)),
           xend=as.Date(convert_date_real(Clinical.value.start)),
-          y=0, yend=Inf, color=colors), alpha=.5)  +
-    guides(color = "none")
+          y=0, yend=Inf), color = therapies %>% dplyr::filter(short == T) %>% dplyr::pull(colors), alpha=1)  +
+    ggplot2::guides(color = "none")
 
   posterior_plot = posterior_plot +
-    geom_segment(
+    ggplot2::geom_segment(
       data = endpoints,
-      aes(x = as.Date(convert_date_real(Clinical.value.start)),
+      ggplot2::aes(x = as.Date(convert_date_real(Clinical.value.start)),
           xend = as.Date(convert_date_real(Clinical.value.start)),
           y=0,
           yend = ylab_pos),
       size = .5, linetype="dashed"
     )+
-    geom_label(
+    ggplot2::geom_label(
       data = endpoints,
-      aes(x = as.Date(convert_date_real(Clinical.value.start)), y = ylab_pos, label=Clinical.original.name),
+      ggplot2::aes(x = as.Date(convert_date_real(Clinical.value.start)), y = ylab_pos, label=Clinical.original.name),
       size = 3
     )
 
-  library(cowplot)
+  dummy_guide <- function(
+    labels = NULL,
+    ...,
+    title = NULL,
+    key   = draw_key_point,
+    guide_args = list(),
+    min_value_time
+  ) {
+    aesthetics <- list(...)
+    n <- max(lengths(aesthetics), 0)
+    labels <- labels %||% seq_len(n)
 
-  custom_legend_therapies <- ggplot(legend_therapies, aes(x=1, y=Therapy)) +
-    geom_point(aes(color=Color), shape=15, size=4) +
-    geom_text(aes(label=Therapy), hjust=0,  size = 4, nudge_x = 1e-13) +   # small nudge
-    scale_color_identity() +
-    theme_void() +
-    theme(legend.position="none")
+    aesthetics$alpha <- aesthetics$alpha %||% rep(1, n)
 
-  vector_y = rep(c(1,2), nrow(legend_times)/2)
-  if (!(nrow(legend_times) %% 2 == 0 )) vector_y=c(vector_y, 1)
+    guide_args$override.aes <- guide_args$override.aes %||% aesthetics
+    guide <- do.call(guide_legend, guide_args)
 
-  custom_legend_times <- ggplot(legend_times %>% mutate(n = 1:nrow(legend_times) -1) %>%
-                                  mutate(x = round(n/2-.1,0), y = vector_y),
-                                aes(x=x, y=vector_y)) +
-    geom_point(aes(color=Color), shape=15, size=4) +
-    geom_text(aes(label=Times), hjust=0, size = 4, nudge_x = 1e-13) +     # small nudge
-    scale_color_identity() +
-    theme_void() +
-    theme(legend.position="none")
+    ggplot2::update_geom_defaults("point", list(dummy = "x"))
 
-  patchwork::wrap_plots(posterior_plot,
-                        custom_legend_therapies,
-                        custom_legend_times,
-                        design =
-                          "AAAAAAA
-                           AAAAAAA
-                           AAAAAAA
-                           AAAAAAA
-                           AAAAAAA
-                           #BBCCC#")
+    dummy_geom <- ggplot2::geom_point(
+      data = data.frame(
+        x = rep(min_value_time, n),
+        y = rep(Inf, n),
+        dummy = factor(labels, levels = labels)   # preserve order!
+      ),
+      ggplot2::aes(x, y, dummy = dummy),
+      alpha = 0,
+      key_glyph = key
+    )
+
+    fills <- aesthetics$fill
+
+    dummy_scale <- ggplot2::discrete_scale(
+      "dummy", "dummy_scale",
+      palette = function(x) {
+        stats::setNames(fills, labels)[x]
+      },
+      name = title,
+      guide = guide
+    )
+
+    list(dummy_geom, dummy_scale)
+  }
 
 
-  # stack them below the plot
-  final_plot <- plot_grid(
-    posterior_plot,
-    custom_legend_therapies,
-    custom_legend_times,
-    ncol=1,
-    rel_heights=c(4,1,1)
+  posterior_plot +
+    dummy_guide(
+    labels = c(names(times_colors), names(clinical_colors)),
+    fill   = c(times_colors, clinical_colors),
+    colour = NA,
+    title  = "Inferred times and treatments",
+    key = draw_key_polygon,
+    min_value_time = min(timing_estimates$value, na.rm = TRUE)
   )
-
-  final_plot
-
-  posterior_plot
 
 }
 
 ## Diagnostics
-plot_chains = function(x, pars=NA){
-  bayesplot::mcmc_trace(get_inferred_parameters(x))
-  if (!is.na(pars)){
-    bayesplot::mcmc_trace(get_inferred_parameters(x), pars = pars)
-  }
-}
-plot_density=function(x, pars=NA){
-  bayesplot::mcmc_dens(get_inferred_parameters(x))
-  if (!is.na(pars)){
-    bayesplot::mcmc_trace(get_inferred_parameters(x), pars = pars)
-  }
-}
-
-get_convergence =function(x){
-  r_hat<- as.data.frame(x$tosca_fit$summary)$rhat
-  if ( sum(r_hat < 1.1) == length(r_hat)){return(TRUE)}else{return(FALSE)}
-}
+# plot_chains = function(x, pars=NA){
+#   bayesplot::mcmc_trace(get_inferred_parameters(x))
+#   if (!is.na(pars)){
+#     bayesplot::mcmc_trace(get_inferred_parameters(x), pars = pars)
+#   }
+# }
+# plot_density=function(x, pars=NA){
+#   bayesplot::mcmc_dens(get_inferred_parameters(x))
+#   if (!is.na(pars)){
+#     bayesplot::mcmc_trace(get_inferred_parameters(x), pars = pars)
+#   }
+# }
+#
+# get_convergence =function(x){
+#   r_hat<- as.data.frame(x$tosca_fit$summary)$rhat
+#   if ( sum(r_hat < 1.1) == length(r_hat)){return(TRUE)}else{return(FALSE)}
+# }
 #get_diverget_transition = function(patient){}
 
 

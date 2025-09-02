@@ -44,6 +44,8 @@ fit = function(
 
   cat("\n--- Start Sampling ---\n")
 
+  library(cmdstanr)
+
   fit <- model$sample(data = data,
                         iter_warmup = warm_up,
                         iter_sampling = n_iterations,

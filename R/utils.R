@@ -1,4 +1,4 @@
-library(dplyr)
+# library(dplyr)
 
 check_clinical_input = function(samples, therapies){
 
@@ -8,7 +8,7 @@ check_clinical_input = function(samples, therapies){
     new_entry = data.frame(
       "Clinical.name"	= "Sample",
       "Clinical.type"	= as.character(c),
-      "Clinical.value.start"= TOSCA:::convert_real_date(samples$Date[c]),
+      "Clinical.value.start"= convert_real_date(samples$Date[c]),
       "Clinical.value.end" = NA,
       "Clinical.index"=NA,
       "Clinical.original.name"=samples$Name[c]
@@ -20,7 +20,7 @@ check_clinical_input = function(samples, therapies){
 
   add_therapy_name = function(clinical_records, therapies, type){
 
-    therapy_names = therapies %>% filter(Class == type) %>% pull(Name) %>% unique()
+    therapy_names = therapies %>% dplyr::filter(Class == type) %>% dplyr::pull(Name) %>% unique()
     n_therapy_types = length(therapy_names)
 
     if (n_therapy_types > 0){
@@ -31,13 +31,13 @@ check_clinical_input = function(samples, therapies){
 
       for (t in 1:n_therapy_types){
         #therapy_df = data.frame()
-        sub_df = therapies %>% filter(Name==therapy_names[t])
+        sub_df = therapies %>% dplyr::filter(Name==therapy_names[t])
         for (tt in 1:nrow(sub_df)){
           new_entry = data.frame(
             "Clinical.name"	= type,
             "Clinical.type"	= t,
-            "Clinical.value.start"= TOSCA:::convert_real_date(sub_df$Start[tt]),
-            "Clinical.value.end" = TOSCA:::convert_real_date(sub_df$End[tt]),
+            "Clinical.value.start"= convert_real_date(sub_df$Start[tt]),
+            "Clinical.value.end" = convert_real_date(sub_df$End[tt]),
             "Clinical.index"=as.character(tt),
             "Clinical.original.name"=sub_df$Name[tt]
           )
@@ -61,11 +61,11 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
   mutations_new = data.frame()
   parameters_new = data.frame()
 
-  l_diploid = mutations %>% filter(Karyptype=="1:1") %>% pull(Length) %>% max()
-  l_CNA = mutations %>% filter(Karyptype!="1:1") %>% pull(Length) %>% unique()
+  l_diploid = mutations %>% dplyr::filter(Karyptype=="1:1") %>% dplyr::pull(Length) %>% max()
+  l_CNA = mutations %>% dplyr::filter(Karyptype!="1:1") %>% dplyr::pull(Length) %>% unique()
   n_cna = length(l_CNA)
-  drug_names = transformed_clinical_records %>% filter(Clinical.name == "Therapy step") %>%
-    dplyr::arrange(Clinical.value.start) %>% pull(Clinical.original.name) %>% unique()
+  drug_names = transformed_clinical_records %>% dplyr::filter(Clinical.name == "Therapy step") %>%
+    dplyr::arrange(Clinical.value.start) %>% dplyr::pull(Clinical.original.name) %>% unique()
 
   ### Create mutations dataframe
   for (m in 1:nrow(mutations)){
@@ -128,7 +128,7 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
   parameters_coeff = data.frame()
   if (n_cna > 0){
     for (n in 1:n_cna){
-      karyo = mutations %>% filter(Length==l_CNA[n]) %>% pull(Karyptype) %>% unique()
+      karyo = mutations %>% dplyr::filter(Length==l_CNA[n]) %>% dplyr::pull(Karyptype) %>% unique()
       if (karyo == "2:0") coeff="2" else coeff="4"
       parameters_coeff = rbind(
         parameters_coeff,
@@ -138,19 +138,19 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
 
   # check compulsory parameters
   if (!("mu_clock" %in% parameters$Parameter.name)) stop(paste("Missing required parameter: mu_clock"))
-  mu_clock = parameters %>% filter("Parameter.name" == "mu_clock") %>% pull("Parameter.value")
+  mu_clock = parameters %>% dplyr::filter("Parameter.name" == "mu_clock") %>% dplyr::pull("Parameter.value")
 
   # add compulsory parameters if not present
   # apart from mu_clock, which is compulsory, all mu, if not provided are approximated
   # based on the number of mutation and the exposure time
   get_omega_approximation = function(transformed_clinical_records){
     if ("omega_alpha" %in% parameters$Parameter.name){
-      omega_alpha = parameters %>% filter(Parameter.name=="omega_alpha") %>% pull(Parameter.value)
-      omega_beta = parameters %>% filter(Parameter.name=="omega_beta") %>% pull(Parameter.value)
+      omega_alpha = parameters %>% dplyr::filter(Parameter.name=="omega_alpha") %>% dplyr::pull(Parameter.value)
+      omega_beta = parameters %>% dplyr::filter(Parameter.name=="omega_beta") %>% dplyr::pull(Parameter.value)
       omega = omega_alpha/omega_beta
     }
-    sample_1= transformed_clinical_records %>% filter(Clinical.name == "Sample", Clinical.type == "1") %>% pull(Clinical.value.start)
-    sample_2= transformed_clinical_records %>% filter(Clinical.name == "Sample", Clinical.type == "2") %>% pull(Clinical.value.start)
+    sample_1= transformed_clinical_records %>% dplyr::filter(Clinical.name == "Sample", Clinical.type == "1") %>% dplyr::pull(Clinical.value.start)
+    sample_2= transformed_clinical_records %>% dplyr::filter(Clinical.name == "Sample", Clinical.type == "2") %>% dplyr::pull(Clinical.value.start)
     omega_lb = log(10e6) / (sample_2 - sample_1)
     omega_ub = log(10e10) / (sample_2-(sample_2 - 30/365))
     omega = mean(c(omega_lb, omega_ub))
@@ -168,12 +168,12 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
                                               "Parameter.value"=mu_clock,"Parameter.index"= NA))
   }
   if ("m_driver" %in% mutations_new$Mutation.name & !("mu_driver" %in% parameters$Name)){
-    exposure_lb = transformed_clinical_records %>% filter(Clinical.type=="Driver") %>% pull(Clinical.value.start)
+    exposure_lb = transformed_clinical_records %>% dplyr::filter(Clinical.type=="Driver") %>% dplyr::pull(Clinical.value.start)
     exposure_lb = exposure_lb[1]
-    exposure_ub = transformed_clinical_records %>% filter(Clinical.type=="Driver") %>% pull(Clinical.value.end)
+    exposure_ub = transformed_clinical_records %>% dplyr::filter(Clinical.type=="Driver") %>% dplyr::pull(Clinical.value.end)
     exposure_ub = exposure_ub[length(exposure_ub)]
 
-    m_driver = mutations_new %>% filter(Mutation.name=="m_driver") %>% pull(Mutation.value)
+    m_driver = mutations_new %>% dplyr::filter(Mutation.name=="m_driver") %>% dplyr::pull(Mutation.value)
     omega = get_omega_approximation(transformed_clinical_records)
     mu_driver = m_driver / (2*l_diploid*omega*(exposure_ub-exposure_lb))
 
@@ -181,14 +181,14 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
                                               "Parameter.value"=c(omega_alpha_approx, omega_beta_approx),"Parameter.index"=c(NA,NA)))
   }
   for (th in drug_names){
-    th_index = transformed_clinical_records %>% filter(Clinical.original.name==th) %>% pull(Clinical.type) %>% unique()
+    th_index = transformed_clinical_records %>% dplyr::filter(Clinical.original.name==th) %>% dplyr::pull(Clinical.type) %>% unique()
     if (parameters %>% filter(Parameter.name=="mu_th_step", Parameter.index==th_index) %>% nrow()==0){
-      exposure_lb = transformed_clinical_records %>% filter(Clinical.original.name==th) %>% pull(Clinical.value.start)
+      exposure_lb = transformed_clinical_records %>% dplyr::filter(Clinical.original.name==th) %>% dplyr::pull(Clinical.value.start)
       exposure_lb = exposure_lb[1]
-      exposure_ub = transformed_clinical_records %>% filter(Clinical.original.name==th) %>% pull(Clinical.value.end)
+      exposure_ub = transformed_clinical_records %>% dplyr::filter(Clinical.original.name==th) %>% dplyr::pull(Clinical.value.end)
       exposure_ub = exposure_ub[length(exposure_ub)]
 
-      m_th = mutations_new %>% filter(Mutation.name=="m_th", Mutation.index==th_index) %>% pull(Mutation.value)
+      m_th = mutations_new %>% dplyr::filter(Mutation.name=="m_th", Mutation.index==th_index) %>% dplyr::pull(Mutation.value)
       omega = get_omega_approximation(transformed_clinical_records)
       mu_driver = m_driver / (2*l_diploid*omega*(exposure_ub-exposure_lb))
 
@@ -218,8 +218,8 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
                                               "Parameter.value"=0.05,"Parameter.index"=NA))
   }
   for (th in drug_names){
-    th_index = transformed_clinical_records %>% filter(Clinical.original.name==th) %>% pull(Clinical.type) %>% unique()
-    if (parameters %>% filter(Parameter.name=="phi_th_step", Parameter.index==th_index) %>% nrow()==0){
+    th_index = transformed_clinical_records %>% dplyr::filter(Clinical.original.name==th) %>% dplyr::pull(Clinical.type) %>% unique()
+    if (parameters %>% dplyr::filter(Parameter.name=="phi_th_step", Parameter.index==th_index) %>% nrow()==0){
       parameters = rbind(parameters, data.frame("Parameter.name"= "phi_th_step",
                                                 "Parameter.value"=0.05,"Parameter.index"=th_index))
     }
@@ -227,9 +227,9 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
   n_phi_cna = sum(parameters$Parameter.name == "phi_cna")
   if (n_phi_cna!=n_cna) {
     for (c in 1:n_cna){
-      index = mutations_new %>% filter(Mutation.name=="m_cna") %>% pull(Mutation.index) %>% unique()
+      index = mutations_new %>% dplyr::filter(Mutation.name=="m_cna") %>% dplyr::pull(Mutation.index) %>% unique()
       index = index[c]
-      if (parameters %>% filter(Parameter.name=="phi_th_step", Parameter.index==th_index) %>% nrow()==0){
+      if (parameters %>% dplyr::filter(Parameter.name=="phi_th_step", Parameter.index==th_index) %>% nrow()==0){
         parameters = rbind(parameters, data.frame("Parameter.name"= "phi_cna",
                                                   "Parameter.value"=0.05,"Parameter.index"=index))
       }
