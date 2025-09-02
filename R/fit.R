@@ -44,7 +44,7 @@ fit = function(
 
   cat("\n--- Start Sampling ---\n")
 
-  library(cmdstanr)
+  requireNamespace("cmdstanr")
 
   fit <- model$sample(data = data,
                         iter_warmup = warm_up,
@@ -71,7 +71,7 @@ fit = function(
   max_rhat <- max(x$tosca_fit$summary$rhat, na.rm = TRUE)
   converged <- all(x$tosca_fit$summary$rhat <= 1.01, na.rm = TRUE)
   cat(sprintf("Convergence (Rhat < 1.01): %s (max Rhat = %.3f)\n",
-              if (converged) "✅ Yes" else "❌ No", max_rhat))
+              if (converged) "\u2705 Yes" else "\u274C No", max_rhat))
 
   # Divergent transitions
   divergences <- x$tosca_fit$diagnostic_summary$num_divergent

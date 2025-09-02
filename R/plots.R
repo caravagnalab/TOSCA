@@ -6,7 +6,6 @@
 #'
 #' @return Name of the prior distribution used in the model
 #'
-#' @examples
 get_prior_distribution_type = function(par){
   prior_distributions = data.frame(
     'parameter'= c("t_eca","t_driver","t_mrca", "mrca", "omega", "mu_driver","s"),
@@ -21,7 +20,6 @@ get_prior_distribution_type = function(par){
 #'
 #' @return Creates and empty plot
 #'
-#' @examples
 eplot = function (){
   ggplot2::ggplot(data = data.frame(x = 0, y = 0, label = "X"),
                   ggplot2::aes(x = x, y = y, label = label)) + CNAqc:::my_ggplot_theme() +
@@ -36,8 +34,6 @@ eplot = function (){
 #' @param cex
 #'
 #' @return Customized ggplot theme
-#'
-#' @examples
 my_ggplot_theme = function (cex = 1)
 {
   cex_opt = getOption("CNAqc_cex", default = 1)
@@ -53,8 +49,6 @@ my_ggplot_theme = function (cex = 1)
 #'
 #' @return ggplot
 #' @export
-#'
-#' @examples
 plot_prior_vs_posterior_single_parameter = function(x, parameter){
 
   posterior = get_inferred_parameters(x)
@@ -194,8 +188,6 @@ plot_prior_vs_posterior = function(x){
 #' @param x TOSCA object
 #'
 #' @return dataframe with columns: name, the name of the mutation cluster, pass: whether the ppc test was passed, i.e. the real number of mutations falls within 1 sd from the mean of the posterior predictive distribution
-#'
-#' @examples
 check_ppc = function(x){
 
   posterior = get_inferred_parameters(x)#x$tosca_fit$posterior
@@ -276,8 +268,6 @@ check_ppc = function(x){
 #'
 #' @return plot
 #' @export
-#'
-#' @examples
 plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
 
   estimates = get_inferred_parameters(x)
@@ -438,8 +428,6 @@ plot_ppc = function(x){
 #'
 #' @return Posterior distribution of the number of cells collected in the first and second samples, considering the growth rate (omega) and the time of birth of the MRCA (t_mrca) of each sample.
 #' @export
-#'
-#' @examples
 plot_expected_N = function(x){
 
   posterior = get_inferred_parameters(x) %>% dplyr::as_tibble()
