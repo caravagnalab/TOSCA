@@ -112,7 +112,8 @@ check_genomic_input = function(mutations, parameters, transformed_clinical_recor
 
 
   ### Create Parameters dataframe
-  colnames(parameters) = c("Parameter.name","Parameter.value","Parameter.index")
+  #colnames(parameters) = c("Parameter.name","Parameter.value","Parameter.index")
+  parameters = parameters %>% dplyr::rename(Parameter.name=Name, Parameter.value=Value,Parameter.index=Index)
 
   # add lengths
   parameters_lengths = data.frame("Parameter.name"= "l_diploid","Parameter.value"=l_diploid,"Parameter.index"=NA)
