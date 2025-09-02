@@ -116,7 +116,8 @@ get_mutation_rate = function(x, type, index=NA){
 }
 
 get_driver_type = function(x){
-  (x$mutations %>% dplyr::filter(Mutation.name=='m_driver') %>% dplyr::pull(Mutation.type) %>% as.integer()) -1
+  # (x$mutations %>% dplyr::filter(Mutation.name=='m_driver') %>% dplyr::pull(Mutation.type) %>% as.integer()) -1
+  2
 }
 
 get_cycles_drivers = function(x){
