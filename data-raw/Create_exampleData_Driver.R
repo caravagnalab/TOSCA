@@ -34,8 +34,10 @@ m_clock = 2*omega*l_diploid*(mu_clock*(t_driver-t_eca) + mu_clock_driver*(t_mrca
 m_driver = 2*omega*l_diploid*mu_driver*(step_1_end_cycle_2-t_driver)
 N2 = exp(omega*(Sample_2-t_mrca))
 N1 = exp(omega*(Sample_1-t_mrca_sample_1))
-N_min = N1*.9
-N_max = N2*1.1
+N_min1 = N1*.9
+N_max1 = N1*1.1
+N_min2 = N2*0.9
+N_max2 = N2*1.1
 
 exampleData_Driver = list(
   "Samples" = data.frame(
@@ -55,16 +57,16 @@ exampleData_Driver = list(
     "Length" = c(l_diploid, l_diploid, l_diploid),
     "Karyptype" = c("1:1","1:1", "1:1"),
     "Type"=c("clock-like primary", "clock-like relapse", "driver"),
-    "Value"=c(m_clock_primary, m_clock, m_clock)
+    "Value"=c(m_clock_primary, m_clock, m_driver)
   ),
 
   'Parameters' =
-    data.frame('Name' = c('l_diploid','mu_clock','mu_clock_driver','mu_driver_alpha','mu_driver_beta','omega_alpha','omega_beta','k_step','N_min','N_max','exponential_growth', 'mrca_alpha','mrca_beta',
-                                    "mu_driver_clock", "mu_driver", "phi_clock","phi_driver"),
-               'Value' = c(l_diploid, mu_clock, mu_clock_driver, mu_driver_alpha, mu_driver_beta, omega_alpha, omega_beta, 10, N_min, N_max, 1,1,1,
-                                     mu_clock_driver, mu_driver,.1,.1),
-               'Index' = c(rep(NA, 17)))
-    )
+    data.frame('Name' = c('mu_clock',
+                          'omega_alpha','omega_beta','k_step','N_min','N_max', 'N_min','N_max' ,'exponential_growth', 'mrca_alpha','mrca_beta',
+                          "mu_driver_clock", "mu_driver", "phi_clock","phi_driver"),
+               'Value' = c(mu_clock, omega_alpha, omega_beta, 10, N_min1, N_max1, N_min2, N_max2, 1,1,1, mu_clock_driver, mu_driver,.1,.1),
+               'Index' = c(rep(NA, 4), "Diagnosis", "Diagnosis", "Relapse", "Relapse", rep(NA, 7))
+    ))
 
 
 

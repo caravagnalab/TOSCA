@@ -25,7 +25,7 @@ init(mutations, parameters, samples, therapies)
 
 \item{therapies}{data.frame with the name and exposure period to therapies affecting the mutation accumulation process.
 1. Name (str)
-2. Class (str), one of the following : "Mutagenic", "Driver responsive", "Chemotherapy inducing dormancy"
+2. Class (str), one of the following : "Mutagenic step", "Mutagenic cauchy", "Driver responsive", "Chemotherapy inducing dormancy"
 3. Start (date), start of the cicle of therapy in the format "YYYY-mm-dd"
 4. End (date), end of the cicle of therapy in the format "YYYY-mm-dd"}
 }

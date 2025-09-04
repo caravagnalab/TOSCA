@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-TOSCA is a packege for inferring the timing in real time of clonal and subclonal somatic copy numbers (SCNA) of type 2:0, 2:1 and 2:2. 
+TOSCA is a packege for inferring the timing in real time of clonal and subclonal somatic copy numbers (SCNA) of type 2:0 and 2:2, and of driver events altering the . 
 
 The package uses a Bayesian model explained in [reference] and implemented in STAN.
 

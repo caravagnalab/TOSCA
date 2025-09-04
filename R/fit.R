@@ -39,8 +39,8 @@ fit = function(
     verbose = F
     ){
 
-  data = get_inference_data(x, model=model_name, dormancy = dormancy)
-  model = get_model(model_name=model_name, dormancy = dormancy)
+  data = TOSCA:::get_inference_data(x, model=model_name, dormancy = dormancy)
+  model = TOSCA:::get_model(model_name=model_name, dormancy = dormancy)
 
   cat("\n--- Start Sampling ---\n")
 
@@ -53,7 +53,7 @@ fit = function(
                         show_messages = verbose
                         )
 
-  x$tosca_fit = list(
+  x$Fit = list(
     'posterior' = posterior::as_draws_df(fit$draws()),
     'summary' = fit$summary(),
     'diagnostic_summary' = fit$diagnostic_summary(),
@@ -68,20 +68,20 @@ fit = function(
   cat("\n--- Sampling Diagnostics ---\n")
 
   # Convergence: Check all Rhat < 1.01
-  max_rhat <- max(x$tosca_fit$summary$rhat, na.rm = TRUE)
-  converged <- all(x$tosca_fit$summary$rhat <= 1.01, na.rm = TRUE)
+  max_rhat <- max(x$Fit$summary$rhat, na.rm = TRUE)
+  converged <- all(x$Fit$summary$rhat <= 1.01, na.rm = TRUE)
   cat(sprintf("Convergence (Rhat < 1.01): %s (max Rhat = %.3f)\n",
               if (converged) "\u2705 Yes" else "\u274C No", max_rhat))
 
   # Divergent transitions
-  divergences <- x$tosca_fit$diagnostic_summary$num_divergent
+  divergences <- x$Fit$diagnostic_summary$num_divergent
   total_div <- sum(divergences)
   total_samples <- n_iterations*n_chains
   div_pct <- 100 * total_div / total_samples
   cat(sprintf("Divergent transitions: %d / %d (%.2f%%)\n", total_div, total_samples, div_pct))
 
   # EBFMI check
-  ebfmi <- x$tosca_fit$diagnostic_summary$ebfmi
+  ebfmi <- x$Fit$diagnostic_summary$ebfmi
   low_ebfmi <- sum(ebfmi < 0.3)
   cat(sprintf("EBFMI < 0.3 in %d / %d chains\n", low_ebfmi, length(ebfmi)))
   #cat("--- End Diagnostics ---\n")

@@ -15,7 +15,7 @@
 #'  2. Date (date) date of collection in the format "YYYY-mm-dd"
 #' @param therapies data.frame with the name and exposure period to therapies affecting the mutation accumulation process.
 #'  1. Name (str)
-#'  2. Class (str), one of the following : "Mutagenic", "Driver responsive", "Chemotherapy inducing dormancy"
+#'  2. Class (str), one of the following : "Mutagenic step", "Mutagenic cauchy", "Driver responsive", "Chemotherapy inducing dormancy"
 #'  3. Start (date), start of the cicle of therapy in the format "YYYY-mm-dd"
 #'  4. End (date), end of the cicle of therapy in the format "YYYY-mm-dd"
 #'
@@ -40,30 +40,28 @@ init = function(mutations, parameters, samples, therapies){
   dfs_names = c("mutations", "parameters", "samples", "therapies")
 
   for (df in dfs){
-    #print(df)
     if (!is.data.frame(df)) {
       stop("Input must be a data.frame.")
     }
   }
 
   for (t in 1:length(dfs)){
-    #print(dfs_names[t])
-    #print(dfs[t])
     check_required_cols(dfs[[t]], type=dfs_names[t])
   }
 
-  transformed_clinical_records = check_clinical_input(samples, therapies)
-  transformed_input = check_genomic_input(mutations, parameters, transformed_clinical_records)
-  transformed_mutations = transformed_input[[1]]
-  transformed_parameters = transformed_input[[2]]
+  TOSCA:::check_clinical_input(samples)
+  TOSCA:::check_clinical_input(therapies)
+  TOSCA:::check_genomic_input(mutations)
+  TOSCA:::check_parameters_input(parameters)
 
   x = list(
-    'clinical_records' = transformed_clinical_records,
-    'mutations' = transformed_mutations,
-    'parameters' = transformed_parameters,
-    "inputs" = list('input_mutations' = mutations,
-                    'input_samples' = samples, "input_therapies"="therapies",
-                    'input_parameters' = parameters)
+    "Input" = list(
+    "Samples" = samples,
+    "Mutations" = mutations,
+    "Parameters" = parameters,
+    "Therapies" = therapies
+    )
+
     )
 
   class(x)= "TOSCA"

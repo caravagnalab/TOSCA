@@ -94,70 +94,17 @@ exampleData_CNA = list(
     "Value"=c(m_clock_primary, m_clock, m_alpha_cna_1, m_beta_cna_1, m_alpha_cna_2, m_beta_cna_2, m_step_1, m_step_2)
   ),
   'Parameters' =
-    data.frame('Name' = c('l_diploid',
-                                    'l_CNA','l_CNA',
-                                    'mu_th_step_alpha','mu_th_step_beta',
-                                    'mu_th_step_alpha','mu_th_step_beta',
-                                    'coeff_CNA','coeff_CNA',
-                                    'mu_clock','omega_alpha','omega_beta','k_step','N_min','N_max','N_min','N_max',
-                                    'exponential_growth', 'mrca_alpha','mrca_beta',
-                                    "mu_th_step", "mu_th_step",
-                                    "phi_clock",
-                                    rep("phi_th_step",2),
-                                    rep("phi_cna",2)),
-               'Value' = c(l_diploid,
-                                     l_CNA1,l_CNA2,
-                                     mu_th_step1_alpha,mu_th_step1_beta,
-                                     mu_th_step2_alpha,mu_th_step2_beta,
-                                     coeff_cna_1, coeff_cna_2,
-                                     mu_clock, omega_alpha, omega_beta, 10, N_min, N_max, N_min_sample_1, N_max_sample_1, 1,1,1,
-                                     mu_th_step_1, mu_th_step_2, rep(.1, 5)),
-               'Index' = c(NA,'1','2','1','1','2','2', '1', '2', '1', '1', '2', '2', rep(NA,7), "1", "2", NA, "1","2","1","2")
+    data.frame('Name' = c('mu_clock','omega_alpha','omega_beta','k_step','N_min','N_max','N_min','N_max',
+                          'exponential_growth', 'mrca_alpha','mrca_beta',
+                          "mu_th_step", "mu_th_step",
+                          "phi_clock",rep("phi_th_step",2),rep("phi_cna",2)),
+               'Value' = c(mu_clock, omega_alpha, omega_beta, 10,
+                           N_min, N_max, N_min_sample_1, N_max_sample_1, 1,1,1,mu_th_step_1, mu_th_step_2, rep(.1, 5)),
+               'Index' = c(rep(NA,4), "Relapse", "Relapse", "Diagnosis","Diagnosis", rep(NA, 3), "Drug 1", "Drug 2",NA, "Drug 1", "Drug 2",
+                           l_CNA1, l_CNA2)
     )
 )
 
-# exampleData_CNA = list(
-#   'Clinical Timepoints' =
-#     data.frame(
-#       'Clinical.name'= c('Sample','Sample','Therapy step','Therapy step','Therapy step'),
-#       'Clinical.type'= c('1','2', '1','1','2'),
-#       'Clinical.value.start'= c(Sample_1, Sample_2, step_1_start_cycle_1, step_1_start_cycle_2, step_2_start_cycle_1),
-#       'Clinical.value.end'= c(NA, NA, step_1_end_cycle_1, step_1_end_cycle_2, step_2_end_cycle_1),
-#       'Clinical.index' = c(NA, NA, '1','2','1')
-#     ),
-#   'Mutations' =
-#     data.frame(
-#       'Mutation.name'= c('m_clock', 'm_clock', 'm_cna','m_cna','m_cna','m_cna', 'm_th', 'm_th'),
-#       'Mutation.type'= c('primary','relapse','alpha','beta','alpha','beta', NA,NA),
-#       'Mutation.index'= c(NA,NA, '1','1','2','2','1','2'),
-#       'Mutation.value'= c(m_clock_primary, m_clock, m_alpha_cna_1, m_beta_cna_1, m_alpha_cna_2, m_beta_cna_2, m_step_1, m_step_2),
-#       'Mutation.coeff'= c(NA,NA,2,2,2,2,NA,NA),
-#       'Mutation.source'= c('clock','clock','mixed','mixed','mixed','mixed','step','step')
-#     ),
-#   'Parameters' =
-#     data.frame('Parameter.name' = c('l_diploid',
-#                                     'l_CNA','l_CNA',
-#                                     'mu_th_step_alpha','mu_th_step_beta',
-#                                     'mu_th_step_alpha','mu_th_step_beta',
-#                                     'coeff_CNA','coeff_CNA',
-#                                     'mu_clock','omega_alpha','omega_beta','k_step','N_min','N_max','N_min','N_max',
-#                                     'exponential_growth', 'mrca_alpha','mrca_beta',
-#                                     "mu_th_step", "mu_th_step",
-#                                     "phi_clock",
-#                                     rep("phi_th_step",2),
-#                                     rep("phi_cna",2)),
-#                'Parameter.value' = c(l_diploid,
-#                                      l_CNA1,l_CNA2,
-#                                      mu_th_step1_alpha,mu_th_step1_beta,
-#                                      mu_th_step2_alpha,mu_th_step2_beta,
-#                                      coeff_cna_1, coeff_cna_2,
-#                                      mu_clock, omega_alpha, omega_beta, 10, N_min, N_max, N_min_sample_1, N_max_sample_1, 1,1,1,
-#                                      mu_th_step_1, mu_th_step_2, rep(.1, 5)),
-#                'Parameter.index' = c(NA,'1','2','1','1','2','2', '1', '2', '1', '1', '2', '2', rep(NA,7), "1", "2", NA, "1","2","1","2")
-#     )
-# )
-
-#saveRDS(exampleData, file = "exampleData.rds")
 
 usethis::use_data(exampleData_CNA, overwrite = TRUE)
 
