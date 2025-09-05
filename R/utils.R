@@ -58,7 +58,12 @@ check_genomic_input = function(mutations){
   for (k in 1:nrow(mutations)){
     if (!TOSCA:::check_valid_karyotype(mutations$Karyptype[k])) stop(paste0("Invalid karyotype: ", k))
   }
-  # mutation_types = c("clock-like primary", "clock-like relapse", "alpha", "beta", "driver")
+  mutation_types = c("clock-like primary", "clock-like relapse", "alpha", "beta", "driver")
+  non_standard_mutations = mutations$Type[!(mutations$Type %in% mutation_types)]
+  if (length(non_standard_mutations > 0)) warning(paste0("The following mutations do not follow the conventional naming scheme: ",
+                                                         paste(non_standard_mutations, collapse = " , "),
+                                                         ". If these mutations are associated to a therapy-related mutational process, make sure that the name reported in 'Type' is the same as the one reported in the 'Therapy' dataframe for the corresponding mutational process. If that is not the case, please choose a valid mutation type between the following: ",
+                                                         paste(mutation_types, collapse=" , ")))
   if (class(mutations$Value) != "numeric") stop("Mutations must be integer numbers")
 }
 
