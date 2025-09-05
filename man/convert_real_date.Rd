@@ -2,13 +2,13 @@
 % Please edit documentation in R/utils.R
 \name{convert_real_date}
 \alias{convert_real_date}
-\title{Title}
+\title{Converts real number into date}
 \usage{
-convert_real_date(date = NULL, ref_year = 1900)
+convert_real_date(x, date = NULL, ref_year = 1900)
 }
 \arguments{
 \item{ref_year}{}
 }
 \description{
-Title
+Converts real number into date
 }

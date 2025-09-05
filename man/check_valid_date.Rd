@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{check_valid_date}
 \alias{check_valid_date}
-\title{Title}
+\title{Check that the input date is valid}
 \usage{
 check_valid_date(str_date)
 }
@@ -10,5 +10,5 @@ check_valid_date(str_date)
 \item{str_date}{}
 }
 \description{
-Title
+Check that the input date is valid
 }

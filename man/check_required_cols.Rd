@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{check_required_cols}
 \alias{check_required_cols}
-\title{Title}
+\title{Check that for the required columns for each dataframe are present}
 \usage{
 check_required_cols(df, type)
 }
@@ -10,5 +10,5 @@ check_required_cols(df, type)
 \item{type}{}
 }
 \description{
-Title
+Check that for the required columns for each dataframe are present
 }

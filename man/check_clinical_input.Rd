@@ -2,13 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{check_clinical_input}
 \alias{check_clinical_input}
-\title{Title}
+\title{Check clinical input}
 \usage{
 check_clinical_input(clinical_input)
 }
 \arguments{
 \item{clinical_input}{}
 }
+\value{
+The function returns an error of the format of the "samples" dataframe has errors
+}
 \description{
-Title
+Check clinical input
 }

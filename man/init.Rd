@@ -19,7 +19,7 @@ init(mutations, parameters, samples, therapies)
 2. Value (real),
 3. Index (int)}
 
-\item{samples}{data.frame with the name and collection date of the longitudinal samples.
+\item{samples}{data.frame with the name and collection date of the longitudinal samples + date of birth (optional).
 1. Name (str), name of the sample
 2. Date (date) date of collection in the format "YYYY-mm-dd"}
 
