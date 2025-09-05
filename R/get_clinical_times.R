@@ -14,7 +14,7 @@ get_start_therapy = function(x, class= "Mutagenic"){
   starts = x$Input$Therapies %>% dplyr::filter(Class==class)
   if (nrow(starts) >0){
     starts = starts %>% dplyr::arrange(as.Date(Start)) %>% dplyr::pull(Start)
-    return(unname(sapply(starts, TOSCA:::convert_real_date)) %>% unlist())
+    return(unname(sapply(starts, TOSCA:::convert_real_date, x = x)) %>% unlist())
   }else{
     return(starts = starts %>% dplyr::arrange(as.Date(Start)) %>% dplyr::pull(Start) %>% as.double())
   }
@@ -24,7 +24,7 @@ get_end_therapy = function(x, class= "Mutagenic"){
   starts = x$Input$Therapies %>% dplyr::filter(Class==class)
   if (nrow(starts) >0){
     starts = starts %>% dplyr::arrange(as.Date(Start)) %>% dplyr::pull(End)
-    return(unname(sapply(starts, TOSCA:::convert_real_date)) %>% unlist())
+    return(unname(sapply(starts, TOSCA:::convert_real_date, x=x)) %>% unlist())
   }else{
     return(starts = starts %>% dplyr::arrange(as.Date(Start)) %>% dplyr::pull(End)%>% as.double())
   }
@@ -36,14 +36,15 @@ get_therapy_class_index = function(x, class= "Mutagenic"){
 }
 
 get_sample = function(x, sample=1){
+  if (nrow(x$Input$Samples) > 2) sample = sample +1
   samples = x$Input$Samples %>% dplyr::arrange(as.Date(Date)) %>% dplyr::pull(Date)
-  TOSCA:::convert_real_date(samples[sample])
+  TOSCA:::convert_real_date(x, samples[sample])
 }
 
 get_max_th = function(x){
   starts = x$Input$Therapies %>% dplyr::arrange(as.Date(Start)) %>%
     distinct(Name, .keep_all = TRUE) %>% dplyr::pull(Start)
-  TOSCA:::convert_real_date(starts[length(starts)])
+  TOSCA:::convert_real_date(x, starts[length(starts)])
 }
 
 ############## TODO

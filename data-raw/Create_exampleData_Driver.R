@@ -1,4 +1,5 @@
 # Timeline
+birth = 0
 t_eca = .2
 t_mrca_sample_1 = .23
 Sample_1 = .25
@@ -39,18 +40,35 @@ N_max1 = N1*1.1
 N_min2 = N2*0.9
 N_max2 = N2*1.1
 
+real_to_date = function(x, date = NULL, ref_year = 2000) {
+
+  y = ref_year + x %>% floor()
+  py = (x - (x %>% floor())) * 365
+  m = (py / 30) %>% floor
+  d = (py - (m * 30)) %>% floor
+  date_string = paste(y, m +1, d + 1, sep = '-')
+
+  date_string = ifelse (d>30, paste(y, m +1, 30, sep = '-'), date_string)
+  date_string = ifelse ((m==1 & d>27), paste(y, m +1, 28, sep = '-'), date_string)
+  date_string = ifelse (m>=12, paste(y+1, 1, 1, sep = '-'), date_string)
+
+  return(date_string)
+}
+
 exampleData_Driver = list(
   "Samples" = data.frame(
-    "Name"=c("Diagnosis", "Relapse"),
-    "Date"=c(TOSCA:::convert_date_real(Sample_1),
-             TOSCA:::convert_date_real(Sample_2))),
+    "Name"=c("Birth", "Diagnosis", "Relapse"),
+    "Date"=c(
+      real_to_date(birth, ref_year = 2000),
+      real_to_date(Sample_1, ref_year = 2000),
+      real_to_date(Sample_2, ref_year = 2000))),
   "Therapies" = data.frame(
     "Name"=c('Timolozomide','Timolozomide'),
     "Class"= c("Driver responsive","Driver responsive"),
-    "Start"=c(TOSCA:::convert_date_real(step_1_start_cycle_1),
-              TOSCA:::convert_date_real(step_1_start_cycle_2)),
-    "End"=c(TOSCA:::convert_date_real(step_1_end_cycle_1),
-            TOSCA:::convert_date_real(step_1_end_cycle_2))),
+    "Start"=c(real_to_date(step_1_start_cycle_1, ref_year = 2000),
+              real_to_date(step_1_start_cycle_2, ref_year = 2000)),
+    "End"=c(real_to_date(step_1_end_cycle_1, ref_year = 2000),
+            real_to_date(step_1_end_cycle_2, ref_year = 2000))),
 
   "Mutations" = data.frame(
     "Name" = c("sbs1_primary", "sbs1_relapse", "sbs11"),

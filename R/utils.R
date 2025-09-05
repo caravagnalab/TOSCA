@@ -161,9 +161,14 @@ check_required_cols = function(df, type){
 #' @return
 #'
 #' @examples
-convert_date_real = function(x, ref_year = 1900) {
-  y = ref_year + x %>% floor()
-  py = (x - (x %>% floor())) * 365
+convert_date_real = function(date, x, ref_year = 1900) {
+
+  if (x$Input$Samples %>% nrow() > 2){
+    ref_year = as.integer(strsplit((x$Input$Samples %>% dplyr::arrange(as.Date(Date)) %>% dplyr::pull(Date))[1], "-")[[1]][1])
+  }
+
+  y = ref_year + date %>% floor()
+  py = (date - (date %>% floor())) * 365
   m = (py / 30) %>% floor
   d = (py - (m * 30)) %>% floor
   date_string = paste(y, m +1, d + 1, sep = '-')
@@ -183,7 +188,12 @@ convert_date_real = function(x, ref_year = 1900) {
 #' @return
 #'
 #' @examples
-convert_real_date = function(date = NULL, ref_year = 1900) {
+convert_real_date = function(x, date = NULL, ref_year = 1900) {
+
+  if (x$Input$Samples %>% nrow() > 2){
+    ref_year = as.integer(strsplit((x$Input$Samples %>% dplyr::arrange(as.Date(Date)) %>% dplyr::pull(Date))[1], "-")[[1]][1])
+  }
+
   ref_month = 1
   ref_day = 1
 

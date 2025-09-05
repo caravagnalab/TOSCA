@@ -1,4 +1,5 @@
 # Timeline
+birth = 0
 t_eca = 7
 t_mrca_sample_1 = 7.5
 Sample_1 = 8
@@ -72,20 +73,38 @@ N_sample_1 = exp(omega*(Sample_1-t_mrca_sample_1))
 N_min_sample_1 = N_sample_1*.9
 N_max_sample_1 = N_sample_1*1.1
 
+
+real_to_date = function(x, date = NULL, ref_year = 2000) {
+
+  y = ref_year + x %>% floor()
+  py = (x - (x %>% floor())) * 365
+  m = (py / 30) %>% floor
+  d = (py - (m * 30)) %>% floor
+  date_string = paste(y, m +1, d + 1, sep = '-')
+
+  date_string = ifelse (d>30, paste(y, m +1, 30, sep = '-'), date_string)
+  date_string = ifelse ((m==1 & d>27), paste(y, m +1, 28, sep = '-'), date_string)
+  date_string = ifelse (m>=12, paste(y+1, 1, 1, sep = '-'), date_string)
+
+  return(date_string)
+}
+
 exampleData_CNA = list(
   "Samples" = data.frame(
-                        "Name"=c("Diagnosis", "Relapse"),
-                        "Date"=c(TOSCA:::convert_date_real(Sample_1),
-                                 TOSCA:::convert_date_real(Sample_2))),
+                        "Name"=c("Birth","Diagnosis", "Relapse"),
+                        "Date"=c(
+                          real_to_date(birth, ref_year = 2000),
+                          real_to_date(Sample_1),
+                          real_to_date(Sample_2))),
   "Therapies" = data.frame(
                         "Name"=c("Drug 1", "Drug 1", "Drug 2"),
                         "Class"= c("Mutagenic","Mutagenic","Mutagenic"),
-                        "Start"=c(TOSCA:::convert_date_real(step_1_start_cycle_1),
-                                  TOSCA:::convert_date_real(step_1_start_cycle_2),
-                                  TOSCA:::convert_date_real(step_2_start_cycle_1)),
-                        "End"=c(TOSCA:::convert_date_real(step_1_end_cycle_1),
-                                TOSCA:::convert_date_real(step_1_end_cycle_2),
-                                TOSCA:::convert_date_real(step_2_end_cycle_1))),
+                        "Start"=c(real_to_date(step_1_start_cycle_1),
+                                  real_to_date(step_1_start_cycle_2),
+                                  real_to_date(step_2_start_cycle_1)),
+                        "End"=c(real_to_date(step_1_end_cycle_1),
+                                real_to_date(step_1_end_cycle_2),
+                                real_to_date(step_2_end_cycle_1))),
   "Mutations" = data.frame(
     "Name" = c("sbs1_primary", "sbs1_relapse", "pre_cna_1", "post_cna_1", "pre_cna_2", "post_cna_2", "m_drug_1", "m_drug_2"),
     "Length" = c(l_diploid, l_diploid, l_CNA1, l_CNA1, l_CNA2, l_CNA2, l_diploid, l_diploid),

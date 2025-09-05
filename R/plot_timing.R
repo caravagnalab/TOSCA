@@ -25,12 +25,15 @@ plot_timing = function(x)
   estimates = TOSCA:::get_inferred_parameters(x)
 
   endpoints = x$Input$Samples
+
+  if (nrow(endpoints) > 2) endpoints = (endpoints %>% dplyr::arrange(as.Date(Date)))[2:3,]
+
   therapies = x$Input$Therapies
 
   # 1. time posterior plot
   timing_estimates = estimates %>%
     dplyr::select(starts_with('t_')) %>%
-    apply(2, convert_date_real) %>%
+    apply(2, TOSCA:::convert_date_real, x=x) %>%
     dplyr::as_tibble()
   #times = timing_estimates$variable %>% unique()
 
@@ -89,7 +92,7 @@ plot_timing = function(x)
       ) +
       ggplot2::geom_point(
         data = endpoints,
-        ggplot2::aes(x = as.Date(convert_date_real(Clinical.value.start)), y = 0),
+        ggplot2::aes(x = as.Date(Start), y = 0),
         inherit.aes = FALSE,
         size = 3
       ) + my_ggplot_theme()+

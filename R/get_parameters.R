@@ -22,8 +22,10 @@ get_parameter = function(x, name){
 }
 
 get_N = function(x, which){
+  samples = x$Input$Samples
+  if (nrow(samples)==3) samples = (samples %>% dplyr::arrange(as.Date(Date)))[2:3,]
   left_join(
-    x$Input$Samples,
+    samples,
     x$Input$Parameters %>% dplyr::filter(Name==paste0("N_", which)) %>% dplyr::rename(Par_name=Name, Name=Index),
     by = "Name"
   ) %>% dplyr::arrange(as.Date(Date)) %>% pull(Value) %>% as.double()

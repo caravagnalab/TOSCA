@@ -10,7 +10,7 @@
 #'  1. Name (str),
 #'  2. Value (real),
 #'  3. Index (int)
-#' @param samples data.frame with the name and collection date of the longitudinal samples.
+#' @param samples data.frame with the name and collection date of the longitudinal samples + date of birth (optional).
 #'  1. Name (str), name of the sample
 #'  2. Date (date) date of collection in the format "YYYY-mm-dd"
 #' @param therapies data.frame with the name and exposure period to therapies affecting the mutation accumulation process.
