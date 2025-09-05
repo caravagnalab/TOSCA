@@ -129,7 +129,7 @@ plot_timing = function(x)
     ggplot2::geom_segment(
       data = therapies %>% dplyr::filter(short == T),
       ggplot2::aes(x=as.Date(Start),
-                   xend=as.Date(End),
+                   xend=as.Date(Start),
                    y=0, yend=Inf), color = therapies %>% dplyr::filter(short == T) %>% dplyr::pull(colors), alpha=1)  +
     ggplot2::guides(color = "none")
 
