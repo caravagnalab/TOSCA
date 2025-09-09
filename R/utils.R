@@ -12,7 +12,7 @@ check_clinical_input = function(clinical_input){
   if (class(clinical_input$Name) != "character"){
     stop("Sample names and Therapy names must be strings")
   }
-  }
+
 
   if ("Date" %in% colnames(clinical_input)){
     for (d in 1:nrow(clinical_input)){
@@ -44,6 +44,7 @@ check_clinical_input = function(clinical_input){
         stop(paste0("Unrecognised class for ",name, ". Select one of the following classes: ", paste(therapy_types, collapse= " , ")))
       }
     }
+  }
   }
 
 }
