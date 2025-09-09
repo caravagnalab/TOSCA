@@ -192,15 +192,26 @@ plot_timing = function(x)
     list(dummy_geom, dummy_scale)
   }
 
-
-  posterior_plot +
-    dummy_guide(
-      labels = c(names(times_colors), names(clinical_colors)),
-      fill   = c(times_colors, clinical_colors),
-      colour = NA,
-      title  = "Inferred times and treatments",
-      key = draw_key_polygon,
-      min_value_time = min(timing_estimates$value, na.rm = TRUE)
-    )
+  if (nrow(therapies)>0){
+    posterior_plot +
+      dummy_guide(
+        labels = c(names(times_colors), names(clinical_colors)),
+        fill   = c(times_colors, clinical_colors),
+        colour = NA,
+        title  = "Inferred times and treatments",
+        key = draw_key_polygon,
+        min_value_time = min(timing_estimates$value, na.rm = TRUE)
+      )
+  }else{
+    posterior_plot +
+      dummy_guide(
+        labels = names(times_colors),
+        fill   = times_colors,
+        colour = NA,
+        title  = "Inferred times",
+        key = draw_key_polygon,
+        min_value_time = min(timing_estimates$value, na.rm = TRUE)
+      )
+  }
 
 }
