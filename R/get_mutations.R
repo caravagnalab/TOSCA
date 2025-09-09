@@ -42,9 +42,14 @@ get_coeff = function(x){
     if (k == "2:0") {
       coeff_alpha = c(coeff_alpha, 1)
       coeff_beta = c(coeff_beta, 2)
-    }else{
+    }
+    if (k == "2:2") {
       coeff_alpha = c(coeff_alpha, 2)
       coeff_beta = c(coeff_beta, 4)
+    }
+    if (k == "2:1") {
+      coeff_alpha = c(coeff_alpha, 1)
+      coeff_beta = c(coeff_beta, 3)
     }
   }
   return(list("alpha"=coeff_alpha, "beta"=coeff_beta))
