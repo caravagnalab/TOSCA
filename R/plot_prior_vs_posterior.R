@@ -7,39 +7,43 @@
 #' @export
 plot_prior_vs_posterior_single_parameter = function(x, parameter){
 
-  posterior = TOSCA:::get_inferred_parameters(x)
+  posterior = TOSCA:::get_inferred_parameters(x) %>% dplyr::select(parameter)
+  colnames(posterior) = "par"
 
-  if (!(parameter %in% colnames(posterior)) & parameter != "mrca") return(eplot())
+  # if (!(parameter %in% colnames(posterior)) & parameter != "mrca") return(eplot())
 
-  if (grepl("\\[", parameter)){
-    prior = "gamma"
-    par_name = strsplit(parameter, split = "\\[")[[1]][1]
-    index = as.integer(strsplit(strsplit(parameter, split = "\\[")[[1]][2], split = "\\]")[1])
-    alpha = TOSCA:::get_prior_hyperparameters(x, par_name)[["alpha"]][index]
-    beta = TOSCA:::get_prior_hyperparameters(x, par_name)[["beta"]][index]
-  } else {
-    prior = TOSCA:::get_prior_distribution_type(parameter)
-    alpha = TOSCA:::get_prior_hyperparameters(x, parameter)[["alpha"]]
-    beta = TOSCA:::get_prior_hyperparameters(x, parameter)[["beta"]]
-
+  if (parameter=="omega"){
+    alpha = TOSCA:::get_parameter(x, "omega_alpha")
+    beta = TOSCA:::get_parameter(x, "omega_beta")
+  }
+  if (grepl("mu_th_step", parameter)){
+    index = as.integer(strsplit(strsplit(parameter, "\\[")[[1]][2], "\\]")[[1]][1])
+    alpha = TOSCA:::get_mutation_rate(x, type = "th_step")[["alpha"]][index]
+    beta = TOSCA:::get_mutation_rate(x, type = "th_step")[["beta"]][index]
+  }
+  if (grepl("mu_driver", parameter)){
+    alpha = TOSCA:::get_mutation_rate(x, type = "driver")[["alpha"]]
+    beta = TOSCA:::get_mutation_rate(x, type = "driver")[["beta"]]
   }
 
-  if (prior == 'gamma') draws = stats::rgamma(1000000, alpha, beta)
-  if (prior == 'beta') draws = stats::rbeta(1000000, alpha, beta)
+  draws = stats::rgamma(1000000, alpha, beta)
 
-  if (parameter == "mrca") { posterior = as.data.frame(posterior[["rho_mrca"]]) } else { posterior = as.data.frame(posterior[[parameter]]) }
+  #if (prior == 'gamma') draws = stats::rgamma(1000000, alpha, beta)
+  #if (prior == 'beta') draws = stats::rbeta(1000000, alpha, beta)
 
-  lb = min(min(draws), min(posterior[,1]))
-  ub = max(max(draws), max(posterior[,1]))
+  #if (parameter == "mrca") { posterior = as.data.frame(posterior[["rho_mrca"]]) } else { posterior = as.data.frame(posterior[[parameter]]) }
+
+  lb = min(min(draws), min(posterior$par))
+  ub = max(max(draws), max(posterior$par))
 
   if (lb < 1e-10 & ub>2){
     density_post_vs_prior = ggplot2::ggplot() +
       TOSCA:::my_ggplot_theme() +
-      ggplot2::geom_histogram(data= posterior, ggplot2::aes(x= posterior[,1], y = ..density..),
+      ggplot2::geom_histogram(data= posterior, ggplot2::aes(x= par, y = ..density..),
                               bins = 100,
                               alpha= .6)+
       ggplot2::geom_vline(
-        xintercept = mean(posterior[,1]),
+        xintercept = mean(posterior$par),
         color = 'indianred3',
         linetype = 'dashed',
         size = 1
@@ -49,11 +53,11 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
       ggplot2::geom_density(ggplot2::aes(x = draws), alpha=.6, color= 'white', fill= 'grey') +
       # ggplot2::theme_bw() +
       TOSCA:::my_ggplot_theme() +
-      ggplot2::geom_histogram(data= posterior, ggplot2::aes(x= posterior[,1], y = ..density..),
+      ggplot2::geom_histogram(data= posterior, ggplot2::aes(x= par, y = ..density..),
                               bins = 100,
                               alpha= .6)+
       ggplot2::geom_vline(
-        xintercept = mean(posterior[,1]),
+        xintercept = mean(posterior$par),
         color = 'indianred3',
         linetype = 'dashed',
         size = 1
@@ -70,7 +74,7 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
       ggplot2::aes(
         x = c(L$x.range[2] * .9, NA),
         y = c(L$y.range[2] * .9, NA),
-        label = paste0("MAP ", round(mean(posterior[,1]), 3)),
+        label = paste0("MAP ", round(mean(posterior$par), 3)),
       ),
       #ylim = c(L$y.range[2] * .9, NA),
       size = 2,
@@ -119,11 +123,13 @@ plot_prior_vs_posterior = function(x){
   parameters = c()
   posterior = TOSCA:::get_inferred_parameters(x)
 
+
+
   is_omega = grepl("omega", colnames(posterior)) %>% sum()
-  is_s = grepl("s", colnames(posterior)) %>% sum()
+  # is_s = grepl("s", colnames(posterior)) %>% sum()
   is_mu_driver = grepl("mu_driver", colnames(posterior)) %>% sum()
   if (is_omega >= 1) parameters = c("omega", parameters)
-  if (is_s == 1) parameters = c("s", parameters)
+  #if (is_s == 1) parameters = c("s", parameters)
   if (is_mu_driver == 1) parameters = c("mu_driver", parameters)
 
   n_mu_th = grepl("mu_th_step", colnames(posterior)) %>% sum()

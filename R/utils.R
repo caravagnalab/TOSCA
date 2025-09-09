@@ -95,7 +95,13 @@ check_parameters_input = function(parameters){
     "phi_th_step",
     "phi_th_cauchy",
     "wgd",
-    "k_step"
+    "k_step",
+    "alpha_th_step",
+    "beta_th_step",
+    "phi_cna_beta",
+    "phi_cna_alpha",
+    "mu_driver_alpha",
+    "mu_driver_beta"
   )
   invalid_parameters = parameters$Name[!(parameters$Name %in% valid_parameters_names)]
   if (length(invalid_parameters > 1)){
