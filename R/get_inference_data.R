@@ -87,8 +87,8 @@ get_inference_data_driver = function(x){
   data[['location_th_cauchy']]= TOSCA:::get_start_therapy(x, class= "Mutagenic cauchy")
   data[['type_th_cauchy']]= TOSCA:::get_therapy_class_index(x, class= "Mutagenic cauchy")
   # data[['scales_th_cauchy']] = TOSCA:::get_cauchy_scales(x)
-  data[['alpha_th_cauchy']] =
-  data[['beta_th_cauchy']] =
+  data[['alpha_th_cauchy']] = get_cauchy_scales(x)[["alpha"]]
+  data[['beta_th_cauchy']] = get_cauchy_scales(x)[["beta"]]
   data[['m_th_cauchy']]=  TOSCA:::get_mutation(x, type = "Mutagenic", cauchy=T)
 
   data[['omega_alpha']] = TOSCA:::get_parameter(x, "omega_alpha")
