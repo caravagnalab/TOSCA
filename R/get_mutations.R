@@ -35,7 +35,8 @@ get_length = function(x, diploid = T){
 }
 
 get_coeff = function(x){
-  karyotypes = x$Input$Mutations %>% dplyr::filter(Type %in% c("alpha", "beta")) %>% dplyr::arrange(Length) %>% dplyr::select(Karyptype) %>% unique()
+  karyotypes = x$Input$Mutations %>%
+    dplyr::filter(Type == "alpha") %>% dplyr::arrange(Length) %>% dplyr::select(Karyptype) #%>% unique()
   coeff_alpha = c()
   coeff_beta = c()
   for (k in karyotypes$Karyptype){
