@@ -7,8 +7,11 @@
 #' @examples
 check_clinical_input = function(clinical_input){
 
+  if (nrow(clinical_input) > 0){
+
   if (class(clinical_input$Name) != "character"){
     stop("Sample names and Therapy names must be strings")
+  }
   }
 
   if ("Date" %in% colnames(clinical_input)){
