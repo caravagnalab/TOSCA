@@ -50,14 +50,14 @@ data{
   array[n_th_step_type] int<lower=0> m_th_step;
 
   // mutations associated to cauchy
-  // int <lower=0> n_th_cauchy;
-  // int <lower=0> n_th_cauchy_type;
-  // //vector<lower=0>[n_th_cauchy] cycles_th_cauchy;
-  // array[n_th_cauchy] real<lower=0> location_th_cauchy;
-  // array[n_th_cauchy] int<lower=0> type_th_cauchy; // vector with numbers identifying the therapy (1:n_th_cauchy)
-  // array[n_th_cauchy_type] real<lower=0> alpha_th_cauchy;
-  // array[n_th_cauchy_type] real<lower=0> beta_th_cauchy;
-  // array[n_th_cauchy_type] int<lower=0> m_th_cauchy;
+  int <lower=0> n_th_cauchy;
+  int <lower=0> n_th_cauchy_type;
+  //vector<lower=0>[n_th_cauchy] cycles_th_cauchy;
+  array[n_th_cauchy] real<lower=0> location_th_cauchy;
+  array[n_th_cauchy] int<lower=0> type_th_cauchy; // vector with numbers identifying the therapy (1:n_th_cauchy)
+  array[n_th_cauchy_type] real<lower=0> alpha_th_cauchy;
+  array[n_th_cauchy_type] real<lower=0> beta_th_cauchy;
+  array[n_th_cauchy_type] int<lower=0> m_th_cauchy;
 
   // other parameters
   real <lower=0> omega_alpha;
@@ -81,7 +81,7 @@ data{
   real<lower=0> phi_clock;
   real<lower=0> phi_driver;
   array[n_th_step_type] real <lower=0> phi_th_step;
-  // array[n_th_cauchy_type] real <lower=0> phi_th_cauchy;
+  array[n_th_cauchy_type] real <lower=0> phi_th_cauchy;
 
 
 }
@@ -94,7 +94,7 @@ parameters{
   real <lower=0, upper=1> rho_driver;
   real <lower=0> mu_driver;
   array[n_th_step_type] real<lower=0> mu_th_step;
-  // array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
+  array[n_th_cauchy_type] real<lower=0> scales_th_cauchy;
   real <lower=0> omega;
 
 }
@@ -104,10 +104,10 @@ transformed parameters{
   real <lower=max_therapy,upper = Sample_2> t_mrca = max_therapy + rho_mrca*(Sample_2-max_therapy);
   real <lower=t_eca,upper = t_mrca> t_driver = t_eca + rho_driver*(t_mrca-t_eca);
   array[n_th_step_type] real lambda_th_step;
-  // array[n_th_cauchy_type] real lambda_th_cauchy;
+  array[n_th_cauchy_type] real lambda_th_cauchy;
 
   for (i in 1:n_th_step_type) lambda_th_step[i] = 0;
-  // for (i in 1:n_th_cauchy_type) lambda_th_cauchy[i] = 0;
+  for (i in 1:n_th_cauchy_type) lambda_th_cauchy[i] = 0;
 
 // Step therapy mutations
 if (n_th_step_type > 0) {
@@ -131,16 +131,16 @@ if (n_th_step_type > 0) {
 
 
   // Cauchy therapy mutations
-  // if (n_th_cauchy_type > 0){
-  // for (th_cauchy in 1:n_th_cauchy_type){
-  //   for (cycle in 1:n_th_cauchy){
-  //     if (type_th_cauchy[cycle] == th_cauchy){
-  //       lambda_th_cauchy[th_cauchy] += couchy_cdf_single(location_th_cauchy[cycle], scales_th_cauchy[cycle],
-  //       t_eca, t_mrca);
-  //     }
-  //   }
-  // }
-  // }
+  if (n_th_cauchy_type > 0){
+  for (th_cauchy in 1:n_th_cauchy_type){
+    for (cycle in 1:n_th_cauchy){
+      if (type_th_cauchy[cycle] == th_cauchy){
+        lambda_th_cauchy[th_cauchy] += couchy_cdf_single(location_th_cauchy[cycle], scales_th_cauchy[cycle],
+        t_eca, t_mrca);
+      }
+    }
+  }
+  }
 
 
    real lambda_driver=0;
@@ -164,9 +164,9 @@ model {
   for (m in 1:n_th_step_type) {
     mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
   }
-  // for (ch in 1:n_th_cauchy_type) {
-  //   scales_th_cauchy[ch] ~ gamma(alpha_th_cauchy[ch], beta_th_cauchy[ch]);
-  // }
+  for (ch in 1:n_th_cauchy_type) {
+    scales_th_cauchy[ch] ~ gamma(alpha_th_cauchy[ch], beta_th_cauchy[ch]);
+  }
 
   omega ~ gamma(omega_alpha, omega_beta);
 
@@ -176,12 +176,12 @@ model {
   real shape_clock = 1 / phi_clock;
   real shape_driver = 1 / phi_driver;
   array[n_th_step_type] real shape_th_step;
- // array[n_th_cauchy_type] real shape_th_cauchy;
+  array[n_th_cauchy_type] real shape_th_cauchy;
 
   for (m in 1:n_th_step_type)
     shape_th_step[m] = 1 / phi_th_step[m];
-  // for (ch in 1:n_th_cauchy_type)
-  //   shape_th_cauchy[ch] = 1 / phi_th_cauchy[ch];
+  for (ch in 1:n_th_cauchy_type)
+    shape_th_cauchy[ch] = 1 / phi_th_cauchy[ch];
 
   // Likelihood
   m_clock_primary ~ neg_binomial_2(
@@ -202,12 +202,12 @@ model {
     );
   }
 
-  // for (th_cauchy in 1:n_th_cauchy_type) {
-  //   m_th_cauchy[th_cauchy] ~ neg_binomial_2(
-  //     2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy] + 0.1,
-  //     shape_th_cauchy[th_cauchy]
-  //   );
-  // }
+  for (th_cauchy in 1:n_th_cauchy_type) {
+    m_th_cauchy[th_cauchy] ~ neg_binomial_2(
+      2 * l_diploid * omega * mu_clock * lambda_th_cauchy[th_cauchy] + 0.1,
+      shape_th_cauchy[th_cauchy]
+    );
+  }
 
   if (driver_type == 0) {
     m_driver ~ neg_binomial_2(
@@ -255,20 +255,20 @@ generated quantities {
   int<lower=0> m_driver_rep;
 
   array[n_th_step_type] int<lower=0> m_th_step_rep;
-  // array[n_th_cauchy_type] int<lower=0> m_th_cauchy_rep;
+  array[n_th_cauchy_type] int<lower=0> m_th_cauchy_rep;
 
   // Calculate shape parameters as in model block
   real shape_clock = 1 / phi_clock;
   real shape_driver = 1 / phi_driver;
   array[n_th_step_type] real shape_th_step;
-  //array[n_th_cauchy_type] real shape_th_cauchy;
+  array[n_th_cauchy_type] real shape_th_cauchy;
 
   for (m in 1:n_th_step_type) {
     shape_th_step[m] = 1 / phi_th_step[m];
   }
-  // for (ch in 1:n_th_cauchy_type) {
-  //   shape_th_cauchy[ch] = 1 / phi_th_cauchy[ch];
-  // }
+  for (ch in 1:n_th_cauchy_type) {
+    shape_th_cauchy[ch] = 1 / phi_th_cauchy[ch];
+  }
 
   // Sample posterior predictive replicates from neg_binomial_2_rng
   m_clock_primary_rep = neg_binomial_2_rng(
@@ -301,12 +301,12 @@ generated quantities {
     );
   }
 
-  // for (ch in 1:n_th_cauchy_type) {
-  //   m_th_cauchy_rep[ch] = neg_binomial_2_rng(
-  //     2 * l_diploid * omega * mu_clock * lambda_th_cauchy[ch],
-  //     shape_th_cauchy[ch]
-  //   );
-  // }
+  for (ch in 1:n_th_cauchy_type) {
+    m_th_cauchy_rep[ch] = neg_binomial_2_rng(
+      2 * l_diploid * omega * mu_clock * lambda_th_cauchy[ch],
+      shape_th_cauchy[ch]
+    );
+  }
 
 
   real N_primary_rep = -1;

@@ -7,7 +7,7 @@ get_mutation_rate = function(x, type){
 
   if (type == "driver"){
     mu_alpha = x$Input$Parameters %>% dplyr::filter(Name=="mu_driver_alpha") %>% pull(Value) %>% as.double()
-    mu_beta = x$Input$Parameters %>% dplyr::filter(Name=="mu_driver_alpha") %>% pull(Value) %>% as.double()
+    mu_beta = x$Input$Parameters %>% dplyr::filter(Name=="mu_driver_beta") %>% pull(Value) %>% as.double()
     mu = list("alpha"=mu_alpha, "beta"=mu_beta)
   }
 
@@ -29,13 +29,19 @@ get_mutation_rate = function(x, type){
   return(mu)
 }
 
-# get_cauchy_scales = function(x){
-#   left_join(
-#     x$Input$Therapies %>% filter(Class=="Mutagenic cauchy") %>% dplyr::arrange(as.Date(Start)),
-#     x$Input$Parameters %>% filter(Name == "scales_cauchy") %>% dplyr::rename(Par_name = Name, Name = Index),
-#     by = "Name"
-#   ) %>% dplyr::pull(Value) %>% unique() %>% as.double()
-# }
+get_cauchy_scales = function(x){
+  alpha = left_join(
+    x$Input$Therapies %>% filter(Class=="Mutagenic cauchy") %>% dplyr::arrange(as.Date(Start)),
+    x$Input$Parameters %>% filter(Name == "alpha_th_cauchy") %>% dplyr::rename(Par_name = Name, Name = Index),
+    by = "Name"
+  ) %>% dplyr::pull(Value) %>% unique() %>% as.double()
+  beta = left_join(
+    x$Input$Therapies %>% filter(Class=="Mutagenic cauchy") %>% dplyr::arrange(as.Date(Start)),
+    x$Input$Parameters %>% filter(Name == "beta_th_cauchy") %>% dplyr::rename(Par_name = Name, Name = Index),
+    by = "Name"
+  ) %>% dplyr::pull(Value) %>% unique() %>% as.double()
+  return(list("alpha"=alpha, "beta"=beta))
+}
 
 get_parameter = function(x, name){
   x$Input$Parameters %>% dplyr::filter(Name == name) %>% pull(Value) %>% as.double()

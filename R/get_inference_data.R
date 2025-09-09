@@ -82,12 +82,14 @@ get_inference_data_driver = function(x){
   # data[['mu_th_step']] =  TOSCA:::get_mutation_rate(x, type = "th_step")
   data[['m_th_step']]= TOSCA:::get_mutation(x, type = "Mutagenic")
 
-  # data[['n_th_cauchy']]= TOSCA:::get_n_therapy_cycles(x, class = 'Mutagenic cauchy')
-  # data[['n_th_cauchy_type']]= TOSCA:::get_n_therapy_classes(x, class = "Mutagenic cauchy")
-  # data[['location_th_cauchy']]= TOSCA:::get_start_therapy(x, class= "Mutagenic cauchy")
-  # data[['type_th_cauchy']]= TOSCA:::get_therapy_class_index(x, class= "Mutagenic cauchy")
+  data[['n_th_cauchy']]= TOSCA:::get_n_therapy_cycles(x, class = 'Mutagenic cauchy')
+  data[['n_th_cauchy_type']]= TOSCA:::get_n_therapy_classes(x, class = "Mutagenic cauchy")
+  data[['location_th_cauchy']]= TOSCA:::get_start_therapy(x, class= "Mutagenic cauchy")
+  data[['type_th_cauchy']]= TOSCA:::get_therapy_class_index(x, class= "Mutagenic cauchy")
   # data[['scales_th_cauchy']] = TOSCA:::get_cauchy_scales(x)
-  # data[['m_th_cauchy']]=  TOSCA:::get_mutation(x, type = "Mutagenic", cauchy=T)
+  data[['alpha_th_cauchy']] =
+  data[['beta_th_cauchy']] =
+  data[['m_th_cauchy']]=  TOSCA:::get_mutation(x, type = "Mutagenic", cauchy=T)
 
   data[['omega_alpha']] = TOSCA:::get_parameter(x, "omega_alpha")
   data[['omega_beta']] = TOSCA:::get_parameter(x, "omega_beta")

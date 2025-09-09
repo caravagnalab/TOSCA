@@ -86,7 +86,7 @@ exampleData_Driver = list(
                           "phi_clock","phi_driver","mrca_alpha","mrca_beta"),
                'Value' = c(mu_clock, omega_alpha, omega_beta, 10, N_min1, N_max1, N_min2, N_max2,
                            1, 1,
-                           mu_clock_driver, mu_driver_alpha, mu_driver_alpha,.1,.1,1,1),
+                           mu_clock_driver, mu_driver_alpha, mu_driver_beta,.1,.1,1,1),
                'Index' = c(rep(NA, 4), "Diagnosis", "Diagnosis", "Relapse", "Relapse", "Diagnosis", "Relapse",
                            rep(NA, 5),NA,NA)
     ))
