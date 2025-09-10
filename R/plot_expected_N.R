@@ -6,9 +6,9 @@
 #' @export
 plot_expected_N = function(x){
 
-  posterior = get_inferred_parameters(x) %>% dplyr::as_tibble()
-  N_rel = exp(posterior$omega*(get_sample(x, sample ='2')-posterior$t_mrca))
-  N_pre = exp(posterior$omega*(get_sample(x, sample ='1')-posterior$t_mrca_primary))
+  posterior = TOSCA:::get_inferred_parameters(x) %>% dplyr::as_tibble()
+  N_rel = exp(posterior$omega*(TOSCA:::get_sample(x, sample =2)-posterior$t_mrca))
+  N_pre = exp(posterior$omega*(TOSCA:::get_sample(x, sample =1)-posterior$t_mrca_primary))
 
   primary_name = x$clinical_records %>% dplyr::filter(Clinical.name == "Sample", Clinical.type == "1") %>% dplyr::pull(Clinical.original.name)
   relapse_name = x$clinical_records %>% dplyr::filter(Clinical.name == "Sample", Clinical.type == "2") %>% dplyr::pull(Clinical.original.name)
