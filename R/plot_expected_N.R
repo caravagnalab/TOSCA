@@ -10,14 +10,15 @@ plot_expected_N = function(x){
   N_rel = exp(posterior$omega*(TOSCA:::get_sample(x, sample =2)-posterior$t_mrca))
   N_pre = exp(posterior$omega*(TOSCA:::get_sample(x, sample =1)-posterior$t_mrca_primary))
 
-  primary_name = x$clinical_records %>% dplyr::filter(Clinical.name == "Sample", Clinical.type == "1") %>% dplyr::pull(Clinical.original.name)
-  relapse_name = x$clinical_records %>% dplyr::filter(Clinical.name == "Sample", Clinical.type == "2") %>% dplyr::pull(Clinical.original.name)
+  if (nrow(x$Input$Samples)>2) i = 1 else i=0
+  primary_name = (x$Input$Samples %>% pull(Name))[1+i] #%>% dplyr::filter(Clinical.name == "Sample", Clinical.type == "1") %>% dplyr::pull(Clinical.original.name)
+  relapse_name = (x$Input$Samples %>% pull(Name))[2+i] #x$clinical_records %>% dplyr::filter(Clinical.name == "Sample", Clinical.type == "2") %>% dplyr::pull(Clinical.original.name)
 
-  N_rel_plot = ggplot2::ggplot() + my_ggplot_theme() +
+  N_rel_plot = ggplot2::ggplot() + TOSCA:::my_ggplot_theme() +
     ggplot2::geom_histogram(ggplot2::aes(x=log(N_rel)))+
     ggplot2::scale_x_log10() +
     ggplot2::xlab(paste0("Tumor size at ", relapse_name, "\n(log-scale)"))
-  N_pre_plot = ggplot2::ggplot() + my_ggplot_theme() +
+  N_pre_plot = ggplot2::ggplot() +  TOSCA:::my_ggplot_theme() +
     ggplot2::geom_histogram(ggplot2::aes(x=log(N_pre)))+
     ggplot2::xlab(paste0("Tumor size at ", primary_name, "\n(log-scale)"))
 
