@@ -22,5 +22,5 @@ plot_expected_N = function(x){
     ggplot2::geom_histogram(ggplot2::aes(x=log(N_pre)))+
     ggplot2::xlab(paste0("Tumor size at ", primary_name, "\n(log-scale)"))
 
-  ggpubr::ggarrange(plotlist = list(N_rel_plot, N_pre_plot), nrow = 2)
+  ggpubr::ggarrange(plotlist = list(N_rel_plot, N_pre_plot), nrow = 1)
 }

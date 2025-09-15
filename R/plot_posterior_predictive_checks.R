@@ -234,7 +234,7 @@ plot_ppc = function(x){
 
   }
 
-  ggpubr::ggarrange(plotlist = ppc_plot_list) + ggplot2::ggtitle("Posterior Predictive Checks")
+  ggpubr::ggarrange(plotlist = ppc_plot_list, nrow = 2, ncol=round(length(ppc_plot_list)/2)) + ggplot2::ggtitle("Posterior Predictive Checks")
 
 
 }

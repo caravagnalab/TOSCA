@@ -124,7 +124,7 @@ exampleData_CNA = list(
                            N_min, N_max, N_min_sample_1, N_max_sample_1,
                            1,1, 1,1,
                            mu_th_step1_alpha, mu_th_step1_beta, mu_th_step2_alpha, mu_th_step2_beta,
-                           rep(.1, 7)),
+                           rep(0.05, 7)),
                'Index' = c(rep(NA,4), "Relapse", "Relapse", "Diagnosis","Diagnosis", "Diagnosis", "Relapse",NA, NA,
                            "Drug 1","Drug 1", "Drug 2","Drug 2",NA, "Drug 1", "Drug 2",
                            l_CNA1, l_CNA1, l_CNA2, l_CNA2)
