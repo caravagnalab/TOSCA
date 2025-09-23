@@ -10,6 +10,18 @@
 #'
 "exampleData_CNA"
 
+#' Dataset with a toy example for the CNA model with dormancy
+#'
+#' @docType data
+#'
+#' @usage data(exampleData_CNA_dormancy)
+#'
+#' @format A list of dataframes with the input required for running TOSCA
+#'
+#' @keywords datasets
+#'
+"exampleData_CNA_dormancy"
+
 #' Dataset with a toy example for the Driver model
 #'
 #' @docType data

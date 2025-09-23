@@ -118,45 +118,46 @@ get_inference_data_driver = function(x){
 get_inference_data_dormancy = function(x){
 
   data = list()
+  data[["n_cna"]] = TOSCA:::get_n_cna(x)
+  data[["m_clock_primary"]] = TOSCA:::get_mutation(x, type = "clock-like primary")
+  data[["m_clock"]] = TOSCA:::get_mutation(x, type = "clock-like relapse")
+  data[["l_diploid"]] =  TOSCA:::get_length(x)
+  data[["mu_clock"]] = TOSCA:::get_mutation_rate(x, type = "clock")
 
-  data[['wgd']] = get_wgd(x)
-  data[['m_clock_primary']] = get_mutation(x, name="m_clock", type="primary", index=NA, source=NA)
-  data[["n_clock"]] = get_n_clock(x)
-  data[['m_clock']] = get_mutation(x, name="m_clock", type="relapse", index=NA, source=NA)
-  data[['l_diploid']] = get_length(x, model=NA)
-  data[['mu_clock']] = get_mutation_rate(x, type = "clock")
+  data[["m_alpha"]] = TOSCA:::get_mutation(x, type = "alpha")
+  data[["m_beta"]] = TOSCA:::get_mutation(x, type = "beta")
+  data[["l_CNA"]] = TOSCA:::get_length(x, diploid = F)
+  data[["coeff"]] = TOSCA:::get_coeff(x)[["beta"]]
 
-  data[['m_alpha']] = get_mutation(x, name="m_cna", type="alpha", index=NA, source=NA)
-  data[['m_beta']] = get_mutation(x, name="m_cna", type="beta", index=NA, source=NA)
-  data[['l_CNA']] = get_length(x, model="CNA")
-  data[['coeff_alpha']] = get_coeff_CNA(x)[["alpha"]]
-  data[['coeff_beta']] = get_coeff_CNA(x)[["beta"]]
+  data[['n_th_step']]= TOSCA:::get_n_therapy_cycles(x, class = 'Mutagenic')
+  data[['n_th_step_type']]= TOSCA:::get_n_therapy_classes(x, class = "Mutagenic")
+  data[['start_th_step']] = TOSCA:::get_start_therapy(x, class= "Mutagenic")
+  data[['end_th_step']] =  TOSCA:::get_end_therapy(x, class= "Mutagenic")
+  data[['type_th_step']]= TOSCA:::get_therapy_class_index(x, class= "Mutagenic")
+  # data[['mu_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")
+  data[['alpha_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")[["alpha"]]
+  data[['beta_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")[["beta"]]
+  data[['m_th_step']]= TOSCA:::get_mutation(x, type = "Mutagenic") # get_m_th(x, type = 'step')
 
-  data[['extra_therapy']] = get_extra_therapy(x)
-  data[["n_steps"]] = get_n_step(x)
-  data[['start_th_step']] = start_th(x, type='Therapy step')
-  data[['end_th_step']] =  end_th_step(x)
-  data[['mu_th_step']] = get_mutation_rate(x, type = "th_step")
-  data[['m_th_step']]= get_mutation(x, name="m_th", type=NA, index=NA, source="step", coeff=NA) # get_m_th(x, type = 'step')
+  data[['omega_alpha']] = TOSCA:::get_parameter(x, "omega_alpha")
+  data[['omega_beta']] = TOSCA:::get_parameter(x, "omega_beta")
+  data[['k_step']] = TOSCA:::get_parameter(x, "k_step")
 
-  data[['omega_alpha']] = get_prior_hyperparameters(x, name='omega')[["alpha"]]
-  data[['omega_beta']] = get_prior_hyperparameters(x, name='omega')[["beta"]]
-  data[['k_step']] = get_k_step(x)
+  data[['Sample_1']] = TOSCA:::get_sample(x, sample=1)
+  data[['Sample_2']] = TOSCA:::get_sample(x, sample=2)
+  data[['chemo_start']]= TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy")
+ data[['chemo_end']]= TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy")
 
-  data[['Sample_1']] = get_sample(x, sample='1')
-  data[['Sample_2']] = get_sample(x, sample='2')
-  data[['chemo_start']] = start_chemo(x)
-  data[['chemo_end']] = end_chemo(x)
+  data[['exponential_growth']] = TOSCA:::get_parameter(x, "exponential_growth")
+  data[['N_min']] = TOSCA:::get_N(x, which="min")
+  data[['N_max']] = TOSCA:::get_N(x, which="max")
 
-  data[['exponential_growth']] = get_exponential_growth(x)
-  data[['N_min']] = get_N_min(x)
-  data[['N_max']] = get_N_max(x)
-  data[['alpha_mrca']] = get_prior_hyperparameters(x, name='mrca')[["alpha"]]
-  data[['beta_mrca']] = get_prior_hyperparameters(x, name='mrca')[["beta"]]
 
-  data[['phi_clock']] = get_phi(x, "clock")
-  data[['phi_th_step']] = get_phi(x, "th_step")
-  data[['phi_cna']] = get_phi(x, "cna")
+  data[['phi_clock']] = TOSCA:::get_phi(x, "clock")
+  data[['phi_th_step']] = TOSCA:::get_phi(x, "phi_th_step")
+  # data[['phi_th_cauchy']] = TOSCA:::get_phi(x, "phi_th_cauchy")
+  data[['phi_cna_alpha']] = TOSCA:::get_phi(x, "phi_cna")[["alpha"]]
+  data[['phi_cna_beta']] = TOSCA:::get_phi(x, "phi_cna")[["beta"]]
 
   data
 }

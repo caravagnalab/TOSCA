@@ -32,10 +32,21 @@ plot_timing = function(x)
 
   # 1. time posterior plot
   timing_estimates = estimates %>%
-    dplyr::select(starts_with('t_')) %>%
+    dplyr::select(starts_with('t_')) #%>%
+    #apply(2, TOSCA:::convert_date_real, x=x) %>%
+    #dplyr::as_tibble()
+  #times = timing_estimates$variable %>% unique()
+
+  if (x$Fit$model_info$dormancy) {
+    dormancy_start = TOSCA:::convert_date_real(date = TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy"), x=x)
+    dormancy_end =  TOSCA:::convert_date_real(date = timing_estimates %>% pull(t_dormancy_end) %>% mean(), x=x)
+    timing_estimates = timing_estimates %>% select(!c("t_dormancy_end",
+                                                      colnames(timing_estimates)[grepl("t_cna_tr", colnames(timing_estimates))]))
+  }
+
+  timing_estimates = timing_estimates %>%
     apply(2, TOSCA:::convert_date_real, x=x) %>%
     dplyr::as_tibble()
-  #times = timing_estimates$variable %>% unique()
 
   for (i in 1:ncol(timing_estimates)){
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
@@ -52,12 +63,39 @@ plot_timing = function(x)
   times_colors_df = data.frame("variable" = names(times_colors), "color"=times_colors)
   timing_estimates = dplyr::left_join(timing_estimates, times_colors_df, by = "variable")
 
+
+  # posterior_plot = ggplot2::ggplot() +
+  #   ggplot2::geom_histogram(
+  #     data = timing_estimates %>% dplyr::rename(Date = value),
+  #     ggplot2::aes(Date, fill = color, y=..density..),
+  #     inherit.aes = FALSE,
+  #     bins = 150
+  #   ) + #geom_density(data = timing_estimates %>% dplyr::rename(Date = value), aes(color = color)) +
+  #   ggplot2::geom_point(
+  #     data = endpoints,
+  #     ggplot2::aes(x = as.Date(Date), y = 0),
+  #     inherit.aes = FALSE,
+  #     size = 3
+  #   ) +
+  #   TOSCA:::my_ggplot_theme()+
+  #   ggplot2::theme(legend.position = 'bottom')+
+  #   ggplot2::scale_fill_identity()
+  #scale_fill_manual(values = times_colors)
+
   posterior_plot = ggplot2::ggplot() +
     ggplot2::geom_histogram(
       data = timing_estimates %>% dplyr::rename(Date = value),
-      ggplot2::aes(Date, fill = color, ..density..),
+      ggplot2::aes(Date, fill = color, y = ..density..),
       inherit.aes = FALSE,
-      bins = 150
+      bins = 150,
+      alpha = 0  # make histograms semi-transparent
+      #color = "white"
+    ) +
+    ggplot2::geom_density(
+      data = timing_estimates %>% dplyr::rename(Date = value),
+      ggplot2::aes(Date, color = color, fill = color),
+      inherit.aes = FALSE,
+      size = 1, alpha = .8
     ) +
     ggplot2::geom_point(
       data = endpoints,
@@ -65,10 +103,11 @@ plot_timing = function(x)
       inherit.aes = FALSE,
       size = 3
     ) +
-    TOSCA:::my_ggplot_theme()+
-    ggplot2::theme(legend.position = 'bottom')+
-    ggplot2::scale_fill_identity()
-  #scale_fill_manual(values = times_colors)
+    TOSCA:::my_ggplot_theme() +
+    ggplot2::theme(legend.position = 'bottom') +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_color_identity()
+
 
   hist_data <- ggplot2::ggplot_build(posterior_plot)$data[[1]]
   ymin <- 0
@@ -77,38 +116,6 @@ plot_timing = function(x)
   # 5% above bottom
   ylab_pos <- ymin + 0.1 * (ymax - ymin)
 
-
-  if ("t_dormancy_start" %in% timing_estimates$variable){
-    MAP_dormancy_start = timing_estimates %>% dplyr::filter(variable == "t_dormancy_start") %>% dplyr::pull(value) %>% mean()
-    MAP_dormancy_end = timing_estimates %>% dplyr::filter(variable == "t_dormancy_end") %>% dplyr::pull(value) %>% mean()
-    timing_estimates = timing_estimates %>% dplyr::filter(!(variable %in% c("t_dormancy_start","t_dormancy_end")))
-
-    posterior_plot = ggplot2::ggplot() +
-      ggplot2::geom_histogram(
-        data = timing_estimates %>% dplyr::rename(Date = value),
-        ggplot2::aes(Date, fill = variable, ..density..),
-        inherit.aes = FALSE,
-        bins = 150
-      ) +
-      ggplot2::geom_point(
-        data = endpoints,
-        ggplot2::aes(x = as.Date(Start), y = 0),
-        inherit.aes = FALSE,
-        size = 3
-      ) + my_ggplot_theme()+
-      ggplot2::theme(legend.position = 'bottom')+
-      ggplot2::scale_fill_manual(values = var_colors)+
-      ggplot2::geom_rect(
-        ggplot2::aes(xmin = MAP_dormancy_start,
-                     xmax = MAP_dormancy_end),
-        ymin = 0,
-        ymax = Inf,
-        fill = 'grey',
-        colour = "white",
-        size = 0.5,
-        alpha = .5
-      )
-  }
 
   therapies = therapies %>% dplyr::mutate(Duration = as.Date(End)-as.Date(Start)) %>% dplyr::mutate(short=ifelse(Duration < 30, T, F))
   new_col = data.frame(Name = names(clinical_colors), colors = clinical_colors)
@@ -193,7 +200,7 @@ plot_timing = function(x)
   }
 
   if (nrow(therapies)>0){
-    posterior_plot +
+    posterior_plot = posterior_plot +
       dummy_guide(
         labels = c(names(times_colors), names(clinical_colors)),
         fill   = c(times_colors, clinical_colors),
@@ -203,7 +210,7 @@ plot_timing = function(x)
         min_value_time = min(timing_estimates$value, na.rm = TRUE)
       )
   }else{
-    posterior_plot +
+    posterior_plot = posterior_plot +
       dummy_guide(
         labels = names(times_colors),
         fill   = times_colors,
@@ -211,6 +218,32 @@ plot_timing = function(x)
         title  = "Inferred times",
         key = draw_key_polygon,
         min_value_time = min(timing_estimates$value, na.rm = TRUE)
+      )
+  }
+
+  if (x$Fit$model_info$dormancy) {
+
+    dormancy_df = data.frame("event"= c("Dormancy"), "Start"=c(dormancy_start), "End"=c(dormancy_end))
+    dormancy_df2 = data.frame("event"= c("Dormancy Start", "Dormancy End"), "date"=c(dormancy_start, dormancy_end))
+
+    posterior_plot = posterior_plot +
+      ggplot2::geom_rect(
+        data = dormancy_df,
+        ggplot2:::aes(xmin = as.Date(Start), xmax = as.Date(End)),
+        ymin = 0,ymax = Inf, color = "white", fill="#c0c0c0ff", alpha = .5
+      )+
+      ggplot2::geom_segment(
+        data = dormancy_df2,
+        ggplot2::aes(x = as.Date(date),
+                     xend = as.Date(date),
+                     y=0,
+                     yend = ylab_pos + 1.5*ylab_pos),
+        size = .5, linetype="dashed", color = "#7d7d7dff"
+      )+
+      ggplot2::geom_label(
+        data = dormancy_df2,
+        ggplot2::aes(x = as.Date(date), y = ylab_pos + 1.5*ylab_pos, label=event),
+        size = 3, fill="#c0c0c0ff"
       )
   }
 

@@ -87,7 +87,7 @@ fit = function(
   #cat("--- End Diagnostics ---\n")
 
   cat("\n--- Posterior Predictive Checks ---\n")
-  print.data.frame(check_ppc(x))
+  print.data.frame(TOSCA:::check_ppc(x))
 
   return(x)
 
