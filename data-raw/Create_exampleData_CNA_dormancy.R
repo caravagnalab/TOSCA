@@ -99,7 +99,7 @@ exampleData_CNA_dormancy = list(
   "Mutations" = data.frame(
     "Name" = c("m_primary", "m_relapse", "m_pre", "m_post", "m_drug1", "m_drug2"),
     "Length" = c(l_diploid, l_diploid, l_CNA1, l_CNA1, l_diploid, l_diploid),
-    "Karyptype" = c("1:1","1:1", "2:0", "2:0", "1:1", "1:1"),
+    "Karyotype" = c("1:1","1:1", "2:0", "2:0", "1:1", "1:1"),
     "Type"=c("clock-like primary", "clock-like relapse", "alpha", "beta", "Drug 1", "Drug 2"),
     "Value"=c(m_clock_primary, m_clock, m_alpha_cna_1, m_beta_cna_1, m_step_1, m_step_2)
   ),

@@ -40,7 +40,7 @@ plot_timing = function(x)
   if (x$Fit$model_info$dormancy) {
     dormancy_start = TOSCA:::convert_date_real(date = TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy"), x=x)
     dormancy_end =  TOSCA:::convert_date_real(date = timing_estimates %>% pull(t_dormancy_end) %>% mean(), x=x)
-    timing_estimates = timing_estimates %>% select(!c("t_dormancy_end",
+    timing_estimates = timing_estimates %>% select(!c("t_dormancy_end", "t_mrca_tr",
                                                       colnames(timing_estimates)[grepl("t_cna_tr", colnames(timing_estimates))]))
   }
 

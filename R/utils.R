@@ -60,7 +60,7 @@ check_genomic_input = function(mutations){
   if (class(mutations$Name) != "character"){stop("Mutation names must be strings")}
   if (class(mutations$Length) != "numeric"){stop("Genome segments lengths must be integer numbers")}
   for (k in 1:nrow(mutations)){
-    if (!TOSCA:::check_valid_karyotype(mutations$Karyptype[k])) stop(paste0("Invalid karyotype: ", k))
+    if (!TOSCA:::check_valid_karyotype(mutations$Karyotype[k])) stop(paste0("Invalid karyotype: ", k))
   }
   mutation_types = c("clock-like primary", "clock-like relapse", "alpha", "beta", "driver")
   non_standard_mutations = mutations$Type[!(mutations$Type %in% mutation_types)]
@@ -159,7 +159,7 @@ check_valid_date = function(str_date){
 check_required_cols = function(df, type){
   if (type == "samples") required_cols <- c("Name", "Date")
   if (type == "parameters") required_cols <- c("Name", "Value","Index")
-  if (type == "mutations") required_cols <- c( "Name","Length","Karyptype","Type","Value")
+  if (type == "mutations") required_cols <- c( "Name","Length","Karyotype","Type","Value")
   if (type == "therapies") required_cols <- c( "Name","Class","Start","End")
   #required_cols <- c("Name", "Value")
   missing_cols <- setdiff(required_cols, colnames(df))

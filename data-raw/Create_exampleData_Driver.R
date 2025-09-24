@@ -73,7 +73,7 @@ exampleData_Driver = list(
   "Mutations" = data.frame(
     "Name" = c("sbs1_primary", "sbs1_relapse", "sbs11"),
     "Length" = c(l_diploid, l_diploid, l_diploid),
-    "Karyptype" = c("1:1","1:1", "1:1"),
+    "Karyotype" = c("1:1","1:1", "1:1"),
     "Type"=c("clock-like primary", "clock-like relapse", "driver"),
     "Value"=c(m_clock_primary, m_clock, m_driver)
   ),

@@ -24,22 +24,22 @@ get_mutation = function(x, type, cauchy=F){
 
 get_length = function(x, diploid = T){
   if (diploid){
-    l = x$Input$Mutations %>% dplyr::filter(Karyptype == "1:1") %>% dplyr::pull(Length) %>% unique()
+    l = x$Input$Mutations %>% dplyr::filter(Karyotype == "1:1") %>% dplyr::pull(Length) %>% unique()
     is_wgd_variable = x$Input$Parameters %>% dplyr::filter(Name=="wgd") %>% nrow() > 0
     if (is_wgd_variable)  is_wgd = x$Input$Parameters %>% dplyr::filter(Name=="wgd") %>% dplyr::pull(Value) else is_wgd=NA
     if (length(l)!=1 & is.na(is_wgd)) stop("The entry for the length of the diploid genome must be unique")
   }else{
-    l = x$Input$Mutations %>% dplyr::filter(Karyptype != "1:1") %>% dplyr::arrange(Length) %>% pull(Length) %>% unique()
+    l = x$Input$Mutations %>% dplyr::filter(Karyotype != "1:1") %>% dplyr::arrange(Length) %>% pull(Length) %>% unique()
   }
   return(l)
 }
 
 get_coeff = function(x){
   karyotypes = x$Input$Mutations %>%
-    dplyr::filter(Type == "alpha") %>% dplyr::arrange(Length) %>% dplyr::select(Karyptype) #%>% unique()
+    dplyr::filter(Type == "alpha") %>% dplyr::arrange(Length) %>% dplyr::select(Karyotype) #%>% unique()
   coeff_alpha = c()
   coeff_beta = c()
-  for (k in karyotypes$Karyptype){
+  for (k in karyotypes$Karyotype){
     if (k == "2:0") {
       coeff_alpha = c(coeff_alpha, 1)
       coeff_beta = c(coeff_beta, 2)
