@@ -629,7 +629,7 @@ plot_timing_MAP = function(x)
       axis.line.x = element_blank(),
       axis.line.y = element_line(),
       legend.position = "none",
-      text = element_text(family = "Times New Roman", size = 13, face = "plain"),
+      text = element_text(family = "Times New Roman", size = 14, face = "plain"),
       plot.margin = unit(c(0,0,0,0), "cm")
     )
 
@@ -647,7 +647,7 @@ plot_timing_MAP = function(x)
     ggplot2::aes(xmin = as.Date(Start),
                  xmax = as.Date(End),
                  fill=Drug),
-    ymin = 0.8,
+    ymin = 1,
     ymax = 1.1,
     #fill = c,
     colour = "white",
@@ -680,19 +680,12 @@ plot_timing_MAP = function(x)
       legend.position = "bottom",
       text = element_text(family = "Times New Roman"),
       plot.margin = unit(c(0,0,0,0), "cm"),
-      legend.title = element_text(size = 14),  # legend title size
-      legend.text  = element_text(size = 12)
+      legend.title = element_text(size = 10),  # legend title size
+      legend.text  = element_text(size = 10)
     ) +
     # Force x-axis line at y=0
-    scale_y_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0))
     #geom_hline(yintercept = 0, color = "black")+ylim(0,2)+
-    geom_hline(yintercept = 1, color = "black")+ylim(0,1.1)+
-    geom_point(data = dates, aes(x=x, y=1))+
-    geom_text(data = dates %>% mutate(d = as.character(x)) %>% rowwise() %>%
-                mutate(d = paste0(strsplit(d, "-")[[1]][2], "-",strsplit(d, "-")[[1]][1])),
-               aes(x=x, y=0.9, label = d),
-              size=4,
-              family = "Times New Roman")
   #clinical_plot
 
 
@@ -706,7 +699,7 @@ plot_timing_MAP = function(x)
       ggplot2::geom_rect(
         data = dormancy_df,
         ggplot2:::aes(xmin = as.Date(Start), xmax = as.Date(End)),
-        ymin = 0.8,ymax = 1.1, color = "white", fill="#c0c0c0ff", alpha = .5
+        ymin = 1,ymax = 1.1, color = "white", fill="#c0c0c0ff", alpha = .5
       )
     # +
     #   ggplot2::geom_segment(
@@ -724,7 +717,15 @@ plot_timing_MAP = function(x)
     #   )
   }
 
+  endpoints$shape = "1"
+  medians_df$shape = "2"
   endpoints$color = c("S1", "S2")
+  times_colors_df$variable = rownames(times_colors_df)
+  medians_df = left_join(medians_df, times_colors_df)
+  endpoints2 = rbind(endpoints, medians_df %>% rename(Name=variable, Date = median) %>% mutate(Date = as.character(Date)) ) %>%
+    mutate(color = ifelse(color %in% c("S1", "S2"), color, Name))
+  times_colors2 = c(times_colors, "S1"="#a272bfff", "S2"="#683b81ff")
+  #endpoints$color = c("S1", "S2")
   clinical_plot <- clinical_plot +
     #scale_x_date(limits = xlims, expand = c(0,0))+
     # theme(
@@ -735,30 +736,39 @@ plot_timing_MAP = function(x)
     #   axis.text.x = element_text(margin = margin(t = 0)),
     #   axis.ticks.length = unit(0, "pt")
     # )+
+    geom_hline(yintercept = 1, color = "black")+ylim(.5,1.1)+
+    geom_point(data = dates, aes(x=x, y=1))+
+    geom_text(data = dates %>% mutate(d = as.character(x)) %>% rowwise() %>%
+                mutate(d = paste0(strsplit(d, "-")[[1]][2], "-",strsplit(d, "-")[[1]][1])),
+              aes(x=x, y=0.95, label = d),
+              size=4,
+              family = "Times New Roman")+
     ggplot2::geom_segment(
       data = endpoints,
       ggplot2::aes(x = as.Date(Date),
                    xend = as.Date(Date),
                    y=1,
-                   yend = .5),
+                   yend = .85),
       size = .5, linetype="dashed"
     )+
     ggplot2::geom_point(
-      data = endpoints,
-      ggplot2::aes(x = as.Date(Date), y = 1, color = color),
-      size = 3.7
-    ) + scale_color_manual(values = c("S1"="#3b5f81ff", "S2"="#683b81ff"))+
+      data = endpoints2,
+      ggplot2::aes(x = as.Date(Date), y = 1, color = color, shape = shape, size=shape)
+      #size = 3.7
+    ) + scale_color_manual(values = times_colors2)+
+    scale_shape_manual(values = c("1"=16, "2"=18))+
+    scale_size_manual(values = c("1"=3.7, "2"=3))+
     ggplot2::geom_label(
       data = endpoints,
-      ggplot2::aes(x = as.Date(Date), y = .5, label=Name),
+      ggplot2::aes(x = as.Date(Date), y = .85, label=Name),
       family = "Times New Roman",
       size = 4
-    ) + xlim(xlims[1], xlims[2]) + guides(color = "none")
+    ) + xlim(xlims[1], xlims[2]) + guides(color = "none", shape = "none", size="none")
 
   #timing_estimates$value <- as.Date(timing_estimates$value)
 
   require(patchwork)
-  combined <- timing_plot2 / clinical_plot + plot_layout(heights = c(1, .5))
+  combined <- timing_plot2 / clinical_plot + plot_layout(heights = c(.6, 1))
   combined
 
 }
