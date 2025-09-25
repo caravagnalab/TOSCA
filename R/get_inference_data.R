@@ -202,7 +202,7 @@ get_inference_data_dormancy = function(x){
   data[['last_therapy']]= TOSCA:::get_end_therapy(x, class= c("Chemotherapy inducing dormancy", "Mutagenic"))[length(TOSCA:::get_end_therapy(x, class= c("Chemotherapy inducing dormancy", "Mutagenic")))]
   #real <lower=0> last_therapy;
 
-  data[['exponential_growth']] = c(1,1) # TO CHANGE
+  data[['exponential_growth']] = c(0,1) # TO CHANGE
   data[['N_min']] = TOSCA:::get_N(x, which="min")
   data[['N_max']] = TOSCA:::get_N(x, which="max")
 

@@ -140,20 +140,20 @@ plot_timing = function(x)
                    y=0, yend=Inf), color = therapies %>% dplyr::filter(short == T) %>% dplyr::pull(colors), alpha=1)  +
     ggplot2::guides(color = "none")
 
-  posterior_plot = posterior_plot +
-    ggplot2::geom_segment(
-      data = endpoints,
-      ggplot2::aes(x = as.Date(Date),
-                   xend = as.Date(Date),
-                   y=0,
-                   yend = ylab_pos),
-      size = .5, linetype="dashed"
-    )+
-    ggplot2::geom_label(
-      data = endpoints,
-      ggplot2::aes(x = as.Date(Date), y = ylab_pos, label=Name),
-      size = 3
-    )
+  # posterior_plot = posterior_plot +
+  #   ggplot2::geom_segment(
+  #     data = endpoints,
+  #     ggplot2::aes(x = as.Date(Date),
+  #                  xend = as.Date(Date),
+  #                  y=0,
+  #                  yend = ylab_pos),
+  #     size = .5, linetype="dashed"
+  #   )+
+  #   ggplot2::geom_label(
+  #     data = endpoints,
+  #     ggplot2::aes(x = as.Date(Date), y = ylab_pos, label=Name),
+  #     size = 3
+  #   )
 
   dummy_guide <- function(
     labels = NULL,
@@ -247,7 +247,20 @@ plot_timing = function(x)
       )
   }
 
-  posterior_plot
+  posterior_plot = posterior_plot +
+    ggplot2::geom_segment(
+      data = endpoints,
+      ggplot2::aes(x = as.Date(Date),
+                   xend = as.Date(Date),
+                   y=0,
+                   yend = ylab_pos),
+      size = .5, linetype="dashed"
+    )+
+    ggplot2::geom_label(
+      data = endpoints,
+      ggplot2::aes(x = as.Date(Date), y = ylab_pos, label=Name),
+      size = 3
+    )
 }
 
 #' Plot clinical timeline + posterior times with histogram
@@ -319,7 +332,8 @@ plot_timing_histogram = function(x)
     TOSCA:::my_ggplot_theme()+
     ggplot2::theme(legend.position = 'bottom')+
     ggplot2::scale_fill_identity()
-  scale_fill_manual(values = times_colors)
+  #+
+  #scale_fill_manual(values = times_colors)
 
   # posterior_plot = ggplot2::ggplot() +
   #   ggplot2::geom_histogram(
@@ -378,21 +392,6 @@ plot_timing_histogram = function(x)
                    xend=as.Date(Start),
                    y=0, yend=Inf), color = therapies %>% dplyr::filter(short == T) %>% dplyr::pull(colors), alpha=1)  +
     ggplot2::guides(color = "none")
-
-  posterior_plot = posterior_plot +
-    ggplot2::geom_segment(
-      data = endpoints,
-      ggplot2::aes(x = as.Date(Date),
-                   xend = as.Date(Date),
-                   y=0,
-                   yend = ylab_pos),
-      size = .5, linetype="dashed"
-    )+
-    ggplot2::geom_label(
-      data = endpoints,
-      ggplot2::aes(x = as.Date(Date), y = ylab_pos, label=Name),
-      size = 3
-    )
 
   dummy_guide <- function(
     labels = NULL,
@@ -485,7 +484,20 @@ plot_timing_histogram = function(x)
         size = 3, fill="#c0c0c0ff"
       )
   }
-  posterior_plot
+  posterior_plot = posterior_plot +
+    ggplot2::geom_segment(
+      data = endpoints,
+      ggplot2::aes(x = as.Date(Date),
+                   xend = as.Date(Date),
+                   y=0,
+                   yend = ylab_pos),
+      size = .5, linetype="dashed"
+    )+
+    ggplot2::geom_label(
+      data = endpoints,
+      ggplot2::aes(x = as.Date(Date), y = ylab_pos, label=Name),
+      size = 3
+    )
 }
 
 
@@ -592,11 +604,12 @@ plot_timing_MAP = function(x)
     theme_bw() +
     labs(y = 'Date', x = '') +
     theme(
-      axis.text.y = element_text(face = 'bold', size = 10),
+      #axis.text.y = element_text(face = 'bold', size = 10),
       legend.position = "none"
     ) +
     # IMPORTANT: set the date limits with scale_y_date because 'value' is on y
-    scale_y_date(limits = xlims, expand = c(0,0)) +
+    ylim(xlims[1],xlims[2])+
+    #scale_y_date(limits = xlims, expand = c(0,0)) +
     coord_flip()
 
   timing_plot2 <- timing_plot2 +
@@ -605,8 +618,8 @@ plot_timing_MAP = function(x)
       #panel.grid = element_blank(),
       #panel.grid.major.y = element_blank(),
       #panel.grid.minor.y = element_blank(),
-      panel.grid.major.x = element_blank(),
-      panel.grid.minor.x = element_blank(),
+      #panel.grid.major.x = element_blank(),
+      #panel.grid.minor.x = element_blank(),
       panel.border = element_blank(),
       # Hide x-axis labels (we keep only bottom one)
       axis.title.x = element_blank(),
@@ -615,14 +628,18 @@ plot_timing_MAP = function(x)
       # Remove y axis line (keep only x at bottom plot)
       axis.line.x = element_blank(),
       axis.line.y = element_line(),
-      legend.position = "none"
+      legend.position = "none",
+      text = element_text(family = "Times New Roman", size = 13, face = "plain"),
+      plot.margin = unit(c(0,0,0,0), "cm")
     )
 
   # Clinical plot
-  therapies = therapies %>% dplyr::mutate(Duration = as.Date(End)-as.Date(Start)) %>% dplyr::mutate(short=ifelse(Duration < 30, T, F)) %>% dplyr::mutate(Drug=Name)
+  therapies = therapies %>% dplyr::mutate(Duration = as.Date(End)-as.Date(Start)) %>%
+    dplyr::mutate(short=ifelse(Duration < 30, T, F)) %>% dplyr::mutate(Drug=Name)
   new_col = data.frame(Name = names(clinical_colors), colors = clinical_colors)
   therapies = dplyr::left_join(therapies,new_col, by="Name")
 
+  dates= data.frame(x = seq(xlims[1], xlims[2], by = 365*2))
   clinical_plot = ggplot() +
     #geom_line(yintercept = 0)+
     ggplot2::geom_rect(
@@ -630,8 +647,8 @@ plot_timing_MAP = function(x)
     ggplot2::aes(xmin = as.Date(Start),
                  xmax = as.Date(End),
                  fill=Drug),
-    ymin = 0,
-    ymax = Inf,
+    ymin = 0.8,
+    ymax = 1.1,
     #fill = c,
     colour = "white",
     size = 0.5,
@@ -644,19 +661,7 @@ plot_timing_MAP = function(x)
     #                xend=as.Date(Start),
     #                y=0, yend=Inf, color = Name), alpha=1)  +
     # scale_color_manual(values = clinical_colors)+
-    ggplot2::geom_segment(
-      data = endpoints,
-      ggplot2::aes(x = as.Date(Date),
-                   xend = as.Date(Date),
-                   y=0,
-                   yend = .5),
-      size = .5, linetype="dashed"
-    )+
-    ggplot2::geom_label(
-      data = endpoints,
-      ggplot2::aes(x = as.Date(Date), y = .5, label=Name),
-      size = 3
-    )+xlab("Date")+
+    xlab("Date")+
     theme_minimal() +
     theme(
       # Remove everything related to y-axis
@@ -664,58 +669,96 @@ plot_timing_MAP = function(x)
       axis.text.y  = element_blank(),
       axis.ticks.y = element_blank(),
       axis.line.y  = element_blank(),
+      axis.title.x = element_blank(),
+      axis.text.x  = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.line.x  = element_blank(),
       panel.grid.major.y = element_blank(),
       panel.grid.minor.y = element_blank(),
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
-      legend.position = "bottom"
+      legend.position = "bottom",
+      text = element_text(family = "Times New Roman"),
+      plot.margin = unit(c(0,0,0,0), "cm"),
+      legend.title = element_text(size = 14),  # legend title size
+      legend.text  = element_text(size = 12)
     ) +
     # Force x-axis line at y=0
     scale_y_continuous(expand = c(0, 0)) +
-    geom_hline(yintercept = 0, color = "black")+ylim(-2,2)
+    #geom_hline(yintercept = 0, color = "black")+ylim(0,2)+
+    geom_hline(yintercept = 1, color = "black")+ylim(0,1.1)+
+    geom_point(data = dates, aes(x=x, y=1))+
+    geom_text(data = dates %>% mutate(d = as.character(x)) %>% rowwise() %>%
+                mutate(d = paste0(strsplit(d, "-")[[1]][2], "-",strsplit(d, "-")[[1]][1])),
+               aes(x=x, y=0.9, label = d),
+              size=4,
+              family = "Times New Roman")
+  #clinical_plot
 
 
   if (x$Fit$model_info$dormancy) {
 
     dormancy_df = data.frame("event"= c("Dormancy"), "Start"=c(dormancy_start), "End"=c(dormancy_end))
-    dormancy_df2 = data.frame("event"= c("Dormancy Start", "Dormancy End"), "date"=c(dormancy_start, dormancy_end))
+    dormancy_df2 = data.frame("event"= c("Dormancy\nStart", "Dormancy\nEnd"), "date"=c(dormancy_start, dormancy_end))
+    dormancy_df2$y = c(1.5, 1.7)
 
     clinical_plot = clinical_plot +
       ggplot2::geom_rect(
         data = dormancy_df,
         ggplot2:::aes(xmin = as.Date(Start), xmax = as.Date(End)),
-        ymin = 0.01,ymax = Inf, color = "white", fill="#c0c0c0ff", alpha = .5
-      )+
-      ggplot2::geom_segment(
-        data = dormancy_df2,
-        ggplot2::aes(x = as.Date(date),
-                     xend = as.Date(date),
-                     y=0,
-                     yend = 1),
-        size = .5, linetype="dashed", color = "#7d7d7dff"
-      )+
-      ggplot2::geom_label(
-        data = dormancy_df2,
-        ggplot2::aes(x = as.Date(date), y = 1, label=event),
-        size = 3, fill="#c0c0c0ff"
+        ymin = 0.8,ymax = 1.1, color = "white", fill="#c0c0c0ff", alpha = .5
       )
+    # +
+    #   ggplot2::geom_segment(
+    #     data = dormancy_df2,
+    #     ggplot2::aes(x = as.Date(date),
+    #                  xend = as.Date(date),
+    #                  y=1,
+    #                  yend = 1.5),
+    #     size = .5, linetype="dashed", color = "#7d7d7dff"
+    #   )+
+    #   ggplot2::geom_label(
+    #     data = dormancy_df2,
+    #     ggplot2::aes(x = as.Date(date), y = y, label=event),
+    #     size = 3, fill="#c0c0c0ff"
+    #   )
   }
 
+  endpoints$color = c("S1", "S2")
   clinical_plot <- clinical_plot +
-    scale_x_date(limits = xlims, expand = c(0,0))+
-    theme(
-      panel.grid = element_blank(),
-      panel.border = element_blank(),
-      axis.line.y = element_blank(),
-      # collapse tick labels onto axis line
-      axis.text.x = element_text(margin = margin(t = 0)),
-      axis.ticks.length = unit(0, "pt")
-    )
+    #scale_x_date(limits = xlims, expand = c(0,0))+
+    # theme(
+    #   panel.grid = element_blank(),
+    #   panel.border = element_blank(),
+    #   axis.line.y = element_blank(),
+    #   # collapse tick labels onto axis line
+    #   axis.text.x = element_text(margin = margin(t = 0)),
+    #   axis.ticks.length = unit(0, "pt")
+    # )+
+    ggplot2::geom_segment(
+      data = endpoints,
+      ggplot2::aes(x = as.Date(Date),
+                   xend = as.Date(Date),
+                   y=1,
+                   yend = .5),
+      size = .5, linetype="dashed"
+    )+
+    ggplot2::geom_point(
+      data = endpoints,
+      ggplot2::aes(x = as.Date(Date), y = 1, color = color),
+      size = 3.7
+    ) + scale_color_manual(values = c("S1"="#3b5f81ff", "S2"="#683b81ff"))+
+    ggplot2::geom_label(
+      data = endpoints,
+      ggplot2::aes(x = as.Date(Date), y = .5, label=Name),
+      family = "Times New Roman",
+      size = 4
+    ) + xlim(xlims[1], xlims[2]) + guides(color = "none")
 
   #timing_estimates$value <- as.Date(timing_estimates$value)
 
   require(patchwork)
-  combined <- timing_plot2 / clinical_plot + plot_layout(heights = c(1, 1.5))
+  combined <- timing_plot2 / clinical_plot + plot_layout(heights = c(1, .5))
   combined
 
 }

@@ -16,15 +16,22 @@ eplot = function (){
     ggplot2::theme(panel.border = ggplot2::element_rect(colour = "black",
                                                         fill = NA, linetype = "dashed"), panel.background = ggplot2::element_rect(fill = "gainsboro"),
                    axis.title = ggplot2::element_blank(), axis.text = ggplot2::element_blank(),
-                   axis.ticks = ggplot2::element_blank(), axis.line = ggplot2::element_blank())
+                   axis.ticks = ggplot2::element_blank(), axis.line = ggplot2::element_blank()
+                   )
 }
 
 my_ggplot_theme = function (cex = 1)
 {
   cex_opt = getOption("CNAqc_cex", default = 1)
-  ggplot2::theme_light(base_size = 10 * cex_opt) + ggplot2::theme(legend.position = "bottom",
-                                                                  legend.key.size = ggplot2::unit(0.3 * cex_opt, "cm"),
-                                                                  panel.background = ggplot2::element_rect(fill = "white"))
+  ggplot2::theme_light(base_size = 10 * cex_opt) +
+    ggplot2::theme(legend.position = "bottom",
+                   legend.key.size = ggplot2::unit(0.3 * cex_opt, "cm"),
+                   panel.background = ggplot2::element_rect(fill = "white"),
+                   axis.text.y  = element_text(family = "Times New Roman"),
+                   axis.title.y = element_text(family = "Times New Roman"),
+                   axis.text.x  = element_text(family = "Times New Roman"),
+                   axis.title.x = element_text(family = "Times New Roman"),
+                   text = element_text(family = "Times New Roman"))
 }
 
 

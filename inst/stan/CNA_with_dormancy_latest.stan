@@ -46,13 +46,13 @@ functions {
                      array[] real mu_th_step, array[] real start_th_step,
                      array[] real end_th_step,
                      real chemo_start, real t_dormancy_end, real k_step,
-                     real shape_cna, real lambda_alpha, int n_step_th) {
+                     real shape_cna, array[] real lambda_alpha, int n_step_th) {
     int m_alpha_rep;
     if (extra_therapy) {
 
-      for (th in 1:n_step_th){
-      m_alpha_rep = neg_binomial_2_rng(lambda_alpha,shape_cna);
-      }
+      //for (th in 1:n_step_th){
+      m_alpha_rep = neg_binomial_2_rng(lambda_alpha[1]+lambda_alpha[2],shape_cna);
+      //}
 
     } else {
       m_alpha_rep = neg_binomial_2_rng(
@@ -68,12 +68,12 @@ functions {
                     array[] real mu_th_step, array[] real start_th_step,
                     array[] real end_th_step,
                     real chemo_start, real t_dormancy_end, real k_step,
-                    real shape_cna, real lambda_beta, int n_step_th) {
+                    real shape_cna, array[] real lambda_beta, int n_step_th) {
     int m_beta_rep;
     if (extra_therapy) {
-      for (th in 1:n_step_th){
-      m_beta_rep = neg_binomial_2_rng(lambda_beta,shape_cna);
-      }
+      //for (th in 1:n_step_th){
+      m_beta_rep = neg_binomial_2_rng(lambda_beta[1]+lambda_beta[2],shape_cna);
+      //}
     } else {
       m_beta_rep = neg_binomial_2_rng(
         coeff_beta * omega * l_CNA *
@@ -86,7 +86,7 @@ functions {
 
   int generate_th_rng(int extra_therapy,
                   real mu_th_step, real omega, real l_diploid,
-                  real t_dormancy_end, real t_mrca,
+                  real t_eca, real t_mrca,
                   real start_th_step, real end_th_step,
                   real k_step, real shape_step_1,  int n_step_th) {
     int m_th_step_rep;
@@ -94,7 +94,7 @@ functions {
       //for (th in 1:n_step_th){
       m_th_step_rep = neg_binomial_2_rng(
         2 * mu_th_step * omega * l_diploid *
-        lambda_therapy(t_dormancy_end, t_mrca, start_th_step, end_th_step, k_step) + 0.1,
+        lambda_therapy(t_eca, t_mrca, start_th_step, end_th_step, k_step) + 0.1,
         shape_step_1
       );
       //}
@@ -158,7 +158,7 @@ parameters{
 
   real <lower=0, upper= start_th_step[1]> t_eca;
   real <lower=t_eca, upper= Sample_1> t_mrca_primary;
-  // real <lower= chemo_start, upper= chemo_end> t_dormancy_start;
+  // real <lower= chemo_start, upper= chemo_end> chemo_start;
   real <lower= chemo_end, upper= last_therapy> t_dormancy_end;
   real <lower= t_dormancy_end, upper= Sample_2> t_mrca;
   real <lower= t_eca, upper= t_mrca - (t_dormancy_end - chemo_start)> t_cna_tr;
@@ -168,20 +168,20 @@ parameters{
 }
 
 transformed parameters{
-  real lambda_alpha = 0;
-  real lambda_beta = 0;
+  array[2] real lambda_alpha;
+  array[2] real lambda_beta;
 
-  for (th in 1:n_th_step){
-    lambda_alpha += coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca) + mu_th_step[th]*lambda_therapy(t_eca, t_cna_tr, start_th_step[th] - delta(start_th_step[th], chemo_start, t_dormancy_end, k_step), end_th_step[th] - delta(end_th_step[th], chemo_start, t_dormancy_end, k_step), k_step)) +.1;
-    lambda_beta += coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - chemo_start) - t_cna_tr ) + mu_th_step[th]*lambda_therapy(t_cna_tr,t_mrca-(t_dormancy_end - chemo_start), start_th_step[th] - delta(start_th_step[th],chemo_start,t_dormancy_end,k_step), end_th_step[th] - delta(end_th_step[th],chemo_start,t_dormancy_end,k_step),k_step)) +.1;
+  lambda_alpha[1] =  coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca) + mu_th_step[1]*lambda_therapy(t_eca, t_cna_tr, start_th_step[1],end_th_step[1], k_step)) +.1;
+  lambda_alpha[2] =  coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca) + mu_th_step[2]*lambda_therapy(t_eca, t_cna_tr, start_th_step[2] - delta(start_th_step[2], chemo_start, t_dormancy_end, k_step),end_th_step[2] - delta(end_th_step[2], chemo_start, t_dormancy_end, k_step), k_step)) +.1;
 
-  }
+  lambda_beta[1] = coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - chemo_start) - t_cna_tr ) + mu_th_step[1]*lambda_therapy(t_cna_tr,t_mrca-(t_dormancy_end - chemo_start), start_th_step[1], end_th_step[1],k_step)) +.1;
+  lambda_beta[2] = coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - chemo_start) - t_cna_tr ) + mu_th_step[2]*lambda_therapy(t_cna_tr,t_mrca-(t_dormancy_end - chemo_start), start_th_step[2] - delta(start_th_step[2],chemo_start,t_dormancy_end,k_step), end_th_step[2] - delta(end_th_step[2],chemo_start,t_dormancy_end,k_step),k_step)) +.1;
 }
 
 model{
   t_eca ~ uniform(0, start_th_step[1]);
   t_mrca_primary ~ uniform(t_eca, Sample_1);
-  // t_dormancy_start~ uniform(chemo_start, chemo_end);
+  // chemo_start~ uniform(chemo_start, chemo_end);
   t_dormancy_end~ uniform(chemo_start, last_therapy);
   t_mrca ~ uniform(t_dormancy_end, Sample_2);
   t_cna_tr ~ uniform(t_eca, t_mrca - (t_dormancy_end - chemo_start) );
@@ -213,13 +213,13 @@ model{
 
     for (th in 1:n_th_step){
     m_th_step[th]  ~  neg_binomial_2(
-      2*mu_th_step[th]*omega*l_diploid*lambda_therapy(t_dormancy_end,t_mrca, start_th_step[th], end_th_step[th],k_step) +.1,
+      2*mu_th_step[th]*omega*l_diploid*lambda_therapy(t_eca,t_mrca, start_th_step[th], end_th_step[th],k_step) +.1,
       1/phi_th_step[th]
       );
     }
 
-    m_alpha ~  neg_binomial_2(lambda_alpha,shape_cna);
-    m_beta ~ neg_binomial_2(lambda_beta,shape_cna);
+    m_alpha ~  neg_binomial_2(lambda_alpha[1]+lambda_alpha[2],shape_cna);
+    m_beta ~ neg_binomial_2(lambda_beta[1]+lambda_beta[2],shape_cna);
   }else{
     m_alpha ~  neg_binomial_2(coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca)) +.1+.1,
                                   shape_cna);
@@ -281,7 +281,7 @@ generated quantities {
   array[n_th_step] int m_th_step_rep;
   for (th in 1:n_th_step){
   m_th_step_rep[th] = generate_th_rng(
-    extra_therapy, mu_th_step[th], omega, l_diploid, t_dormancy_end, t_mrca,
+    extra_therapy, mu_th_step[th], omega, l_diploid, t_eca, t_mrca,
     start_th_step[th], end_th_step[th], k_step, shape_step_1, n_th_step
   );
   }
