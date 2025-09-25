@@ -147,6 +147,10 @@ get_parameter = function(x, name){
   if (length(par)==0){
     if (name == "omega_alpha") par = TOSCA:::get_growth_rate_prior_estimate(x)[["alpha"]]
     if (name == "omega_beta") par = TOSCA:::get_growth_rate_prior_estimate(x)[["beta"]]
+    if (name == "k_step") par = 100
+    if (name == "exponential_growth") par = 1
+    if (name == "mrca_alpha") par = 1
+    if (name == "mrca_beta") par = 1
   }
   par
 }

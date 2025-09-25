@@ -19,13 +19,13 @@ check_ppc = function(x){
   ppc_df = data.frame()
 
   for (v in variables){
-    # print(v)
+    #print(v)
 
     true_value = training_data[[v]]
 
     if (length(true_value)>0){
 
-      if (v %in% c("m_th_step","m_th_cauchy", "m_alpha", "m_beta") ){
+      if (v %in% c("m_th_step", "m_alpha", "m_beta") & !x$Fit$model_info$dormancy){
 
         for (i in 1:length(true_value)){
           rep_draws = posterior[[paste0(v,"_rep[",i,"]")]]
@@ -47,6 +47,26 @@ check_ppc = function(x){
 
       }else{
 
+        if (v == "m_th_step" & x$Fit$model_info$dormancy){
+          for (i in 1:length(true_value)){
+            rep_draws = posterior[[paste0(v,"_rep[",i,"]")]]
+            coverage <- mean(true_value[i] > (rep_draws - 2*sd(rep_draws)) &
+                               true_value[i] < (rep_draws + 2*sd(rep_draws)))
+            # cat(paste0(v, '_', i,':'))
+            # cat(sprintf("Approximate posterior predictive coverage: %.1f%%\n", coverage * 100))
+            # cat('\n')
+            original_name = TOSCA:::get_original_mutation_name(x, name = v, index = i)
+            ppc_df = rbind(ppc_df,
+                           data.frame(
+                             "name" = original_name,
+                             "variable" = paste0(v,"_",i),
+                             "true_value"=true_value[i],
+                             "ppc_coverage"=coverage,
+                             "pass" = coverage > .6
+                           ))
+          }
+        }else{
+
         rep_draws = posterior[[paste0(v, "_rep")]]
         coverage <- mean(true_value > (rep_draws - 2*sd(rep_draws)) &
                            true_value < (rep_draws + 2*sd(rep_draws)))
@@ -64,6 +84,7 @@ check_ppc = function(x){
                          "ppc_coverage"=coverage,
                          "pass" = coverage > .6
                        ))
+        }
 
       }
     }
@@ -196,14 +217,14 @@ plot_ppc = function(x){
             rep_name1 = paste0(v1, "_rep")
             rep_name2 = paste0(v2, "_rep")
 
-            if (x$Fit$model_info$dormancy){
-
-              if (rep_name1 == "m_alpha_rep") rep_name1 = "m_alpha_rep[1]"
-              if (rep_name1 == "m_beta_rep") rep_name1 = "m_beta_rep[1]"
-              if (rep_name2 == "m_alpha_rep") rep_name2 = "m_alpha_rep[1]"
-              if (rep_name2 == "m_beta_rep") rep_name2 = "m_beta_rep[1]"
-
-            }
+            # if (x$Fit$model_info$dormancy){
+            #
+            #   if (rep_name1 == "m_alpha_rep") rep_name1 = "m_alpha_rep[1]"
+            #   if (rep_name1 == "m_beta_rep") rep_name1 = "m_beta_rep[1]"
+            #   if (rep_name2 == "m_alpha_rep") rep_name2 = "m_alpha_rep[1]"
+            #   if (rep_name2 == "m_beta_rep") rep_name2 = "m_beta_rep[1]"
+            #
+            # }
 
             ppc_plot = TOSCA:::plot_ppc_single_mut(x, true_value1, true_value2, rep_name1, rep_name2)
             ppc_plot_list[[length(ppc_plot_list)+1]] = ppc_plot

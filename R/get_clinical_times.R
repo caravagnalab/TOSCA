@@ -21,7 +21,7 @@ get_start_therapy = function(x, class= "Mutagenic"){
 }
 
 get_end_therapy = function(x, class= "Mutagenic"){
-  starts = x$Input$Therapies %>% dplyr::filter(Class==class)
+  starts = x$Input$Therapies %>% dplyr::filter(Class %in% class)
   if (nrow(starts) >0){
     starts = starts %>% dplyr::arrange(as.Date(Start)) %>% dplyr::pull(End)
     return(unname(sapply(starts, TOSCA:::convert_real_date, x=x)) %>% unlist())
