@@ -1,5 +1,5 @@
 # Plot Prior vs Posterior - all parameters
-
+require(extrafont)
 get_prior_distribution_type = function(par){
   prior_distributions = data.frame(
     'parameter'= c("t_eca","t_driver","t_mrca", "mrca", "omega", "mu_driver","s"),

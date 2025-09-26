@@ -469,20 +469,21 @@ plot_timing_histogram = function(x)
         data = dormancy_df,
         ggplot2:::aes(xmin = as.Date(Start), xmax = as.Date(End)),
         ymin = 0,ymax = Inf, color = "white", fill="#c0c0c0ff", alpha = .5
-      )+
-      ggplot2::geom_segment(
-        data = dormancy_df2,
-        ggplot2::aes(x = as.Date(date),
-                     xend = as.Date(date),
-                     y=0,
-                     yend = ylab_pos + 1.5*ylab_pos),
-        size = .5, linetype="dashed", color = "#7d7d7dff"
-      )+
-      ggplot2::geom_label(
-        data = dormancy_df2,
-        ggplot2::aes(x = as.Date(date), y = ylab_pos + 1.5*ylab_pos, label=event),
-        size = 3, fill="#c0c0c0ff"
       )
+    # +
+    #   ggplot2::geom_segment(
+    #     data = dormancy_df2,
+    #     ggplot2::aes(x = as.Date(date),
+    #                  xend = as.Date(date),
+    #                  y=0,
+    #                  yend = ylab_pos + 1.5*ylab_pos),
+    #     size = .5, linetype="dashed", color = "#7d7d7dff"
+    #   )+
+    #   ggplot2::geom_label(
+    #     data = dormancy_df2,
+    #     ggplot2::aes(x = as.Date(date), y = ylab_pos + 1.5*ylab_pos, label=event),
+    #     size = 3, fill="#c0c0c0ff"
+    #   )
   }
   posterior_plot = posterior_plot +
     ggplot2::geom_segment(
@@ -496,7 +497,8 @@ plot_timing_histogram = function(x)
     ggplot2::geom_label(
       data = endpoints,
       ggplot2::aes(x = as.Date(Date), y = ylab_pos, label=Name),
-      size = 3
+      size = 3,
+      family = "Times New Roman"
     )
 }
 
@@ -630,7 +632,7 @@ plot_timing_MAP = function(x)
       axis.line.y = element_line(),
       legend.position = "none",
       text = element_text(family = "Times New Roman", size = 14, face = "plain"),
-      plot.margin = unit(c(0,0,0,0), "cm")
+      plot.margin = unit(c(0,1,0,0), "cm") # top, right, bottom, left
     )
 
   # Clinical plot
@@ -639,7 +641,8 @@ plot_timing_MAP = function(x)
   new_col = data.frame(Name = names(clinical_colors), colors = clinical_colors)
   therapies = dplyr::left_join(therapies,new_col, by="Name")
 
-  dates= data.frame(x = seq(xlims[1], xlims[2], by = 365*2))
+  dates= data.frame(x = seq.Date(from = xlims[1], to = xlims[2], length.out = 7))
+  #data.frame(x = seq(xlims[1], xlims[2], by = 365*2))
   clinical_plot = ggplot() +
     #geom_line(yintercept = 0)+
     ggplot2::geom_rect(
@@ -673,13 +676,13 @@ plot_timing_MAP = function(x)
       axis.text.x  = element_blank(),
       axis.ticks.x = element_blank(),
       axis.line.x  = element_blank(),
-      panel.grid.major.y = element_blank(),
-      panel.grid.minor.y = element_blank(),
-      panel.grid.major.x = element_blank(),
-      panel.grid.minor.x = element_blank(),
+      # panel.grid.major.y = element_blank(),
+      # panel.grid.minor.y = element_blank(),
+      # panel.grid.major.x = element_blank(),
+      # panel.grid.minor.x = element_blank(),
       legend.position = "bottom",
       text = element_text(family = "Times New Roman"),
-      plot.margin = unit(c(0,0,0,0), "cm"),
+      plot.margin = unit(c(0,1,0,0), "cm"), # top, right, bottom, left
       legend.title = element_text(size = 10),  # legend title size
       legend.text  = element_text(size = 10)
     ) +
@@ -736,7 +739,8 @@ plot_timing_MAP = function(x)
     #   axis.text.x = element_text(margin = margin(t = 0)),
     #   axis.ticks.length = unit(0, "pt")
     # )+
-    geom_hline(yintercept = 1, color = "black")+ylim(.5,1.1)+
+    geom_hline(yintercept = 1, color = "black")+ylim(.8,1.1)+
+    #geom_vline(xintercept = xlims[1], color = "black")+
     geom_point(data = dates, aes(x=x, y=1))+
     geom_text(data = dates %>% mutate(d = as.character(x)) %>% rowwise() %>%
                 mutate(d = paste0(strsplit(d, "-")[[1]][2], "-",strsplit(d, "-")[[1]][1])),
@@ -768,7 +772,7 @@ plot_timing_MAP = function(x)
   #timing_estimates$value <- as.Date(timing_estimates$value)
 
   require(patchwork)
-  combined <- timing_plot2 / clinical_plot + plot_layout(heights = c(.6, 1))
+  combined <- timing_plot2 / clinical_plot + plot_layout(heights = c(1, .5))
   combined
 
 }

@@ -265,7 +265,7 @@ plot_ppc = function(x){
   }
 
   ncol = round(length(ppc_plot_list)/2,1)
-  if (ncol > round(length(ppc_plot_list)/2)) ncol = round(length(ppc_plot_list)/2) +1
+  if (ncol > round(length(ppc_plot_list)/2)) ncol = round(length(ppc_plot_list)/2) +1 else ncol = round(length(ppc_plot_list)/2)
 
   ggpubr::ggarrange(plotlist = ppc_plot_list, nrow = 2, ncol=ncol) + ggplot2::ggtitle("Posterior Predictive Checks")
 

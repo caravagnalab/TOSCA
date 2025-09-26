@@ -23,7 +23,9 @@ Imports:
     posterior,
     reshape2,
     rlang,
-    scales
+    scales,
+    patchwork,
+    extrafont
 RoxygenNote: 7.3.2
 Suggests: 
     testthat (>= 3.0.0)
