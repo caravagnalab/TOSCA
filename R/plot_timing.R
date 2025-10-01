@@ -48,6 +48,8 @@ plot_timing = function(x)
     apply(2, TOSCA:::convert_date_real, x=x) %>%
     dplyr::as_tibble()
 
+  timing_estimates = convert_timing_names(timing_estimates)
+
   for (i in 1:ncol(timing_estimates)){
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
   }
@@ -261,6 +263,7 @@ plot_timing = function(x)
       ggplot2::aes(x = as.Date(Date), y = ylab_pos, label=Name),
       size = 3
     )
+  posterior_plot
 }
 
 #' Plot clinical timeline + posterior times with histogram
@@ -299,6 +302,8 @@ plot_timing_histogram = function(x)
   timing_estimates = timing_estimates %>%
     apply(2, TOSCA:::convert_date_real, x=x) %>%
     dplyr::as_tibble()
+
+  timing_estimates = convert_timing_names(timing_estimates)
 
   for (i in 1:ncol(timing_estimates)){
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
@@ -500,6 +505,7 @@ plot_timing_histogram = function(x)
       size = 3,
       family = "Times New Roman"
     )
+  posterior_plot
 }
 
 
@@ -539,6 +545,8 @@ plot_timing_MAP = function(x)
   timing_estimates = timing_estimates %>%
     apply(2, TOSCA:::convert_date_real, x=x) %>%
     dplyr::as_tibble()
+
+  timing_estimates = convert_timing_names(timing_estimates)
 
   for (i in 1:ncol(timing_estimates)){
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
@@ -618,10 +626,10 @@ plot_timing_MAP = function(x)
     theme(
       # Clean theme: no grid, no border
       #panel.grid = element_blank(),
-      #panel.grid.major.y = element_blank(),
-      #panel.grid.minor.y = element_blank(),
-      #panel.grid.major.x = element_blank(),
-      #panel.grid.minor.x = element_blank(),
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
       panel.border = element_blank(),
       # Hide x-axis labels (we keep only bottom one)
       axis.title.x = element_blank(),
@@ -676,10 +684,12 @@ plot_timing_MAP = function(x)
       axis.text.x  = element_blank(),
       axis.ticks.x = element_blank(),
       axis.line.x  = element_blank(),
-      # panel.grid.major.y = element_blank(),
-      # panel.grid.minor.y = element_blank(),
-      # panel.grid.major.x = element_blank(),
-      # panel.grid.minor.x = element_blank(),
+
+      panel.grid.major.y = element_blank(), #
+      panel.grid.minor.y = element_blank(),
+      panel.grid.major.x = element_blank(), #
+      panel.grid.minor.x = element_blank(), #
+
       legend.position = "bottom",
       text = element_text(family = "Times New Roman"),
       plot.margin = unit(c(0,1,0,0), "cm"), # top, right, bottom, left
@@ -772,11 +782,10 @@ plot_timing_MAP = function(x)
   #timing_estimates$value <- as.Date(timing_estimates$value)
 
   require(patchwork)
-  combined <- timing_plot2 / clinical_plot + plot_layout(heights = c(1, .5))
+  combined <- timing_plot2 / clinical_plot + plot_layout(heights = c(1, .7))
   combined
 
 }
-
 
 
 

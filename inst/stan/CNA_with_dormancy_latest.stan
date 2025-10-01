@@ -51,7 +51,11 @@ functions {
     if (extra_therapy) {
 
       //for (th in 1:n_step_th){
-      m_alpha_rep = neg_binomial_2_rng(lambda_alpha[1]+lambda_alpha[2],shape_cna);
+      // m_alpha_rep = neg_binomial_2_rng(lambda_alpha[1]+lambda_alpha[2],shape_cna);
+      // *** ORIGINAL CLL MODEL
+      // m_alpha_rep = neg_binomial_2_rng(lambda_alpha[1]+lambda_alpha[2],shape_cna);
+      m_alpha_rep = neg_binomial_2_rng(lambda_alpha[1]+lambda_alpha[2]+lambda_alpha[3],shape_cna);
+      // *** TO HERE
       //}
 
     } else {
@@ -72,7 +76,10 @@ functions {
     int m_beta_rep;
     if (extra_therapy) {
       //for (th in 1:n_step_th){
-      m_beta_rep = neg_binomial_2_rng(lambda_beta[1]+lambda_beta[2],shape_cna);
+      // *** ORIGINAL CLL MODEL
+      // m_beta_rep = neg_binomial_2_rng(lambda_beta[1]+lambda_beta[2],shape_cna);
+      m_beta_rep = neg_binomial_2_rng(lambda_beta[1]+lambda_beta[2]+lambda_beta[3],shape_cna);
+      // *** TO HERE
       //}
     } else {
       m_beta_rep = neg_binomial_2_rng(
@@ -83,6 +90,7 @@ functions {
     }
     return m_beta_rep;
   }
+
 
   int generate_th_rng(int extra_therapy,
                   real mu_th_step, real omega, real l_diploid,
@@ -103,6 +111,32 @@ functions {
     }
     return m_th_step_rep;
   }
+
+  // *** UNCOMMENT HERE TO HAVE THE CLL MODEL WITH ONLY BENDAMUSTINE ***
+  int generate2_th_rng(int extra_therapy,
+                     real mu_th_step, real omega, real l_diploid,
+                     real t_eca, real t_mrca,
+                     real start_th_step_1, real start_th_step_2,
+                     real end_th_step_1, real end_th_step_2,
+                     real k_step, real shape_step_1, int n_step_th) {
+  int m_th_step_rep;
+  real lambda_sum;
+  if (extra_therapy) {
+    lambda_sum = lambda_therapy(t_eca, t_mrca, start_th_step_1, end_th_step_1, k_step)
+               + lambda_therapy(t_eca, t_mrca, start_th_step_2, end_th_step_2, k_step);
+
+    m_th_step_rep = neg_binomial_2_rng(
+      2 * mu_th_step * omega * l_diploid * lambda_sum + 0.1,
+      shape_step_1
+    );
+  } else {
+    m_th_step_rep = -1;
+  }
+  return m_th_step_rep;
+}
+
+
+  // ** UNTIL HERE
 }
 
 data{
@@ -127,9 +161,17 @@ data{
  array[n_th_step] real<lower=0> start_th_step;
  array[n_th_step] real<lower=0> end_th_step;
  //array[n_th_step] int<lower=0> type_th_step; // vector with numbers identifying the therapy (1:n_th_step)
- array[n_th_step] real<lower=0> alpha_th_step;
- array[n_th_step] real<lower=0> beta_th_step;
- array[n_th_step] int<lower=0> m_th_step;
+
+ // *** UNCOMMENT HERE TO HAVE THE CLL MODEL WITH ONLY BENDAMUSTINE ***
+ //array[n_th_step] real<lower=0> alpha_th_step;
+ //array[n_th_step] real<lower=0> beta_th_step;
+ //array[n_th_step] int<lower=0> m_th_step;
+
+ array[2] real<lower=0> alpha_th_step;
+ array[2] real<lower=0> beta_th_step;
+ array[2] int<lower=0> m_th_step;
+
+ // ** UNTIL HERE **
 
 	real <lower=0> omega_alpha;
   real <lower=0> omega_beta;
@@ -150,7 +192,10 @@ data{
 
   // Overdispersion parameters for all mutation types
   real <lower=0> phi_clock;
-  array[n_th_step] real <lower=0> phi_th_step;
+  // *** UNCOMMENT HERE TO HAVE THE CLL MODEL WITH ONLY BENDAMUSTINE ***
+  // array[n_th_step] real <lower=0> phi_th_step;
+  array[2] real <lower=0> phi_th_step;
+  // ** UNTIL HERE
   real <lower=0> phi_cna;
 }
 
@@ -159,37 +204,83 @@ parameters{
   real <lower=0, upper= start_th_step[1]> t_eca;
   real <lower=t_eca, upper= Sample_1> t_mrca_primary;
   // real <lower= chemo_start, upper= chemo_end> chemo_start;
-  real <lower= chemo_end, upper= last_therapy> t_dormancy_end;
-  real <lower= t_dormancy_end, upper= Sample_2> t_mrca;
+  // *** CLL ORIGINAL MODEL
+  //real <lower= chemo_end, upper= last_therapy> t_dormancy_end;
+  real <lower= chemo_end+30/365, upper= last_therapy> t_dormancy_end;
+  // UNTIL HERE
+  real <lower= last_therapy, upper= Sample_2> t_mrca;
   real <lower= t_eca, upper= t_mrca - (t_dormancy_end - chemo_start)> t_cna_tr;
 
   real <lower= 0> omega;
-  array[n_th_step] real<lower=0> mu_th_step;
+
+  // *** UNCOMMENT HERE TO HAVE THE CLL MODEL WITH ONLY BENDAMUSTINE ***
+  // array[n_th_step] real<lower=0> mu_th_step;
+  array[2] real<lower=0> mu_th_step;
+  // *** UNTIL HERE
 }
 
 transformed parameters{
-  array[2] real lambda_alpha;
-  array[2] real lambda_beta;
+  // *** UNCOMMENT HERE TO HAVE THE CLL MODEL WITH ONLY BENDAMUSTINE ***
 
-  lambda_alpha[1] =  coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca) + mu_th_step[1]*lambda_therapy(t_eca, t_cna_tr, start_th_step[1],end_th_step[1], k_step)) +.1;
-  lambda_alpha[2] =  coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca) + mu_th_step[2]*lambda_therapy(t_eca, t_cna_tr, start_th_step[2] - delta(start_th_step[2], chemo_start, t_dormancy_end, k_step),end_th_step[2] - delta(end_th_step[2], chemo_start, t_dormancy_end, k_step), k_step)) +.1;
+  // array[2] real lambda_alpha;
+  // array[2] real lambda_beta;
+  //
+  // lambda_alpha[1] =  coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca) + mu_th_step[1]*lambda_therapy(t_eca, t_cna_tr, start_th_step[1],end_th_step[1], k_step)) +.1;
+  // lambda_alpha[2] =  coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca) + mu_th_step[2]*lambda_therapy(t_eca, t_cna_tr, start_th_step[2] - delta(start_th_step[2], chemo_start, t_dormancy_end, k_step),end_th_step[2] - delta(end_th_step[2], chemo_start, t_dormancy_end, k_step), k_step)) +.1;
+  //
+  // lambda_beta[1] = coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - chemo_start) - t_cna_tr ) + mu_th_step[1]*lambda_therapy(t_cna_tr,t_mrca-(t_dormancy_end - chemo_start), start_th_step[1], end_th_step[1],k_step)) +.1;
+  // lambda_beta[2] = coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - chemo_start) - t_cna_tr ) + mu_th_step[2]*lambda_therapy(t_cna_tr,t_mrca-(t_dormancy_end - chemo_start), start_th_step[2] - delta(start_th_step[2],chemo_start,t_dormancy_end,k_step), end_th_step[2] - delta(end_th_step[2],chemo_start,t_dormancy_end,k_step),k_step)) +.1;
+  //
+
+  array[3] real lambda_alpha;
+  array[3] real lambda_beta;
+
+  lambda_alpha[1] =  coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca) +
+                     mu_th_step[1]*lambda_therapy(t_eca, t_cna_tr, start_th_step[1],end_th_step[1], k_step)) +.1;
+  lambda_alpha[2] =  coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca) +
+                     mu_th_step[1]*lambda_therapy(t_eca, t_cna_tr, start_th_step[2],end_th_step[2], k_step)) +.1;
+  lambda_alpha[3] =  coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca) +
+                     mu_th_step[2]*lambda_therapy(t_eca, t_cna_tr, start_th_step[3] - delta(start_th_step[3], chemo_start, t_dormancy_end, k_step),end_th_step[3] - delta(end_th_step[3], chemo_start, t_dormancy_end, k_step), k_step)) +.1;
 
   lambda_beta[1] = coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - chemo_start) - t_cna_tr ) + mu_th_step[1]*lambda_therapy(t_cna_tr,t_mrca-(t_dormancy_end - chemo_start), start_th_step[1], end_th_step[1],k_step)) +.1;
-  lambda_beta[2] = coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - chemo_start) - t_cna_tr ) + mu_th_step[2]*lambda_therapy(t_cna_tr,t_mrca-(t_dormancy_end - chemo_start), start_th_step[2] - delta(start_th_step[2],chemo_start,t_dormancy_end,k_step), end_th_step[2] - delta(end_th_step[2],chemo_start,t_dormancy_end,k_step),k_step)) +.1;
+  lambda_beta[2] = coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - chemo_start) - t_cna_tr ) + mu_th_step[1]*lambda_therapy(t_cna_tr,t_mrca-(t_dormancy_end - chemo_start), start_th_step[2], end_th_step[2],k_step)) +.1;
+  lambda_beta[3] = coeff_beta*omega*l_CNA*(mu_clock*( t_mrca - (t_dormancy_end - chemo_start) - t_cna_tr ) + mu_th_step[2]*lambda_therapy(t_cna_tr,t_mrca-(t_dormancy_end - chemo_start), start_th_step[3] - delta(start_th_step[3],chemo_start,t_dormancy_end,k_step), end_th_step[3] - delta(end_th_step[3],chemo_start,t_dormancy_end,k_step),k_step)) +.1;
+
+   // *** UNTIL HERE
 }
 
 model{
   t_eca ~ uniform(0, start_th_step[1]);
   t_mrca_primary ~ uniform(t_eca, Sample_1);
   // chemo_start~ uniform(chemo_start, chemo_end);
-  t_dormancy_end~ uniform(chemo_start, last_therapy);
-  t_mrca ~ uniform(t_dormancy_end, Sample_2);
+  // *** CLL  ORIGINAL MODEL
+  // t_dormancy_end~ uniform(chemo_end, last_therapy);
+  // ***  UNTIL HERE
+  t_dormancy_end~ uniform(chemo_end+30/365, last_therapy);
+  t_mrca ~ uniform(last_therapy, Sample_2);
   t_cna_tr ~ uniform(t_eca, t_mrca - (t_dormancy_end - chemo_start) );
 
   omega ~ gamma(omega_alpha,omega_beta);
-  for (m in 1:n_th_step){
-    mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
-  }
+  // *** CLL ORIGINAL MODEL
+  //for (m in 1:n_th_step){
+    //mu_th_step[m] ~ gamma(alpha_th_step[m], beta_th_step[m]);
+  //}
+  //for (m in 1:n_th_step){
+    mu_th_step[1] ~ gamma(alpha_th_step[1], beta_th_step[1]);
+    mu_th_step[2] ~ gamma(alpha_th_step[2], beta_th_step[2]);
+  //}
+  // *** TO HERE
+
+  print("t_eca bounds: [0, ", start_th_step[1], "]");
+  print("t_mrca_primary bounds: [", t_eca, ", ", Sample_1, "]");
+  print("t_dormancy_end bounds: [", chemo_end, ", ", last_therapy, "]");
+  print("t_mrca bounds: [", t_dormancy_end, ", ", Sample_2, "]");
+  print("t_cna_tr bounds: [", t_eca, ", ", t_mrca - (t_dormancy_end - chemo_start), "]");
+  print("sampled omega: ", omega);
+  print("alpha, beta 1: ", alpha_th_step[1], ",", beta_th_step[1]);
+  print("alpha, beta 2: ", alpha_th_step[2], ",", beta_th_step[2]);
+  print("sampled mu_sbsB: ", mu_th_step[1]);
+  print("sampled mu_sbsGan: ", mu_th_step[2]);
 
   real shape_clock = 1 / phi_clock;
   // if (extra_therapy){
@@ -201,25 +292,55 @@ model{
     2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca) +.1,
     shape_clock
     );
+  print("sampled m_clock_primary: ",2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca) +.1);
 
   if (!wgd){
   m_clock[1] ~  neg_binomial_2(
     2*mu_clock*omega*l_diploid*((chemo_start - t_eca) + (t_mrca-t_dormancy_end)) +.1,
     shape_clock
   );
+  print("sampled m_clock: ", 2*mu_clock*omega*l_diploid*((chemo_start - t_eca) + (t_mrca-t_dormancy_end)) +.1);
   }
 
   if (extra_therapy){
 
-    for (th in 1:n_th_step){
-    m_th_step[th]  ~  neg_binomial_2(
-      2*mu_th_step[th]*omega*l_diploid*lambda_therapy(t_eca,t_mrca, start_th_step[th], end_th_step[th],k_step) +.1,
-      1/phi_th_step[th]
-      );
-    }
+    // *** UNCOMMENT HERE TO HAVE THE CLL MODEL WITH ONLY BENDAMUSTINE ***
 
-    m_alpha ~  neg_binomial_2(lambda_alpha[1]+lambda_alpha[2],shape_cna);
-    m_beta ~ neg_binomial_2(lambda_beta[1]+lambda_beta[2],shape_cna);
+    // for (th in 1:n_th_step){
+    // m_th_step[th]  ~  neg_binomial_2(
+    //   2*mu_th_step[th]*omega*l_diploid*lambda_therapy(t_eca,t_mrca, start_th_step[th], end_th_step[th],k_step) +.1,
+    //   1/phi_th_step[th]
+    //   );
+    // }
+
+    m_th_step[1]  ~  neg_binomial_2(
+      2*mu_th_step[1]*omega*l_diploid*(
+        lambda_therapy(t_eca,t_mrca, start_th_step[1], end_th_step[1],k_step)+
+        lambda_therapy(t_eca,t_mrca, start_th_step[2], end_th_step[2],k_step)
+        ) +.1,
+      1/phi_th_step[1]
+      );
+      print("sampled m_th_step[1]: ",2*mu_th_step[1]*omega*l_diploid*(lambda_therapy(t_eca,t_mrca, start_th_step[1], end_th_step[1],k_step)+lambda_therapy(t_eca,t_mrca, start_th_step[2], end_th_step[2],k_step)) +.1);
+
+      m_th_step[2]  ~  neg_binomial_2(
+      2*mu_th_step[2]*omega*l_diploid*lambda_therapy(t_eca,t_mrca, start_th_step[3], end_th_step[3],k_step) +.1,
+      1/phi_th_step[2]
+      );
+      print("sampled m_th_step[2]: ",2*mu_th_step[2]*omega*l_diploid*lambda_therapy(t_eca,t_mrca, start_th_step[3], end_th_step[3],k_step));
+
+
+
+    // m_alpha ~  neg_binomial_2(lambda_alpha[1]+lambda_alpha[2],shape_cna);
+    // m_beta ~ neg_binomial_2(lambda_beta[1]+lambda_beta[2],shape_cna);
+
+    m_alpha ~  neg_binomial_2(lambda_alpha[1]+lambda_alpha[2]+lambda_alpha[3],shape_cna);
+    m_beta ~ neg_binomial_2(lambda_beta[1]+lambda_beta[2]+lambda_beta[3],shape_cna);
+    print("alpha: ",lambda_alpha[1]+lambda_alpha[2]+lambda_alpha[3]);
+    print("beta: ",lambda_beta[1]+lambda_beta[2]+lambda_beta[3]);
+
+    // ** UNTIL HERE
+
+
   }else{
     m_alpha ~  neg_binomial_2(coeff_alpha*omega*l_CNA*(mu_clock*(t_cna_tr - t_eca)) +.1+.1,
                                   shape_cna);
@@ -278,13 +399,29 @@ generated quantities {
     chemo_start, t_dormancy_end, k_step, shape_cna, lambda_beta, n_th_step
   );
 
-  array[n_th_step] int m_th_step_rep;
-  for (th in 1:n_th_step){
-  m_th_step_rep[th] = generate_th_rng(
-    extra_therapy, mu_th_step[th], omega, l_diploid, t_eca, t_mrca,
-    start_th_step[th], end_th_step[th], k_step, shape_step_1, n_th_step
-  );
-  }
+  // *** UNCOMMENT HERE TO HAVE THE CLL MODEL WITH ONLY BENDAMUSTINE ***
+
+  // array[n_th_step] int m_th_step_rep;
+  array[2] int m_th_step_rep;
+
+  // for (th in 1:n_th_step){
+  // m_th_step_rep[th] = generate_th_rng(
+  //   extra_therapy, mu_th_step[th], omega, l_diploid, t_eca, t_mrca,
+  //   start_th_step[th], end_th_step[th], k_step, shape_step_1, n_th_step
+  // );
+  // }
+
+   m_th_step_rep[1] = generate2_th_rng(
+     extra_therapy, mu_th_step[1], omega, l_diploid, t_eca, t_mrca,
+     start_th_step[1], start_th_step[2], end_th_step[1], end_th_step[2], k_step, shape_step_1, n_th_step
+     );
+
+   m_th_step_rep[2] = generate_th_rng(
+     extra_therapy, mu_th_step[2], omega, l_diploid, t_eca, t_mrca,
+     start_th_step[3], end_th_step[3], k_step, shape_step_1, n_th_step
+     );
+
+  // *** UNTIL HERE
 
   t_cna = traslation(t_cna_tr, chemo_start, t_dormancy_end);
 

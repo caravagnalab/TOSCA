@@ -27,14 +27,34 @@ my_ggplot_theme = function (cex = 1)
     ggplot2::theme(legend.position = "bottom",
                    legend.key.size = ggplot2::unit(0.3 * cex_opt, "cm"),
                    panel.background = ggplot2::element_rect(fill = "white"),
-                   axis.text.y  = element_text(family = "Times New Roman"),
-                   axis.title.y = element_text(family = "Times New Roman"),
-                   axis.text.x  = element_text(family = "Times New Roman"),
-                   axis.title.x = element_text(family = "Times New Roman"),
-                   text = element_text(family = "Times New Roman"))
+                   axis.text.y  = ggplot2::element_text(family = "Times New Roman"),
+                   axis.title.y = ggplot2::element_text(family = "Times New Roman"),
+                   axis.text.x  = ggplot2::element_text(family = "Times New Roman"),
+                   axis.title.x = ggplot2::element_text(family = "Times New Roman"),
+                   text = ggplot2::element_text(family = "Times New Roman"))
 }
 
+convert_timing_names = function(timing_estimates){
+  cna_times = colnames(timing_estimates)[grepl("t_cna", colnames(timing_estimates))]
+  new_names = sapply(cna_times, function(c){
+    if (grepl("\\[", c)) new_name = paste0("Copy Number (", strsplit(strsplit(c, "\\[")[[1]][2], "\\]")[[1]], ")") else new_name = "CNA"
+    new_name
+  })
+  # Define mapping
+  name_map <- c(
+    t_eca = "Early Common Ancestor (ECA)",
+    t_mrca = "Most Recent Common Ancestor (MRCA)",
+    t_mrca_primary = "MRCA first sample",
+    #"t_cna[1]" = "CNA 1",
+    t_dormancy_end = "Dormancy end",
+    t_driver = "Driver",
+    new_names
+  )
 
+  # Apply
+  colnames(timing_estimates) <- name_map[colnames(timing_estimates)]
+  timing_estimates
+}
 
 ## Diagnostics
 # plot_chains = function(x, pars=NA){

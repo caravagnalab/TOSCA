@@ -36,7 +36,9 @@ fit = function(
     #stepsize = 0.01,
     model_name = 'Driver',
     dormancy=F,
-    verbose = F
+    verbose = F,
+    initialisation = F,
+    init_fun = NULL
     ){
 
   data = TOSCA:::get_inference_data(x, model=model_name, dormancy = dormancy)
@@ -45,13 +47,22 @@ fit = function(
   cat("\n--- Start Sampling ---\n")
 
   requireNamespace("cmdstanr")
-
+  if (initialisation){
+    fit <- model$sample(data = data,
+                        iter_warmup = warm_up,
+                        iter_sampling = n_iterations,
+                        chains = n_chains,
+                        show_messages = verbose,
+                        init = init_fun
+    )
+  }else{
   fit <- model$sample(data = data,
                         iter_warmup = warm_up,
                         iter_sampling = n_iterations,
                         chains = n_chains,
                         show_messages = verbose
                         )
+  }
 
   x$Fit = list(
     'posterior' = posterior::as_draws_df(fit$draws()),
