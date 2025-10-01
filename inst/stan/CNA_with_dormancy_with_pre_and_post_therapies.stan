@@ -125,6 +125,10 @@ parameters {
 transformed parameters {
   t_mrca_tr = t_mrca - (t_dormancy_end-chemo_start);
 
+  for (c in 1:n_cna){
+    t_cna[c] = traslation(t_cna_tr[c], chemo_start, t_dormancy_end);
+    }
+
   // Clock-like alpha and beta
   array[n_cna] real lambda_alpha_clock;
   array[n_cna] real lambda_beta_clock;
@@ -183,20 +187,26 @@ transformed parameters {
   array[fac_n_th_step] real lambda_fac;
   if (fac_n_th_step > 0){
     for (t in 1:fac_n_th_step){
-      lambda_fac += lambda_therapy_single(t_eca, t_mrca, fac_start_th_step[t], fac_end_th_step[t], k_step);
+      // lambda_fac += lambda_therapy_single(t_eca, t_mrca, fac_start_th_step[t], fac_end_th_step[t], k_step);
+      if (fac_start_th_step[t] > chemo_start & fac_end_th_step[t] < t_dormancy_end) lambda_fac += 0;
+      if (fac_start_th_step[t] > chemo_start & fac_start_th_step[t] < t_dormancy_end & fac_end_th_step[t] > t_dormancy_end) lambda_fac += fac_end_th_step[t] - t_dormancy_end;
+      if (fac_start_th_step[t] > t_dormancy_end) lambda_fac += fac_end_th_step[t] - fac_start_th_step[t];
     }
     for (c in 1:n_cna) {
-            real alpha = lambda_therapy_single(t_eca, t_cna[c],
-                                               fac_start_th_step[t] - delta(fac_start_th_step[t], chemo_start, t_dormancy_end, k_step),
-                                               fac_end_th_step[t] - delta(fac_start_th_step[t], chemo_start, t_dormancy_end, k_step),
-                                               k_step);
+      if (fac_start_th_step[t] > chemo_start & fac_end_th_step[t] < t_dormancy_end) {
+        real alpha = 0;
+        real beta  = 0;
+      }
+      if (fac_start_th_step[t] > chemo_start & fac_start_th_step[t] < t_dormancy_end & fac_end_th_step[t] > t_dormancy_end) {
+        real alpha = lambda_therapy_single(t_eca, t_cna[c], t_dormancy_end, fac_end_th_step[t], k_step);
+        real beta  = lambda_therapy_single(t_cna[c], t_mrca, t_dormancy_end, fac_end_th_step[t],k_step);
+      }
+      if (fac_start_th_step[t] > t_dormancy_end) {
+        real alpha = lambda_therapy_single(t_eca, t_cna[c], fac_start_th_step[t], fac_end_th_step[t], k_step);
+        real beta  = lambda_therapy_single(t_cna[c], t_mrca, fac_start_th_step[t], fac_end_th_step[t], k_step);
+      }
 
-            real beta  = lambda_therapy_single(t_cna[c], t_mrca,
-                                               fac_start_th_step[t] - delta(fac_start_th_step[t], chemo_start, t_dormancy_end, k_step),
-                                               fac_end_th_step[t] - delta(fac_start_th_step[t], chemo_start, t_dormancy_end, k_step),
-                                               k_step);
-
-            real scale = l_CNA[c] * omega * fac_mu_th_step;
+      real scale = l_CNA[c] * omega * fac_mu_th_step;
 
             if (coeff[c] == 2) {
               lambda_alpha_fac[c] += 1.0 * scale * alpha;
@@ -279,9 +289,6 @@ model {
 generated quantities {
 
   array[n_cna] real <lower = t_eca,upper = t_mrca> t_cna;
-  for (c in 1:n_cna){
-    t_cna[c] = traslation(t_cna_tr[c], chemo_start, t_dormancy_end);
-    }
 
   m_clock_primary_rep = neg_binomial_2_rng(2*l_diploid*omega*mu_clock*(t_mrca_primary-t_eca) +.1,shape_clock);
   m_clock_rep =  neg_binomial_2_rng(2*mu_clock*omega*l_diploid*(t_mrca_tr - t_eca) +.1, shape_clock);
