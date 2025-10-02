@@ -115,106 +115,58 @@ get_inference_data_driver = function(x){
   data
 }
 
-# get_inference_data_dormancy = function(x){
-#
-#   data = list()
-#   data[["n_cna"]] = TOSCA:::get_n_cna(x)
-#   data[["m_clock_primary"]] = TOSCA:::get_mutation(x, type = "clock-like primary")
-#   data[["m_clock"]] = TOSCA:::get_mutation(x, type = "clock-like relapse")
-#   data[["l_diploid"]] =  TOSCA:::get_length(x)
-#   data[["mu_clock"]] = TOSCA:::get_mutation_rate(x, type = "clock")
-#
-#   data[["m_alpha"]] = TOSCA:::get_mutation(x, type = "alpha")
-#   data[["m_beta"]] = TOSCA:::get_mutation(x, type = "beta")
-#   data[["l_CNA"]] = TOSCA:::get_length(x, diploid = F)
-#   data[["coeff"]] = TOSCA:::get_coeff(x)[["beta"]]
-#
-#   data[['n_th_step']]= TOSCA:::get_n_therapy_cycles(x, class = 'Mutagenic')
-#   data[['n_th_step_type']]= TOSCA:::get_n_therapy_classes(x, class = "Mutagenic")
-#   data[['start_th_step']] = TOSCA:::get_start_therapy(x, class= "Mutagenic")
-#   data[['end_th_step']] =  TOSCA:::get_end_therapy(x, class= "Mutagenic")
-#   data[['type_th_step']]= TOSCA:::get_therapy_class_index(x, class= "Mutagenic")
-#   # data[['mu_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")
-#   data[['alpha_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")[["alpha"]]
-#   data[['beta_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")[["beta"]]
-#   data[['m_th_step']]= TOSCA:::get_mutation(x, type = "Mutagenic") # get_m_th(x, type = 'step')
-#
-#   data[['omega_alpha']] = TOSCA:::get_parameter(x, "omega_alpha")
-#   data[['omega_beta']] = TOSCA:::get_parameter(x, "omega_beta")
-#   data[['k_step']] = TOSCA:::get_parameter(x, "k_step")
-#
-#   data[['Sample_1']] = TOSCA:::get_sample(x, sample=1)
-#   data[['Sample_2']] = TOSCA:::get_sample(x, sample=2)
-#   data[['chemo_start']]= TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy")
-#  data[['chemo_end']]= TOSCA:::get_end_therapy(x, class= "Chemotherapy inducing dormancy")
-#
-#   data[['exponential_growth']] = TOSCA:::get_parameter(x, "exponential_growth")
-#   data[['N_min']] = TOSCA:::get_N(x, which="min")
-#   data[['N_max']] = TOSCA:::get_N(x, which="max")
-#
-#
-#   data[['phi_clock']] = TOSCA:::get_phi(x, "clock")
-#   data[['phi_th_step']] = TOSCA:::get_phi(x, "phi_th_step")
-#   # data[['phi_th_cauchy']] = TOSCA:::get_phi(x, "phi_th_cauchy")
-#   data[['phi_cna_alpha']] = TOSCA:::get_phi(x, "phi_cna")[["alpha"]]
-#   data[['phi_cna_beta']] = TOSCA:::get_phi(x, "phi_cna")[["beta"]]
-#
-#   data
-# }
-
 get_inference_data_dormancy = function(x){
 
   data = list()
 
-  data[['wgd']] = 0 # TO CHANGE
   data[['m_clock_primary']] = TOSCA:::get_mutation(x, type = "clock-like primary")
-  data[['n_clock']] = 1
   data[['m_clock']] = TOSCA:::get_mutation(x, type = "clock-like relapse")
   data[['l_diploid']] = TOSCA:::get_length(x)
   data[['mu_clock']] = TOSCA:::get_mutation_rate(x, type = "clock")
 
+  data[['n_cna']] = TOSCA:::get_n_cna(x)
   data[['m_alpha']] = TOSCA:::get_mutation(x, type = "alpha")
   data[['m_beta']] = TOSCA:::get_mutation(x, type = "beta")
-  data[["l_CNA"]] = TOSCA:::get_length(x, diploid = F)
-  data[["coeff_alpha"]] = TOSCA:::get_coeff(x)[["alpha"]]
-  data[["coeff_beta"]] = TOSCA:::get_coeff(x)[["beta"]]
+  data[['l_CNA']] = TOSCA:::get_length(x, diploid = F)
+  data[['coeff']] = TOSCA:::get_coeff(x)[["beta"]]
 
-  # FOR SIMPLICITY AT THE MOMENT ONLY A SINGLE CYCLE FOR EACH THERAPY IS ALLOWED
-  data[['extra_therapy']] = 1 # TO CHANGE
-  data[['n_th_step']]=TOSCA:::get_n_therapy_cycles(x, class = 'Mutagenic')
+  # First therapy after Chemo
+  data[["fac_n_th_step"]] = 2# numero di cicli
+  data[["fac_start_th_step"]] = c(th2_c1_start, th2_c2_start)
+  data[["fac_end_th_step"]] = c(th2_c1_end, th2_c2_end)
+  data[["fac_alpha_th_step"]] = alpha_th2
+  data[["fac_beta_th_step"]] = beta_th2
+  data[["fac_m_th_step"]] = m_th_step_2
+
+  ## TO CHANGE BECAUSE I NEED TO EXCLUDE THE THERAPY GIVEN IMMEDIATELY AFTER DORM
+  data[['n_th_step']]= TOSCA:::get_n_therapy_cycles(x, class = 'Mutagenic')
+  data[['n_th_step_type']]= TOSCA:::get_n_therapy_classes(x, class = "Mutagenic")
   data[['start_th_step']] = TOSCA:::get_start_therapy(x, class= "Mutagenic")
   data[['end_th_step']] =  TOSCA:::get_end_therapy(x, class= "Mutagenic")
-  #   data[['type_th_step']]= TOSCA:::get_therapy_class_index(x, class= "Mutagenic")
-  #   # data[['mu_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")
+  data[['type_th_step']]= TOSCA:::get_therapy_class_index(x, class= "Mutagenic")
   data[['alpha_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")[["alpha"]]
   data[['beta_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")[["beta"]]
   data[['m_th_step']]= TOSCA:::get_mutation(x, type = "Mutagenic") # get_m_th(x, type = 'step')
-
+  ###################################################################
 
   data[['omega_alpha']] = TOSCA:::get_parameter(x, "omega_alpha")
   data[['omega_beta']] = TOSCA:::get_parameter(x, "omega_beta")
   data[['k_step']] = TOSCA:::get_parameter(x, "k_step")
-
   data[['Sample_1']] = TOSCA:::get_sample(x, sample=1)
   data[['Sample_2']] = TOSCA:::get_sample(x, sample=2)
-  data[['chemo_start']]= TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy")
-  data[['chemo_end']]= TOSCA:::get_end_therapy(x, class= "Chemotherapy inducing dormancy")
-  data[['last_therapy']]= TOSCA:::get_end_therapy(x, class= c("Chemotherapy inducing dormancy", "Mutagenic"))[length(TOSCA:::get_end_therapy(x, class= c("Chemotherapy inducing dormancy", "Mutagenic")))]
-  #real <lower=0> last_therapy;
-
-  data[['exponential_growth']] = c(0,1) # TO CHANGE
+  data[['exponential_growth']] = TOSCA:::get_parameter(x, "exponential_growth")
   data[['N_min']] = TOSCA:::get_N(x, which="min")
   data[['N_max']] = TOSCA:::get_N(x, which="max")
-
-  data[['alpha_mrca']] = 1
-  data[['beta_mrca']] = 1
-
   data[['phi_clock']] = TOSCA:::get_phi(x, "clock")
   data[['phi_th_step']] = TOSCA:::get_phi(x, "phi_th_step")
-  #   # data[['phi_th_cauchy']] = TOSCA:::get_phi(x, "phi_th_cauchy")
-  data[['phi_cna']] = 0.01
-  #   data[['phi_cna_beta']] = TOSCA:::get_phi(x, "phi_cna")[["beta"]]
+  # data[['phi_th_cauchy']] = TOSCA:::get_phi(x, "phi_th_cauchy")
+  data[['phi_cna_alpha']] = TOSCA:::get_phi(x, "phi_cna")[["alpha"]]
+  data[['phi_cna_beta']] = TOSCA:::get_phi(x, "phi_cna")[["beta"]]
 
+  # Data specific to this model
+  data[["first_clinical_event"]] = th1_c1_end  # earlier date between the end of the last cycle of the first therapy (between mutagenic and chemo), and the first sample
+  data[["chemo_start"]] = chemo_start # == dormancy start
+  data[["fac"]] = th2_c2_end # First event After Chemo could be chemo end OR the end of the last cycle of the first therapy after dormancy IF the chemo finishes after that
   data
 }
 

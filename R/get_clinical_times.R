@@ -87,3 +87,22 @@ end_chemo = function(x){
 get_type_th_step = function(x, name='Therapy step'){
   as.integer(x$clinical_records %>% dplyr::filter(Clinical.name==name) %>% dplyr::pull(Clinical.type) )#%>% unique()
 }
+
+# Get first therapy after chemo (FAC) : Upper bound della dormancy, la terapia coincidente con la dormancy che finisce per prima
+
+# Get all therapies that could have overlapped with chemo - therapies whose fisrt cycle is before the FAC
+get_fac = function(x){
+  chemo_start = x$Input$Therapies %>% dplyr::filter(Class == "Chemotherapy inducing dormancy") %>% pull(Start)
+  therapies_after_chemo = x$Input$Therapies %>% dplyr::arrange(as.Date(Start, format = "%Y-%m-%d")) %>%
+    filter(as.Date(Start, format = "%Y-%m-%d") > as.Date(chemo_start, format = "%Y-%m-%d"))
+  therapies_before_chemo_names = x$Input$Therapies %>% dplyr::arrange(as.Date(Start, format = "%Y-%m-%d")) %>%
+    filter(as.Date(Start, format = "%Y-%m-%d") < as.Date(chemo_start, format = "%Y-%m-%d")) %>% pull(Name)
+
+  therapies_after_chemo = therapies_after_chemo %>% dplyr::filter(!(Name %in% therapies_before_chemo_names))
+
+}
+
+
+
+
+
