@@ -130,15 +130,6 @@ get_inference_data_dormancy = function(x){
   data[['l_CNA']] = TOSCA:::get_length(x, diploid = F)
   data[['coeff']] = TOSCA:::get_coeff(x)[["beta"]]
 
-  # First therapy after Chemo
-  data[["fac_n_th_step"]] = 2# numero di cicli
-  data[["fac_start_th_step"]] = c(th2_c1_start, th2_c2_start)
-  data[["fac_end_th_step"]] = c(th2_c1_end, th2_c2_end)
-  data[["fac_alpha_th_step"]] = alpha_th2
-  data[["fac_beta_th_step"]] = beta_th2
-  data[["fac_m_th_step"]] = m_th_step_2
-
-  ## TO CHANGE BECAUSE I NEED TO EXCLUDE THE THERAPY GIVEN IMMEDIATELY AFTER DORM
   data[['n_th_step']]= TOSCA:::get_n_therapy_cycles(x, class = 'Mutagenic')
   data[['n_th_step_type']]= TOSCA:::get_n_therapy_classes(x, class = "Mutagenic")
   data[['start_th_step']] = TOSCA:::get_start_therapy(x, class= "Mutagenic")
@@ -147,7 +138,6 @@ get_inference_data_dormancy = function(x){
   data[['alpha_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")[["alpha"]]
   data[['beta_th_step']] = TOSCA:::get_mutation_rate(x, type = "th_step")[["beta"]]
   data[['m_th_step']]= TOSCA:::get_mutation(x, type = "Mutagenic") # get_m_th(x, type = 'step')
-  ###################################################################
 
   data[['omega_alpha']] = TOSCA:::get_parameter(x, "omega_alpha")
   data[['omega_beta']] = TOSCA:::get_parameter(x, "omega_beta")
@@ -164,9 +154,9 @@ get_inference_data_dormancy = function(x){
   data[['phi_cna_beta']] = TOSCA:::get_phi(x, "phi_cna")[["beta"]]
 
   # Data specific to this model
-  data[["first_clinical_event"]] = th1_c1_end  # earlier date between the end of the last cycle of the first therapy (between mutagenic and chemo), and the first sample
-  data[["chemo_start"]] = chemo_start # == dormancy start
-  data[["fac"]] = th2_c2_end # First event After Chemo could be chemo end OR the end of the last cycle of the first therapy after dormancy IF the chemo finishes after that
+  data[["first_clinical_event"]] = TOSCA:::get_first_clinical_event(x)  # earlier date between the end of the last cycle of the first therapy (between mutagenic and chemo), and the first sample
+  data[["chemo_start"]] = get_start_therapy(x, class= "Chemotherapy inducing dormancy") # == dormancy start
+  data[["fac"]] = get_fac(x) # First event After Chemo could be chemo end OR the end of the last cycle of the first therapy after dormancy IF the chemo finishes after that
   data
 }
 

@@ -103,21 +103,15 @@ parameters {
   real <lower=t_eca, upper = Sample_1 > t_mrca_primary; // this branch doesn't go through dormancy
 
   real <lower= chemo_start, upper= fac> t_dormancy_end;
-  // real <lower= t_dormancy_end, upper=Sample_2> t_mrca;
-  real <lower= t_eca, upper=Sample_2 - (t_dormancy_end-chemo_start)> t_mrca_tr;
-  array[n_cna] real <lower = t_eca, upper = t_mrca_tr> t_cna_tr;
+  real <lower= t_dormancy_end, upper=Sample_2> t_mrca;
+  array[n_cna] real <lower = t_eca, upper = t_mrca - (t_dormancy_end-chemo_start) > t_cna_tr;
 
   array[n_th_step_type] real<lower=0> mu_th_step;
   real <lower=0> omega;
 }
 
 transformed parameters {
-  //real t_mrca_tr = t_mrca - (t_dormancy_end-chemo_start);
-  real t_mrca = traslation(t_mrca_tr, chemo_start, t_dormancy_end);
-  array[n_cna] real t_cna;
-  for (c in 1:n_cna){
-    t_cna[c] = traslation(t_cna_tr[c], chemo_start, t_dormancy_end);
-    }
+  real t_mrca_tr = t_mrca - (t_dormancy_end-chemo_start);
 
   array[n_cna] real lambda_alpha_clock;
   array[n_cna] real lambda_beta_clock;
@@ -134,6 +128,12 @@ transformed parameters {
   for (th_type in 1:n_th_step_type) {
     lambda_th_step[th_type] = 0;
   }
+
+
+  array[n_cna] real t_cna;
+  for (c in 1:n_cna){
+    t_cna[c] = traslation(t_cna_tr[c], chemo_start, t_dormancy_end);
+    }
 
   // Clock-like alpha and beta
   for (c in 1:n_cna) {
@@ -157,7 +157,7 @@ transformed parameters {
   if (n_th_step_type > 0) {
     for (th_type in 1:n_th_step_type) {
       for (cycle in 1:n_th_step) {
-        if (type_th_step[cycle] == th_type && end_th_step[cycle] < t_mrca) {
+        if (type_th_step[cycle] == th_type) {
 
           // the cycle happens whithin the dormancy inteval
           if (start_th_step[cycle] > chemo_start && end_th_step[cycle] < t_dormancy_end) lambda_th_step[th_type] += 0;
@@ -218,8 +218,7 @@ model {
   t_eca ~ uniform(0, first_clinical_event); // by default before dormancy
   t_mrca_primary ~ uniform(t_eca, Sample_1); // this branch doesn't go through dormancy
   t_dormancy_end ~ uniform(chemo_start, fac);
-  // t_mrca ~ uniform(t_dormancy_end, Sample_2);
-  t_mrca_tr ~ uniform(t_eca, Sample_2 - (t_dormancy_end-chemo_start));
+  t_mrca ~ uniform(t_dormancy_end, Sample_2);
   for (c in 1:n_cna){
     t_cna_tr[c] ~ uniform(t_eca, t_mrca_tr);
   }

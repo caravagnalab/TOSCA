@@ -88,18 +88,26 @@ get_type_th_step = function(x, name='Therapy step'){
   as.integer(x$clinical_records %>% dplyr::filter(Clinical.name==name) %>% dplyr::pull(Clinical.type) )#%>% unique()
 }
 
-# Get first therapy after chemo (FAC) : Upper bound della dormancy, la terapia coincidente con la dormancy che finisce per prima
+get_first_clinical_event = function(x){
+  ealiest_sample = x$Input$Samples %>% dplyr::arrange(as.Date(Date, format = "%Y-%m-%d"))
+  if (nrow(ealiest_sample) == 3) ealiest_sample = ealiest_sample[2,] %>% pull(Date) else ealiest_sample = ealiest_sample[1,] %>% pull(Date)
+  earliest_therapy = x$Input$Therapies %>% dplyr::arrange(as.Date(Start, format = "%Y-%m-%d")) %>% pull(Start)
+  earliest_therapy = earliest_therapy[1]
+  early = min(c(ealiest_sample, earliest_therapy))
+  TOSCA:::convert_real_date(x = x, date = early)
+}
 
-# Get all therapies that could have overlapped with chemo - therapies whose fisrt cycle is before the FAC
+# Get first therapy after chemo (FAC) : Upper bound della dormancy, la terapia coincidente con la dormancy che finisce per prima
 get_fac = function(x){
   chemo_start = x$Input$Therapies %>% dplyr::filter(Class == "Chemotherapy inducing dormancy") %>% pull(Start)
   therapies_after_chemo = x$Input$Therapies %>% dplyr::arrange(as.Date(Start, format = "%Y-%m-%d")) %>%
     filter(as.Date(Start, format = "%Y-%m-%d") > as.Date(chemo_start, format = "%Y-%m-%d"))
   therapies_before_chemo_names = x$Input$Therapies %>% dplyr::arrange(as.Date(Start, format = "%Y-%m-%d")) %>%
-    filter(as.Date(Start, format = "%Y-%m-%d") < as.Date(chemo_start, format = "%Y-%m-%d")) %>% pull(Name)
-
+    filter(as.Date(Start, format = "%Y-%m-%d") < as.Date(chemo_start, format = "%Y-%m-%d")) %>% dplyr::pull(Name)
   therapies_after_chemo = therapies_after_chemo %>% dplyr::filter(!(Name %in% therapies_before_chemo_names))
-
+  therapies_after_chemo = therapies_after_chemo %>% dplyr::group_by(Name) %>% dplyr::filter(Start == max(Start)) %>% dplyr::arrange(Start) %>%
+    dplyr::pull(End)
+  therapies_after_chemo[1]
 }
 
 
