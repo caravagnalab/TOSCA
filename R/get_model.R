@@ -5,7 +5,7 @@ get_model <- function(model_name='Driver', dormancy=F) {
   all_paths <- list(
     "Driver" = "Driver.stan",
     "CNA" = "CNA.stan",
-    "CNA_dormancy" = "CNA_with_dormancy_latest.stan" # "CNA_with_dormancy.stan"
+    "CNA_dormancy" = "CNA_with_dormancy.stan" # "CNA_with_dormancy.stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")

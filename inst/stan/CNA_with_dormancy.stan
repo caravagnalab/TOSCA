@@ -49,6 +49,22 @@ functions {
     return m_fac;
   }
 
+  real smooth_overlap_fraction(real x, real y, real a, real b, real k) {
+    // smooth min and max
+    real sigmoid1 = inv_logit(k * (x - a));
+    real sigmoid2 = inv_logit(k * (a - x));
+    real overlap_left = x * sigmoid1 + a * sigmoid2;
+
+    real sigmoid3 = inv_logit(k * (y - b));
+    real sigmoid4 = inv_logit(k * (b - y));
+    real overlap_right = y * sigmoid3 + b * sigmoid4;
+
+    // smooth positive part: (1/k)*softplus(k * (overlap_right - overlap_left))
+    real overlap_len = log1p_exp(k * (overlap_right - overlap_left)) / k;
+
+    return 1 - (overlap_len / (y - x));
+  }
+
 }
 
 data {
@@ -87,7 +103,6 @@ data {
   array[2] real<lower=0> N_max;
 
   real<lower=0> phi_clock;
-  real<lower=0> fac_phi_th_step;
   array[n_th_step_type] real <lower=0> phi_th_step;
   array[n_cna] real<lower=0> phi_cna_alpha;
   array[n_cna] real<lower=0> phi_cna_beta;
@@ -157,6 +172,12 @@ transformed parameters {
   if (n_th_step_type > 0) {
     for (th_type in 1:n_th_step_type) {
       for (cycle in 1:n_th_step) {
+
+        // lambda_th_step[th_type] =
+        // lambda_therapy_single(t_eca, t_mrca_tr,
+        // start_th_step[cycle] - delta(start_th_step[cycle], chemo_start, t_dormancy_end, k_step),
+        // end_th_step[cycle] - delta(end_th_step[cycle], chemo_start, t_dormancy_end, k_step), k_step);
+
         if (type_th_step[cycle] == th_type && end_th_step[cycle] < t_mrca) {
 
           // the cycle happens whithin the dormancy inteval
@@ -206,6 +227,8 @@ transformed parameters {
             }
           }
           }
+
+
 
         }
       }
@@ -279,7 +302,7 @@ generated quantities {
   array[n_th_step_type] real shape_th_step_rep;
   for (m in 1:n_th_step_type)
   shape_th_step_rep[m] = 1 / phi_th_step[m];
-  real shape_fac_rep = 1 / fac_phi_th_step;
+  //real shape_fac_rep = 1 / fac_phi_th_step;
   array[n_cna] real shape_cna_alpha_rep;
   array[n_cna] real shape_cna_beta_rep;
   for (c in 1:n_cna){
