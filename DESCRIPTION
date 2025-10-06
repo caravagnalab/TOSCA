@@ -14,7 +14,6 @@ Depends:
     ggplot2,
     dplyr
 Imports: 
-    cmdstanr,
     dplyr,
     ggplot2,
     ggpubr,
@@ -28,6 +27,7 @@ Imports:
     extrafont
 RoxygenNote: 7.3.3
 Suggests: 
+    cmdstanr,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://aliceantonello.github.io/TOSCA/
