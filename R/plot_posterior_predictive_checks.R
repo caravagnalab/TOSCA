@@ -175,18 +175,6 @@ plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
 #' @export
 #'
 #' @examples
-#' library(TOSCA)
-#' library(dplyr)
-#' library(ggplot2)
-#' data("exampleData_CNA")
-#' mutations = exampleData_CNA$Mutations
-#' parameters = exampleData_CNA$Parameters
-#' samples = exampleData_CNA$Samples
-#' therapies = exampleData_CNA$Therapies
-#'
-#' x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
-#' fit = TOSCA::fit(x, model_name='CNA', n_iterations = 1000, n_chains = 4, warm_up = 500)
-#' plot_ppc(fit)
 plot_ppc = function(x){
 
   posterior = TOSCA:::get_inferred_parameters(x)

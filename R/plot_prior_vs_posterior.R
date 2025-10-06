@@ -107,18 +107,6 @@ get_prior_hyperparameters = function(x, name){
 #' @export
 #'
 #' @examples
-#' library(TOSCA)
-#' library(dplyr)
-#' library(ggplot2)
-#' data("exampleData_CNA")
-#' mutations = exampleData_CNA$Mutations
-#' parameters = exampleData_CNA$Parameters
-#' samples = exampleData_CNA$Samples
-#' therapies = exampleData_CNA$Therapies
-#'
-#' x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
-#' fit = TOSCA::fit(x, model_name='CNA', n_iterations = 1000, n_chains = 4, warm_up = 500)
-#' plot_prior_vs_posterior(fit)
 plot_prior_vs_posterior = function(x){
   parameters = c()
   posterior = TOSCA:::get_inferred_parameters(x)
@@ -154,3 +142,17 @@ plot_prior_vs_posterior = function(x){
 
   ggpubr::ggarrange(plotlist = parameter_plots, nrow=1, ncol = length(parameters))
 }
+
+
+#' library(TOSCA)
+#' library(dplyr)
+#' library(ggplot2)
+#' data("exampleData_CNA")
+#' mutations = exampleData_CNA$Mutations
+#' parameters = exampleData_CNA$Parameters
+#' samples = exampleData_CNA$Samples
+#' therapies = exampleData_CNA$Therapies
+#'
+#' x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
+#' fit = TOSCA::fit(x, model_name='CNA', n_iterations = 1000, n_chains = 4, warm_up = 500)
+#' plot_prior_vs_posterior(fit)

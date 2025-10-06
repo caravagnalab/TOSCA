@@ -12,7 +12,9 @@ fit(
   cores = 4,
   model_name = "Driver",
   dormancy = F,
-  verbose = F
+  verbose = F,
+  initialisation = F,
+  init_fun = NULL
 )
 }
 \arguments{
