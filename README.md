@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# TOSCA
+# TOSCA <a href="https://aliceantonello.github.io/TOSCA/"><img src="man/figures/logo.png" align="right" height="100" /></a>
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -11,6 +11,10 @@ subclonal somatic copy numbers (SCNA) of type 2:0, 2:1 and 2:2, and of
 driver events altering the mutation rate. The input data is the result
 of the clonal and signature deconvolution analyses performed on WGS
 longitudinal data.
+
+#### Citation
+
+#### Help and support
 
 ## Installation
 
