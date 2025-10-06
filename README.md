@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# TOSCA <a href="https://aliceantonello.github.io/TOSCA/"><img src="man/figures/logo.png" align="right" height="100" /></a>
+# TOSCA <a href="https://aliceantonello.github.io/TOSCA/"><img src="man/figures/logo.png" align="right" height="180" /></a>
 
 <!-- badges: start -->
 <!-- badges: end -->
