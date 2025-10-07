@@ -93,5 +93,6 @@ fit = function(
 
   # Additional warnings :
   #   - posterior predictive checks
+  # prova
 }
 
