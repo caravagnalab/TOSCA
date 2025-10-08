@@ -91,8 +91,5 @@ fit = function(
 
   return(x)
 
-  # Additional warnings :
-  #   - posterior predictive checks
-  # prova
 }
 
