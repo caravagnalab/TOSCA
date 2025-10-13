@@ -314,7 +314,7 @@ plot_timing_histogram = function(x)
       data = timing_estimates %>% dplyr::rename(Date = value),
       ggplot2::aes(Date, fill = color, y=..density..),
       inherit.aes = FALSE,
-      bins = 150
+      bins = 150, color = "black",
     ) + #geom_density(data = timing_estimates %>% dplyr::rename(Date = value), aes(color = color)) +
     ggplot2::geom_point(
       data = endpoints,
@@ -323,7 +323,14 @@ plot_timing_histogram = function(x)
       size = 3
     ) +
     TOSCA:::my_ggplot_theme()+
-    ggplot2::theme(legend.position = 'bottom')+
+    ggplot2::theme(legend.position = 'bottom',
+                   axis.line.y = element_blank(),
+                   panel.grid.major= element_blank(),
+                   panel.grid.minor= element_blank(),
+                   #axis.ticks.y= element_blank(),
+                   #axis.text.y= element_blank(),
+                   #axis.title.y= element_blank(),
+                   panel.border = element_blank())+
     ggplot2::scale_fill_identity()
   #+
   #scale_fill_manual(values = times_colors)

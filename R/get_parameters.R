@@ -25,12 +25,12 @@ get_mutation_rate = function(x, type){
       mu_alpha = left_join(
         x$Input$Therapies %>% filter(Class=="Mutagenic"),
         mu_alpha %>% dplyr::rename(par_name = Name, Name = Index), by = "Name") %>%
-        dplyr::arrange(as.Date(Start)) %>% pull(Value) %>% #unique() %>%
+        dplyr::arrange(as.Date(Start)) %>% select(Name, Value) %>% unique() %>% pull(Value) %>% #unique() %>%
         as.double()
       mu_beta = left_join(
         x$Input$Therapies %>% filter(Class=="Mutagenic"),
         mu_beta %>% dplyr::rename(par_name = Name, Name = Index), by = "Name") %>%
-        dplyr::arrange(as.Date(Start)) %>% pull(Value) %>% #unique() %>%
+        dplyr::arrange(as.Date(Start)) %>% select(Name, Value) %>% unique() %>% pull(Value) %>% #unique() %>%
         as.double()
     }else{
       therapies = x$Input$Therapies %>% filter(Class=="Mutagenic") %>% arrange(Start)
