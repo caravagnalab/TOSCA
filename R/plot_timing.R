@@ -1,13 +1,12 @@
-# Plot clinical timeline + posterior times
-#' Posterior distribution of the inferred times
+#' Plot clinical timeline + posterior times with density
 #'
-#' @param x TOSCA object
+#' @param x
 #'
-#' @return Posterior distributio plot of the inferred times, mapped on the clinical history
+#' @return
 #' @export
 #'
 #' @examples
-plot_timing = function(x)
+plot_timing_density = function(x)
 {
   #clinical_timeline #= x$Input$Samples
   estimates = TOSCA:::get_inferred_parameters(x)
@@ -28,7 +27,7 @@ plot_timing = function(x)
   if (x$Fit$model_info$dormancy) {
     dormancy_start = TOSCA:::convert_date_real(date = TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy"), x=x)
     dormancy_end =  TOSCA:::convert_date_real(date = timing_estimates %>% pull(t_dormancy_end) %>% mean(), x=x)
-    timing_estimates = timing_estimates %>% select(!c("t_dormancy_end",
+    timing_estimates = timing_estimates %>% select(!c("t_dormancy_end", "t_mrca_tr",
                                                       colnames(timing_estimates)[grepl("t_cna_tr", colnames(timing_estimates))]))
   }
 
@@ -36,7 +35,7 @@ plot_timing = function(x)
     apply(2, TOSCA:::convert_date_real, x=x) %>%
     dplyr::as_tibble()
 
-  timing_estimates = convert_timing_names(timing_estimates)
+  timing_estimates = TOSCA:::convert_timing_names(timing_estimates)
 
   for (i in 1:ncol(timing_estimates)){
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
@@ -262,7 +261,7 @@ plot_timing = function(x)
 #' @export
 #'
 #' @examples
-plot_timing_histogram = function(x)
+plot_timing = function(x)
 {
   #clinical_timeline #= x$Input$Samples
   estimates = TOSCA:::get_inferred_parameters(x)
@@ -283,7 +282,7 @@ plot_timing_histogram = function(x)
   if (x$Fit$model_info$dormancy) {
     dormancy_start = TOSCA:::convert_date_real(date = TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy"), x=x)
     dormancy_end =  TOSCA:::convert_date_real(date = timing_estimates %>% pull(t_dormancy_end) %>% mean(), x=x)
-    timing_estimates = timing_estimates %>% select(!c("t_dormancy_end",
+    timing_estimates = timing_estimates %>% select(!c("t_dormancy_end", "t_mrca_tr",
                                                       colnames(timing_estimates)[grepl("t_cna_tr", colnames(timing_estimates))]))
   }
 
@@ -291,7 +290,7 @@ plot_timing_histogram = function(x)
     apply(2, TOSCA:::convert_date_real, x=x) %>%
     dplyr::as_tibble()
 
-  timing_estimates = convert_timing_names(timing_estimates)
+  timing_estimates = TOSCA:::convert_timing_names(timing_estimates)
 
   for (i in 1:ncol(timing_estimates)){
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
@@ -392,6 +391,11 @@ plot_timing_histogram = function(x)
                    xend=as.Date(Start),
                    y=0, yend=Inf), color = therapies %>% dplyr::filter(short == T) %>% dplyr::pull(colors), alpha=1)  +
     ggplot2::guides(color = "none")
+
+  rect_ind <- which(lapply(posterior_plot$layers, function(x) class(x$geom)[1]) == "GeomRect")
+  ## manually change the order to put geom rect first
+  posterior_plot$layers <- c(posterior_plot$layers[rect_ind], posterior_plot$layers[-rect_ind])
+
 
   dummy_guide <- function(
     labels = NULL,
@@ -500,7 +504,7 @@ plot_timing_histogram = function(x)
       size = 3,
       family = "Times New Roman"
     )
-  posterior_plot
+  posterior_plot + geom_hline(yintercept=0, color="black")
 }
 
 
@@ -533,7 +537,7 @@ plot_timing_MAP = function(x)
   if (x$Fit$model_info$dormancy) {
     dormancy_start = TOSCA:::convert_date_real(date = TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy"), x=x)
     dormancy_end =  TOSCA:::convert_date_real(date = timing_estimates %>% pull(t_dormancy_end) %>% mean(), x=x)
-    timing_estimates = timing_estimates %>% select(!c(
+    timing_estimates = timing_estimates %>% select(!c("t_mrca_tr",
                                                       colnames(timing_estimates)[grepl("t_cna_tr", colnames(timing_estimates))]))
   }
 
@@ -541,7 +545,7 @@ plot_timing_MAP = function(x)
     apply(2, TOSCA:::convert_date_real, x=x) %>%
     dplyr::as_tibble()
 
-  timing_estimates = convert_timing_names(timing_estimates)
+  timing_estimates = TOSCA:::convert_timing_names(timing_estimates)
 
   for (i in 1:ncol(timing_estimates)){
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
@@ -730,7 +734,7 @@ plot_timing_MAP = function(x)
   endpoints$color = c("S1", "S2")
   times_colors_df$variable = rownames(times_colors_df)
   medians_df = left_join(medians_df, times_colors_df)
-  endpoints2 = rbind(endpoints, medians_df %>% rename(Name=variable, Date = median) %>% mutate(Date = as.character(Date)) ) %>%
+  endpoints2 = rbind(endpoints, medians_df %>% dplyr::rename(Name=variable, Date = median) %>% dplyr::mutate(Date = as.character(Date)) ) %>%
     mutate(color = ifelse(color %in% c("S1", "S2"), color, Name))
   times_colors2 = c(times_colors, "S1"="#a272bfff", "S2"="#683b81ff")
   #endpoints$color = c("S1", "S2")

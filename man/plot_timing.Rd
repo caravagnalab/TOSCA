@@ -2,16 +2,13 @@
 % Please edit documentation in R/plot_timing.R
 \name{plot_timing}
 \alias{plot_timing}
-\title{Posterior distribution of the inferred times}
+\title{Plot clinical timeline + posterior times with histogram}
 \usage{
 plot_timing(x)
 }
 \arguments{
-\item{x}{TOSCA object}
-}
-\value{
-Posterior distributio plot of the inferred times, mapped on the clinical history
+\item{x}{}
 }
 \description{
-Posterior distribution of the inferred times
+Plot clinical timeline + posterior times with histogram
 }

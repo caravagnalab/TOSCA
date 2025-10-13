@@ -5,7 +5,7 @@ get_model <- function(model_name='Driver', dormancy=F) {
   all_paths <- list(
     "Driver" = "Driver.stan",
     "CNA" = "CNA.stan",
-    "CNA_dormancy" = "CNA_with_dormancy.stan" # "CNA_with_dormancy.stan"
+    "CNA_dormancy" = "CNA_dormancy.stan" # "CNA_with_dormancy.stan"
   )
 
   if (!(model_name) %in% names(all_paths)) stop("model_name not recognized")
@@ -29,18 +29,18 @@ get_original_mutation_name = function(x, name, index){
   if (name == "m_clock_primary") original_name = x$Input$Mutations %>% dplyr::filter(Type=="clock-like primary") %>% pull(Name)
   if (name == "m_clock") original_name = x$Input$Mutations %>% dplyr::filter(Type=="clock-like relapse") %>% pull(Name)
 
-  if (name %in% c("m_alpha", "m_beta") & x$Fit$model_info$dormancy){
-    if (name == "m_alpha") original_name = (x$Input$Mutations %>% dplyr::filter(Type=="alpha") %>% dplyr::arrange(Length) %>% dplyr::pull(Name))
-    if (name == "m_beta") original_name = (x$Input$Mutations %>% dplyr::filter(Type=="beta") %>% dplyr::arrange(Length) %>% dplyr::pull(Name))
-  }else{
+  # if (name %in% c("m_alpha", "m_beta") & x$Fit$model_info$dormancy){
+  #   if (name == "m_alpha") original_name = (x$Input$Mutations %>% dplyr::filter(Type=="alpha") %>% dplyr::arrange(Length) %>% dplyr::pull(Name))
+  #   if (name == "m_beta") original_name = (x$Input$Mutations %>% dplyr::filter(Type=="beta") %>% dplyr::arrange(Length) %>% dplyr::pull(Name))
+  # }else{
     if (name == "m_alpha") original_name = (x$Input$Mutations %>% dplyr::filter(Type=="alpha") %>% dplyr::arrange(Length) %>% dplyr::pull(Name))[index]
     if (name == "m_beta") original_name = (x$Input$Mutations %>% dplyr::filter(Type=="beta") %>% dplyr::arrange(Length) %>% dplyr::pull(Name))[index]
-  }
+  #}
 
   if (name == "m_th_step") {
-    drugs = x$Input$Therapies %>% filter(Class == "Mutagenic") %>% dplyr::pull(Name) %>% unique()
+    drugs = x$Input$Therapies %>% dplyr::filter(Class == "Mutagenic") %>% dplyr::pull(Name) %>% unique()
     original_name = (left_join(
-      x$Input$Mutations %>% filter(Type %in% drugs) %>% rename(OR_name = Name, Name = Type),
+      x$Input$Mutations %>% dplyr::filter(Type %in% drugs) %>% dplyr::rename(OR_name = Name, Name = Type),
       x$Input$Therapies %>% filter(Class == "Mutagenic"), by="Name") %>% dplyr::arrange(as.Date(Start)) %>%
       dplyr::select(OR_name) %>% unique() %>% dplyr::pull(OR_name))[index]
   }

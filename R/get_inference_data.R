@@ -144,6 +144,8 @@ get_inference_data_dormancy = function(x){
   data[['k_step']] = TOSCA:::get_parameter(x, "k_step")
   data[['Sample_1']] = TOSCA:::get_sample(x, sample=1)
   data[['Sample_2']] = TOSCA:::get_sample(x, sample=2)
+  data[['chemo_start']] = TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy")
+  data[['chemo_end']] = TOSCA:::get_end_therapy(x, class= "Chemotherapy inducing dormancy")
   data[['exponential_growth']] = TOSCA:::get_parameter(x, "exponential_growth")
   data[['N_min']] = TOSCA:::get_N(x, which="min")
   data[['N_max']] = TOSCA:::get_N(x, which="max")
@@ -154,9 +156,9 @@ get_inference_data_dormancy = function(x){
   data[['phi_cna_beta']] = TOSCA:::get_phi(x, "phi_cna")[["beta"]]
 
   # Data specific to this model
-  data[["first_clinical_event"]] = TOSCA:::get_first_clinical_event(x)  # earlier date between the end of the last cycle of the first therapy (between mutagenic and chemo), and the first sample
-  data[["chemo_start"]] = get_start_therapy(x, class= "Chemotherapy inducing dormancy") # == dormancy start
-  data[["fac"]] = TOSCA:::get_fac(x) # First event After Chemo could be chemo end OR the end of the last cycle of the first therapy after dormancy IF the chemo finishes after that
+  #data[["first_clinical_event"]] = TOSCA:::get_first_clinical_event(x)  # earlier date between the end of the last cycle of the first therapy (between mutagenic and chemo), and the first sample
+  #data[["chemo_start"]] = get_start_therapy(x, class= "Chemotherapy inducing dormancy") # == dormancy start
+  #data[["fac"]] = TOSCA:::get_fac(x) # First event After Chemo could be chemo end OR the end of the last cycle of the first therapy after dormancy IF the chemo finishes after that
   data
 }
 
