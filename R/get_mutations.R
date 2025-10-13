@@ -9,13 +9,13 @@ get_mutation = function(x, type, cauchy=F){
     left_join(
       drugs %>% dplyr::arrange(as.Date(Start)),
       x$Input$Mutations %>% dplyr::filter(Type %in% drugs$Name) %>% dplyr::select(Type, Value) %>% dplyr::rename(Name=Type),
-      by = "Name") %>% pull(Value) %>% unique() %>% as.integer()
+      by = "Name") %>% select(Name, Value) %>% unique() %>% pull(Value) %>% round() %>% as.integer()
     }else{
       drugs = x$Input$Therapies %>% dplyr::filter(Class == "Mutagenic cauchy")
       left_join(
         drugs %>% dplyr::arrange(as.Date(Start)),
         x$Input$Mutations %>% dplyr::filter(Type %in% drugs$Name) %>% dplyr::select(Type, Value) %>% dplyr::rename(Name=Type),
-        by = "Name") %>% pull(Value) %>% unique() %>% as.integer()
+        by = "Name") %>% select(Name, Value) %>% unique() %>% pull(Value) %>% round() %>% as.integer()
     }
   }else{
   x$Input$Mutations %>% dplyr::filter(Type == type) %>% dplyr::arrange(Length) %>% pull(Value) %>% as.integer()
