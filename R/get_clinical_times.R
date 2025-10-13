@@ -107,7 +107,7 @@ get_fac = function(x){
   therapies_after_chemo = therapies_after_chemo %>% dplyr::filter(!(Name %in% therapies_before_chemo_names))
   therapies_after_chemo = therapies_after_chemo %>% dplyr::group_by(Name) %>% dplyr::filter(Start == max(Start)) %>% dplyr::arrange(Start) %>%
     dplyr::pull(End)
-  therapies_after_chemo[1]
+  TOSCA:::convert_real_date(x, therapies_after_chemo[1])
 }
 
 

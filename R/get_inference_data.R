@@ -156,7 +156,7 @@ get_inference_data_dormancy = function(x){
   # Data specific to this model
   data[["first_clinical_event"]] = TOSCA:::get_first_clinical_event(x)  # earlier date between the end of the last cycle of the first therapy (between mutagenic and chemo), and the first sample
   data[["chemo_start"]] = get_start_therapy(x, class= "Chemotherapy inducing dormancy") # == dormancy start
-  data[["fac"]] = get_fac(x) # First event After Chemo could be chemo end OR the end of the last cycle of the first therapy after dormancy IF the chemo finishes after that
+  data[["fac"]] = TOSCA:::get_fac(x) # First event After Chemo could be chemo end OR the end of the last cycle of the first therapy after dormancy IF the chemo finishes after that
   data
 }
 
