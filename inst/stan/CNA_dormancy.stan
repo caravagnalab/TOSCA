@@ -16,7 +16,7 @@ functions {
   }
 
 real delta(real t, real dorm_s, real dorm_e, real k) {
-  real shift_weight = inv_logit(-k * (t - dorm_e));
+  real shift_weight = inv_logit(k * (t - dorm_e));
   return t - (t - dorm_e) * shift_weight - dorm_s;
 }
 
@@ -150,24 +150,26 @@ transformed parameters {
           // lambda_th_step[th_type] += lambda_therapy_single(t_dormancy_end, t_mrca, start_th_step[cycle], 
           //     end_th_step[cycle], k_step);
           
-          lambda_th_step[th_type] += lambda_therapy_single(t_eca, t_mrca_tr, 
-                   start_th_step[cycle] - delta(start_th_step[cycle], chemo_start, t_dormancy_end, k_step), 
-                   end_th_step[cycle] - delta(start_th_step[cycle], chemo_start, t_dormancy_end, k_step), 
-                   k_step);
+          real start_adjust;
+          real end_adjust;
+          
+          if (end_th_step[cycle] > chemo_start) {
+            start_adjust = start_th_step[cycle] - delta(start_th_step[cycle], chemo_start, t_dormancy_end, k_step);
+            end_adjust   = end_th_step[cycle]   - delta(end_th_step[cycle], chemo_start, t_dormancy_end, k_step);
+          } else {
+            start_adjust = start_th_step[cycle];
+            end_adjust   = end_th_step[cycle];
+          }
+          
+          
+          
+      lambda_th_step[th_type] += lambda_therapy_single(t_eca, t_mrca_tr, 
+                   start_adjust, end_adjust, k_step);
               
-  
-   for (c in 1:n_cna) {
+  for (c in 1:n_cna) {
      
-            real alpha = lambda_therapy_single(t_eca, t_cna_tr[c], 
-            start_th_step[cycle] - delta(start_th_step[cycle], chemo_start, t_dormancy_end, k_step), 
-            end_th_step[cycle] - delta(start_th_step[cycle], chemo_start, t_dormancy_end, k_step), 
-                           k_step);
-            real beta  = lambda_therapy_single(t_cna_tr[c],
-            // t_mrca-(t_dormancy_end - chemo_start), 
-            t_mrca_tr,
-            start_th_step[cycle] - delta(start_th_step[cycle], chemo_start, t_dormancy_end, k_step), 
-            end_th_step[cycle] - delta(start_th_step[cycle], chemo_start, t_dormancy_end, k_step), 
-            k_step);
+            real alpha = lambda_therapy_single(t_eca, t_cna_tr[c], start_adjust, end_adjust, k_step);
+            real beta  = lambda_therapy_single(t_cna_tr[c],t_mrca_tr,start_adjust,end_adjust, k_step);
             
             real scale = l_CNA[c] * omega * mu_th_step[th_type];
 
@@ -270,7 +272,8 @@ if (m_clock > 0){
   
   if (exponential_growth[1] == 1) {
     real lambda1 = exp(-omega * (Sample_1 - t_mrca_primary));
-    target += -lambda1 * N_min[1] + log1m_exp(-lambda1 * (N_max[1] - N_min[1]));
+    // target += -lambda1 * N_min[1] + log1m_exp(-lambda1 * (N_max[1] - N_min[1]));
+    N_min[1] ~ exponential(lambda1);
     
   }
   
@@ -280,7 +283,8 @@ if (m_clock > 0){
     // real lambda2 = exp(-omega * (Sample_2 - (t_dormancy_end - chemo_start) - t_mrca_tr));
     real kappa = smooth_mrca_weight(t_mrca_tr, chemo_start, omega,k_step);
     real lambda2 = exp(-omega * (Sample_2 - (t_dormancy_end - chemo_start) - t_mrca_tr))/kappa;
-    target += -lambda2 * N_min[2] + log1m_exp(-lambda2 * (N_max[2] - N_min[2]));
+    // target += -lambda2 * N_min[2] + log1m_exp(-lambda2 * (N_max[2] - N_min[2]));
+    N_min[2] ~ exponential(lambda2);
     
   }
   
