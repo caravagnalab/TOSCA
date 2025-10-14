@@ -19,7 +19,7 @@ check_ppc = function(x){
   ppc_df = data.frame()
 
   for (v in variables){
-    print(v)
+    # print(v)
 
     true_value = training_data[[v]]
 
@@ -28,7 +28,7 @@ check_ppc = function(x){
       if (v %in% c("m_th_step", "m_alpha", "m_beta") & !x$Fit$model_info$dormancy){ # "m_alpha", "m_beta"
 
         for (i in 1:length(true_value)){
-          print(i)
+          # print(i)
           rep_draws = posterior[[paste0(v,"_rep[",i,"]")]]
           coverage <- mean(true_value[i] > (rep_draws - 2*sd(rep_draws)) &
                              true_value[i] < (rep_draws + 2*sd(rep_draws)))
