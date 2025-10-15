@@ -496,7 +496,7 @@ plot_timing = function(x)
                    xend = as.Date(Date),
                    y=0,
                    yend = ylab_pos),
-      size = .5, linetype="dashed"
+      size = .5 #, linetype="dashed"
     )+
     ggplot2::geom_label(
       data = endpoints,
@@ -603,13 +603,14 @@ plot_timing_MAP = function(x)
   xlims <- xlims + c(-10, 10)
 
   timing_plot2 <- ggplot(timing_estimates) +
-    geom_violin(aes(x = variable, y = value, color = variable, fill = variable),
-                alpha = .5, scale = "width") +
+    see::geom_violinhalf(aes(x = variable, y = value, fill = variable),
+                color = "black",
+                alpha = .7, scale = "width") +
     scale_color_manual(values = times_colors) +
     scale_fill_manual(values = times_colors) +
-    geom_point(data = medians_df,
-               aes(y = median, x = variable, color = variable),
-               shape = 18, size = 2.5) +
+    # geom_point(data = medians_df,
+    #            aes(y = median, x = variable, color = variable),
+    #            shape = 18, size = 2.5) +
     theme_bw() +
     labs(y = 'Date', x = '') +
     theme(
@@ -736,7 +737,7 @@ plot_timing_MAP = function(x)
   medians_df = left_join(medians_df, times_colors_df)
   endpoints2 = rbind(endpoints, medians_df %>% dplyr::rename(Name=variable, Date = median) %>% dplyr::mutate(Date = as.character(Date)) ) %>%
     mutate(color = ifelse(color %in% c("S1", "S2"), color, Name))
-  times_colors2 = c(times_colors, "S1"="#a272bfff", "S2"="#683b81ff")
+  times_colors2 = c(times_colors, "S1"="black", "S2"="black") #"S1"="#a272bfff", "S2"="#683b81ff")
   #endpoints$color = c("S1", "S2")
   clinical_plot <- clinical_plot +
     #scale_x_date(limits = xlims, expand = c(0,0))+
@@ -762,7 +763,7 @@ plot_timing_MAP = function(x)
                    xend = as.Date(Date),
                    y=1,
                    yend = .85),
-      size = .5, linetype="dashed"
+      size = .5 #, linetype="dashed"
     )+
     ggplot2::geom_point(
       data = endpoints2,
