@@ -605,7 +605,7 @@ plot_timing_MAP = function(x)
   timing_plot2 <- ggplot(timing_estimates) +
     see::geom_violinhalf(aes(x = variable, y = value, fill = variable),
                 color = "black",
-                alpha = .7, scale = "width") +
+                alpha = 1, scale = "width") +
     scale_color_manual(values = times_colors) +
     scale_fill_manual(values = times_colors) +
     # geom_point(data = medians_df,

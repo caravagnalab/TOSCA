@@ -21,7 +21,7 @@ get_mutation_rate = function(x, type){
     mu_alpha = x$Input$Parameters %>% dplyr::filter(Name=="alpha_th_step") #%>% pull(Value) %>% as.double()
     mu_beta = x$Input$Parameters %>% dplyr::filter(Name=="beta_th_step") #%>% pull(Value) %>% as.double()
 
-    if (length(mu_alpha)==nrow(x$Input$Therapies %>% filter(Class=="Mutagenic"))){
+    if (nrow(mu_alpha)==nrow(x$Input$Therapies %>% filter(Class=="Mutagenic"))){
       mu_alpha = left_join(
         x$Input$Therapies %>% filter(Class=="Mutagenic"),
         mu_alpha %>% dplyr::rename(par_name = Name, Name = Index), by = "Name") %>%
@@ -53,6 +53,13 @@ get_mutation_rate = function(x, type){
 }
 
 get_growth_rate_estimate = function(x){
+
+  if (x$Input$Parameters %>% dplyr::filter(Name == "omega_alpha") %>% nrow() == 1){
+    oa = x$Input$Parameters %>% dplyr::filter(Name == "omega_alpha") %>% pull(Value)
+    ob = x$Input$Parameters %>% dplyr::filter(Name == "omega_beta") %>% pull(Value)
+    omega = oa / ob
+  }else{
+
   # Second sample name
   sample_names=x$Input$Samples %>% dplyr::arrange(Date) %>% pull(Name)
   last_sample_name = sample_names[length(sample_names)]
@@ -72,6 +79,8 @@ get_growth_rate_estimate = function(x){
   Upper_bound = log(N[2]) / (ub_interval)
 
   omega = mean(c(Lower_bound, Upper_bound))
+
+  }
   omega
 }
 
