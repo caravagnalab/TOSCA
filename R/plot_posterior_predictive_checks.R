@@ -207,14 +207,14 @@ plot_ppc = function(x){
             rep_name1 = paste0(v1, "_rep")
             rep_name2 = paste0(v2, "_rep")
 
-            if (x$Fit$model_info$dormancy){
+            #if (x$Fit$model_info$dormancy){
 
               if (rep_name1 == "m_alpha_rep") rep_name1 = "m_alpha_rep[1]"
               if (rep_name1 == "m_beta_rep") rep_name1 = "m_beta_rep[1]"
               if (rep_name2 == "m_alpha_rep") rep_name2 = "m_alpha_rep[1]"
               if (rep_name2 == "m_beta_rep") rep_name2 = "m_beta_rep[1]"
 
-            }
+            #}
 
             ppc_plot = TOSCA:::plot_ppc_single_mut(x, true_value1, true_value2, rep_name1, rep_name2)
             ppc_plot_list[[length(ppc_plot_list)+1]] = ppc_plot
@@ -233,7 +233,7 @@ plot_ppc = function(x){
             }
 
             if (length(true_value1)==1 & length(true_value2)>1){
-              for (i in 1:length(true_value1)){
+              for (i in 1:length(true_value2)){
                 rep_name2 = paste0(v2,"_rep[",i,"]")
                 rep_name1 = paste0(v1, "_rep")
                 ppc_plot = TOSCA:::plot_ppc_single_mut(x, true_value1, true_value2[i], rep_name1, rep_name2)
