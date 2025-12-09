@@ -10,9 +10,33 @@ reference:
   - exampleData_CNA
   - exampleData_Driver
 
-- title: Check input
-  desc:  Functions to check the format of input data.
+- title: Create TOSCA object
+  desc:  Functions to create the TOSCA object and check the format of input data.
   contents:
+  - init
   - check_clinical_input
   - check_genomic_input
   - check_parameters_input
+  - check_required_cols
+  - check_valid_date
+  - check_valid_karyotype
+  - convert_date_real
+  - convert_real_date
+
+- title: Fit model
+  desc:  Function to fit model.
+  contents:
+  - fit
+
+- title: Plot fit
+  desc:  Function to visualise the results of the fit.
+  contents:
+  - check_ppc
+  - plot_expected_N
+  - plot_ppc
+  - plot_ppc_single_mut
+  - plot_prior_vs_posterior
+  - plot_prior_vs_posterior_single_parameter
+  - plot_timing
+  - plot_timing_MAP
+  - plot_timing_density
