@@ -14,7 +14,13 @@ longitudinal data.
 
 #### Citation
 
+If you use `TOSCA`, please cite: \* *Timing cancer genomics driver
+events around therapy* Riccardo Bergamin, Alice Antonello, Giulio
+Caravagna.
+
 #### Help and support
+
+[![](https://img.shields.io/badge/GitHub%20Pages-https://caravagnalab.github.io/TOSCA/-yellow.svg)](https://caravagnalab.github.io/TOSCA)
 
 ## Installation
 
