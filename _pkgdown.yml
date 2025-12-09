@@ -2,3 +2,17 @@ url: https://caravagnalab.github.io/TOSCA/
 template:
   bootstrap: 5
 
+reference:
+- title: Available data
+  desc:  Datasets included in the package.
+  contents:
+  - exampleData_CNA_dormancy
+  - exampleData_CNA
+  - exampleData_Driver
+
+- title: Check input
+  desc:  Functions to check the format of input data.
+  contents:
+  - check_clinical_input
+  - check_genomic_input
+  - check_parameters_input
