@@ -47,6 +47,3 @@ jobs:
           clean: false
           branch: gh-pages
           folder: docs
-      - urls:
-      reference: caravagnalab.github.io/TOSCA/reference
-      article: caravagnalab.github.io/TOSCA/articles
