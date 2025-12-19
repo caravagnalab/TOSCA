@@ -213,7 +213,8 @@ plot_ppc = function(x){
               if (rep_name1 == "m_beta_rep") rep_name1 = "m_beta_rep[1]"
               if (rep_name2 == "m_alpha_rep") rep_name2 = "m_alpha_rep[1]"
               if (rep_name2 == "m_beta_rep") rep_name2 = "m_beta_rep[1]"
-
+            if (rep_name1 == "m_th_step_rep") rep_name1 = "m_th_step_rep[1]"
+            if (rep_name2 == "m_th_step_rep") rep_name2 = "m_th_step_rep[1]"
             #}
 
             ppc_plot = TOSCA:::plot_ppc_single_mut(x, true_value1, true_value2, rep_name1, rep_name2)
