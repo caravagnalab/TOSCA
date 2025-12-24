@@ -69,21 +69,21 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
 
   L = ggplot2::ggplot_build(density_post_vs_prior)$layout$panel_params[[1]]
 
-  density_post_vs_prior = density_post_vs_prior +
-    ggrepel::geom_label_repel(
-      ggplot2::aes(
-        x = c(L$x.range[2] * .9, NA),
-        y = c(L$y.range[2] * .9, NA),
-        label = paste0("MAP ", round(mean(posterior$par), 3)),
-      ),
-      #ylim = c(L$y.range[2] * .9, NA),
-      size = 2,
-      fill = 'indianred3',
-      color = 'white',
-      nudge_y = 0,
-      nudge_x = 0,
-      show.legend = FALSE
-    )
+  # density_post_vs_prior = density_post_vs_prior +
+  #   ggrepel::geom_label_repel(
+  #     ggplot2::aes(
+  #       x = c(L$x.range[2] * .9, NA),
+  #       y = c(L$y.range[2] * .9, NA),
+  #       label = paste0("MAP ", round(mean(posterior$par), 3)),
+  #     ),
+  #     #ylim = c(L$y.range[2] * .9, NA),
+  #     size = 2,
+  #     fill = 'indianred3',
+  #     color = 'white',
+  #     nudge_y = 0,
+  #     nudge_x = 0,
+  #     show.legend = FALSE
+  #   )
 
   return(density_post_vs_prior)
 }
