@@ -1,3 +1,24 @@
+#' Title
+#'
+#' @param x TOSCA object
+#' @param index index of mu_step parameter
+#'
+#' @return name of the drug corresponding to the index
+#'
+get_name_mu_step = function(x, index){
+  mu_alpha = x$Input$Parameters %>% dplyr::filter(Name=="alpha_th_step")
+  mu_alpha = left_join(
+    x$Input$Therapies %>% filter(Class=="Mutagenic"),
+    mu_alpha %>% dplyr::rename(par_name = Name, Name = Index), by = "Name") %>%
+    dplyr::arrange(as.Date(Start))
+  names = mu_alpha %>%
+    group_by(Name) %>%
+    slice_min(as.Date(Start, format="%Y-%m-%d"), with_ties = FALSE) %>%
+    dplyr::arrange(as.Date(Start)) %>%
+    pull(Name)
+  names[index]
+}
+
 #' Prior vs Posterior distribution of inferred parameter
 #'
 #' @param x TOSCA object
@@ -16,10 +37,12 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
     alpha = TOSCA:::get_parameter(x, "omega_alpha")
     beta = TOSCA:::get_parameter(x, "omega_beta")
   }
+  name_mu_step = ""
   if (grepl("mu_th_step", parameter)){
     index = as.integer(strsplit(strsplit(parameter, "\\[")[[1]][2], "\\]")[[1]][1])
     alpha = TOSCA:::get_mutation_rate(x, type = "th_step")[["alpha"]][index]
     beta = TOSCA:::get_mutation_rate(x, type = "th_step")[["beta"]][index]
+    name_mu_step = TOSCA:::get_name_mu_step(x, index)
   }
   if (grepl("mu_driver", parameter)){
     alpha = TOSCA:::get_mutation_rate(x, type = "driver")[["alpha"]]
@@ -64,8 +87,18 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
       )
   }
 
-  density_post_vs_prior = density_post_vs_prior +
-    ggplot2::scale_x_continuous(name=bquote(.(rlang::sym(parameter))), breaks = scales::pretty_breaks(n=3) )
+  if (parameter == "omega"){
+    density_post_vs_prior = density_post_vs_prior +
+      ggplot2::scale_x_continuous(name=bquote(.(rlang::sym(parameter))), breaks = scales::pretty_breaks(n=3) )
+  }
+  if (parameter == "mu_driver") {
+    density_post_vs_prior = density_post_vs_prior +
+      ggplot2::scale_x_continuous(name=bquote(.(rlang::sym(mu[.("driver")]))), breaks = scales::pretty_breaks(n=3) )
+  }
+  if (name_mu_step!=""){
+    density_post_vs_prior = density_post_vs_prior +
+      ggplot2::scale_x_continuous(name=bquote(mu[.(name_mu_step)]), breaks = scales::pretty_breaks(n=3) )
+  }
 
   L = ggplot2::ggplot_build(density_post_vs_prior)$layout$panel_params[[1]]
 
