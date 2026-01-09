@@ -88,16 +88,16 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
   return(density_post_vs_prior)
 }
 
-get_prior_hyperparameters = function(x, name){
-  # name = mu_driver*, mu_th_step*, scale_th_cauchy*, omega*, mrca*, s*
-  if (name %in% x$Input$Parameters$Name){
-    x$Input$Parameters %>% dplyr::filter(Name==name) %>% dplyr::pull(Value) %>% as.double()
-  }else{
-    alpha= x$Input$Parameters %>% dplyr::filter(Name==paste0(name,'_alpha')) %>% dplyr::pull(Value) %>% as.double()
-    beta= x$Input$Parameters %>% dplyr::filter(Name==paste0(name,'_beta')) %>% dplyr::pull(Value) %>% as.double()
-    list('alpha'=alpha, 'beta'=beta)
-  }
-}
+# get_prior_hyperparameters = function(x, name){
+#   # name = mu_driver*, mu_th_step*, scale_th_cauchy*, omega*, mrca*, s*
+#   if (name %in% x$Input$Parameters$Name){
+#     x$Input$Parameters %>% dplyr::filter(Name==name) %>% dplyr::pull(Value) %>% as.double()
+#   }else{
+#     alpha= x$Input$Parameters %>% dplyr::filter(Name==paste0(name,'_alpha')) %>% dplyr::pull(Value) %>% as.double()
+#     beta= x$Input$Parameters %>% dplyr::filter(Name==paste0(name,'_beta')) %>% dplyr::pull(Value) %>% as.double()
+#     list('alpha'=alpha, 'beta'=beta)
+#   }
+# }
 
 #' Produce collective plot of prior vs posterior for all inferred parameters
 #'
