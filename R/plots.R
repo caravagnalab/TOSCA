@@ -95,13 +95,13 @@ plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "relapse", NA)
   if(mut1[1] == "m_cna"){
     rep_name1 = paste0("m_",mut1[2],"_rep","[",mut1[3],"]") 
   }else{
-  rep_name1 = paste0(mut1[1], "_rep")
+  rep_name1 = paste0(mut1[1],"_",mut1[2],"_rep")
   }
   
   if(mut2[1] == "m_cna"){
     rep_name2 = paste0("m_",mut2[2],"_rep","[",mut2[3],"]") 
   }else{
-    rep_name2 = paste0(mut2[1], "_rep")
+    rep_name2 = paste0(mut2[1],"_",mut2[2],"_rep")
   }
 
   ppc = estimates %>% dplyr::select(rep_name1,rep_name2)
@@ -146,7 +146,7 @@ plot_posterior_predictive_checks = function(x, mut1= c("m_clock", "relapse", NA)
       guides(
         fill = 'none',
         alpha = 'none'
-      ) + xlab(mut1[1]) + ylab(mut2[1])+
+      ) + xlab(rep_name1) + ylab(rep_name2)+
     theme(legend.position = "none")
 
 }
@@ -194,7 +194,7 @@ plot_timing = function(x)
 
   # 1. time posterior plot
   timing_estimates = estimates %>%
-    dplyr::select(starts_with('t_')) %>% 
+    dplyr::select(starts_with('t_')) %>%  
     apply(2, convert_date_real) %>%
     as_tibble()
   times = timing_estimates$variable %>% unique() %>% as.vector()
@@ -203,7 +203,8 @@ plot_timing = function(x)
     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
   }
 
-  timing_estimates = timing_estimates %>% reshape2::melt() %>% as_tibble()
+  timing_estimates = timing_estimates %>% reshape2::melt() %>% as_tibble() %>% 
+             filter(!grepl(x = variable,pattern = "tr")) 
   var_colors = ggsci::pal_npg()(timing_estimates$variable %>% unique() %>% length())
   names(var_colors) = times
 
@@ -212,7 +213,8 @@ plot_timing = function(x)
       data = timing_estimates %>% dplyr::rename(Date = value),
       aes(Date, fill = variable, ..density..),
       inherit.aes = FALSE,
-      bins = 150
+      bins = 150,
+      position = "identity"
     ) +
     geom_point(
       data = endpoints,

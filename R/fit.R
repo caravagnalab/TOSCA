@@ -7,22 +7,28 @@ fit = function(
     cores = 4,
     adapt_delta = 0.99,
     stepsize = 0.01,
+    max_treedepth = 10,
     model_name = 'Driver',
-    fixed_omega,
-    fixed_mu,
-    dormancy,
+    fixed_omega = F,
+    fixed_mu = T,
+    dormancy = F,
     seed
     ){
 
-  data = get_inference_data(x, model=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu, dormancy = dormancy)
-  model = get_model(model_name=model_name, fixed_omega = fixed_omega, fixed_mu = fixed_mu, dormancy = dormancy)
+  data = get_inference_data(x, model=model_name, fixed_omega = fixed_omega, 
+                            fixed_mu = fixed_mu, dormancy = dormancy)
+  model = get_model(model_name=model_name, fixed_omega = fixed_omega, 
+                    fixed_mu = fixed_mu, dormancy = dormancy)
 
   fit <- model$sample(data = data,
                       iter_warmup = warm_up,
                       iter_sampling = n_iterations,
                       chains = n_chains,
                       parallel_chains = n_chains,
-                      seed = seed
+                      seed = seed,
+                      adapt_delta = adapt_delta,
+                      stepsize = stepsize,
+                      max_treedepth = max_treedepth
                       )
 
   x$tosca_fit = list(

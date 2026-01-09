@@ -218,6 +218,7 @@ if(m_clock > 0){
   if (exponential_growth[1] == 1) {
     real lambda1 = exp(-omega * (Sample_1 - t_mrca_primary));
     target += -lambda1 * N_min[1] + log1m_exp(-lambda1 * (N_max[1] - N_min[1]));
+     // N_min[1] ~ exponential(lambda1);
     
   }
   
@@ -225,6 +226,7 @@ if(m_clock > 0){
     
     real lambda2 = exp(-omega * (Sample_2 - t_mrca));
     target += -lambda2 * N_min[2] + log1m_exp(-lambda2 * (N_max[2] - N_min[2]));
+    // N_min[2] ~ exponential(lambda2);
     
   }
   

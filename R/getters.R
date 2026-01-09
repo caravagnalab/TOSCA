@@ -36,7 +36,8 @@ get_mutation = function(x, name, type=NA, index=NA){
 
 ## Get Clinical Data
 get_sample = function(x, sample='1'){
-  x$clinical_records %>% filter(Clinical.name=='Sample', Clinical.type==sample) %>% pull(Clinical.value.start)
+  x$clinical_records %>% filter(Clinical.name=='Sample', Clinical.type==sample) %>% 
+    pull(Clinical.value.start)
 }
 
 get_therapy_driver = function(x){
@@ -50,7 +51,8 @@ get_n_th = function(x, name = 'Therapy step'){
 }
 
 get_n_th_type = function(x, name = 'Therapy step'){
-  n_th_type = length(x$clinical_records %>% filter(Clinical.name== name) %>% pull(Clinical.type) %>% unique() )
+  n_th_type = length(x$clinical_records %>% filter(Clinical.name== name) %>% 
+                       pull(Clinical.type) %>% unique() )
   if (is.null(n_th_type)){n_th_type=0}
   n_th_type
 }
@@ -119,11 +121,15 @@ get_max_th = function(x){
  th =  nrow(x$clinical_records %>% filter(Clinical.name!="Sample"))
  
 if(th > 0){
-  max_index = x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.type) %>% as.integer() %>% 
+  max_index = x$clinical_records %>% filter(Clinical.name!="Sample") %>% pull(Clinical.type) %>% 
+    as.integer() %>% 
     max() %>% as.character()
 
-  x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>% 
+  x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>%
     pull(Clinical.value.start) %>% min()
+   # x$clinical_records %>% filter(Clinical.name!="Sample", Clinical.type == max_index) %>%
+   #    pull(Clinical.value.end) %>% max()
+  
 }else{
   
   0
@@ -131,8 +137,26 @@ if(th > 0){
   #min(dates)
 }
 
+get_max_mrca = function(x){
+  
+  x$parameters %>% filter(Parameter.name=='max_mrca') %>% pull(Parameter.value)  
+  
+}
+
+get_min_mrca = function(x){
+  
+  x$parameters %>% filter(Parameter.name=='min_mrca') %>% pull(Parameter.value)   
+  
+}
+
+
 get_exponential_growth = function(x){
   x$parameters %>% filter(Parameter.name=='exponential_growth') %>% pull(Parameter.value)
+}
+
+get_reg_dormancy = function(x){
+  x$parameters %>% filter(Parameter.name=='reg_dormancy') %>% pull(Parameter.value)
+
 }
 
 get_N_min = function(x){
@@ -143,7 +167,17 @@ get_N_min = function(x){
 get_N_max= function(x){
   N_max = x$parameters %>% filter(Parameter.name=='N_max') %>% pull(Parameter.value)
   if (length(N_max) < 2){return(c(N_max, N_max))}else{N_max}
+  
 }
+
+get_N_dorm= function(x){
+  N_dorm = x$parameters %>% filter(Parameter.name=='N_dorm') %>% pull(Parameter.value)
+  
+  return(N_dorm)
+  
+}
+  
+  
 
 
 ## Get data for inference
@@ -181,7 +215,10 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu, dormancy
       data[['mrca_alpha']] = get_prior_hyperparameters(x, name='mrca')[["alpha"]]
       data[['mrca_beta']] = get_prior_hyperparameters(x, name='mrca')[["beta"]]
       
-      data[['max_therapy']] = get_max_th(x)
+      # data[['max_therapy']] = get_max_th(x)
+      
+      data[['min_mrca']] = get_min_mrca(x)
+      data[['max_mrca']] = get_max_mrca(x)
 
  }
   
@@ -227,10 +264,17 @@ get_inference_data = function(x, model='Driver', fixed_omega, fixed_mu, dormancy
     data[['omega_beta']] = get_prior_hyperparameters(x, name='omega')[["beta"]]
   }
   
-  if(dormancy == T){
+  if (dormancy == T) {
+    data[['chemo_start']] = start_th(x, type = 'Chemotherapy')
+    data[['chemo_end']] = end_th(x, type = 'Chemotherapy')
+    data[['reg_dormancy']] = get_reg_dormancy(x)
+    data[['N_dorm']] = get_N_dorm(x)
     
-    data[['chemo_start']] = start_th(x, type='Chemotherapy')
-    data[['chemo_end']] = end_th(x, type='Chemotherapy')
+    if ('Therapy step' %in% x$clinical_records$Clinical.name) {
+      data[['max_dormancy']] = start_th(x, type = 'Therapy step') %>% min()
+    } else{
+      data[['max_dormancy']] = get_sample(x, sample = '2')
+    }
     
   }
 
