@@ -27,10 +27,13 @@ fit = function(
     dormancy=F,
     verbose = F,
     initialisation = F,
-    init_fun = NULL
+    init_fun = NULL,
+    max_mrca = NA,
+    reg_dormancy = 0
     ){
 
-  data = TOSCA:::get_inference_data(x, model=model_name, dormancy = dormancy)
+  if (!is.na(max_mrca)) max_mrca = TOSCA:::convert_real_date(x, date = max_mrca)
+  data = TOSCA:::get_inference_data(x, model=model_name, dormancy = dormancy, max_mrca=max_mrca, reg_dormancy=reg_dormancy)
   model = TOSCA:::get_model(model_name=model_name, dormancy = dormancy)
 
   cat("\n--- Start Sampling ---\n")

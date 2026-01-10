@@ -47,12 +47,12 @@ real k) {
 
 data{
 
- int <lower=1> n_cna;
  int <lower=0> m_clock_primary;
  int <lower=0> m_clock;
  real <lower=0> l_diploid;
  real <lower=0> mu_clock;
 
+ int <lower=1> n_cna;
  array[n_cna] int <lower=0> m_alpha;
  array[n_cna] int <lower=0> m_beta;
  array[n_cna] real <lower=0> l_CNA;
@@ -76,14 +76,10 @@ data{
   real <lower=0> Sample_2;
   real <lower=0> chemo_start;
   real <lower=0> chemo_end;
-  real <lower=0> max_dormancy;
-  int <lower=0,upper=1> reg_dormancy;
-
 
   array[2] int <lower=0, upper=1> exponential_growth;
   array[2] real<lower=0> N_min;
   array[2] real<lower=0> N_max;
-  real<lower=0> N_dorm;
 
   // Overdispersion parameters for all mutation types
    real<lower=0> phi_clock;
@@ -93,11 +89,12 @@ data{
 
 }
 
+
 parameters{
 
   real <lower=0, upper= Sample_1> t_eca;
   real <lower=t_eca, upper= Sample_1> t_mrca_primary;
-  real <lower= chemo_end, upper= max_dormancy> t_dormancy_end;
+  real <lower= chemo_end, upper= Sample_2> t_dormancy_end;
   // real <lower= t_dormancy_end, upper= Sample_2> t_mrca;
   real <lower= t_eca, upper= Sample_2> t_mrca_tr;
   // array[n_cna] real <lower= t_eca, upper= t_mrca - (t_dormancy_end - chemo_start)> t_cna_tr;
@@ -199,7 +196,7 @@ model{
 
   t_eca ~ uniform(0, Sample_1);
   t_mrca_primary ~ uniform(t_eca, Sample_1);
-  t_dormancy_end ~ uniform(chemo_end, max_dormancy);
+  t_dormancy_end ~ uniform(chemo_end, Sample_2);
   // t_mrca ~ uniform(t_dormancy_end, Sample_2);
   t_mrca_tr ~ uniform(t_eca, Sample_2);
 
@@ -273,17 +270,12 @@ if (m_clock > 0){
 }
 
 
-if(reg_dormancy == 1){
-  real lambda = exp(-omega * (max_dormancy - t_dormancy_end));
-  target += exponential_lcdf(N_dorm | lambda);
-}
-
-
   if (exponential_growth[1] == 1) {
     real lambda1 = exp(-omega * (Sample_1 - t_mrca_primary));
-    target += -lambda1 * N_min[1] + log1m_exp(-lambda1 * (N_max[1] - N_min[1]));
-    // N_min[1] ~ exponential(lambda1);
- }
+    // target += -lambda1 * N_min[1] + log1m_exp(-lambda1 * (N_max[1] - N_min[1]));
+    N_min[1] ~ exponential(lambda1);
+
+  }
 
   if(exponential_growth[2] == 1){
 
@@ -291,9 +283,10 @@ if(reg_dormancy == 1){
     // real lambda2 = exp(-omega * (Sample_2 - (t_dormancy_end - chemo_start) - t_mrca_tr));
     real kappa = smooth_mrca_weight(t_mrca_tr, chemo_start, omega,k_step);
     real lambda2 = exp(-omega * (Sample_2 - (t_dormancy_end - chemo_start) - t_mrca_tr))/kappa;
-    target += -lambda2 * N_min[2] + log1m_exp(-lambda2 * (N_max[2] - N_min[2]));
-    // N_min[2] ~ exponential(lambda2);
-}
+    // target += -lambda2 * N_min[2] + log1m_exp(-lambda2 * (N_max[2] - N_min[2]));
+    N_min[2] ~ exponential(lambda2);
+
+  }
 
 }
 
