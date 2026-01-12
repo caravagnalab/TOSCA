@@ -12,11 +12,16 @@ fit(
   n_chains = 4,
   warm_up = 5000,
   cores = 4,
+  adapt_delta = 0.95,
+  stepsize = 0.01,
+  seed = 5,
   model_name = "Driver",
   dormancy = F,
   verbose = F,
   initialisation = F,
-  init_fun = NULL
+  init_fun = NULL,
+  max_mrca = NA,
+  reg_dormancy = 0
 )
 ```
 
@@ -44,6 +49,15 @@ fit(
 
   Number of cores to use when executing the chains in parallel
 
+- adapt_delta:
+
+  target acceptance probability for the Metropolis step in HMC. The
+  default is 0.95.
+
+- seed:
+
+  seed of the computation. Default is 5.
+
 - model_name:
 
   Name of the model: "CNA" or "Driver"
@@ -57,6 +71,11 @@ fit(
 
   Boolen specifying if the fit function should output the iterations
   progression. The default is F.
+
+- step_size:
+
+  how far the particle moves in each leapfrog step along the trajectory.
+  The default is 0.01.
 
 ## Value
 

@@ -80,6 +80,8 @@ Function to visualise the results of the fit.
 - [`plot_ppc_single_mut()`](https://caravagnalab.github.io/TOSCA/reference/plot_ppc_single_mut.md)
   : Plot the posterior predictive distribution and compares it to the
   real number of mutations
+- [`get_name_mu_step()`](https://caravagnalab.github.io/TOSCA/reference/get_name_mu_step.md)
+  : Title
 - [`plot_prior_vs_posterior()`](https://caravagnalab.github.io/TOSCA/reference/plot_prior_vs_posterior.md)
   : Produce collective plot of prior vs posterior for all inferred
   parameters
