@@ -10,11 +10,16 @@ fit(
   n_chains = 4,
   warm_up = 5000,
   cores = 4,
+  adapt_delta = 0.95,
+  stepsize = 0.01,
+  seed = 5,
   model_name = "Driver",
   dormancy = F,
   verbose = F,
   initialisation = F,
-  init_fun = NULL
+  init_fun = NULL,
+  max_mrca = NA,
+  reg_dormancy = 0
 )
 }
 \arguments{
@@ -28,11 +33,17 @@ fit(
 
 \item{cores}{Number of cores to use when executing the chains in parallel}
 
+\item{adapt_delta}{target acceptance probability for the Metropolis step in HMC. The default is 0.95.}
+
+\item{seed}{seed of the computation. Default is 5.}
+
 \item{model_name}{Name of the model: "CNA" or "Driver"}
 
 \item{dormancy}{Boolean specifying if the model should include dormancy (available only for "CNA" model). The default is F}
 
 \item{verbose}{Boolen specifying if the fit function should output the iterations progression. The default is F.}
+
+\item{step_size}{how far the particle moves in each leapfrog step along the trajectory. The default is 0.01.}
 }
 \value{
 TOSCA object
