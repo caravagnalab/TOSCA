@@ -21,25 +21,25 @@ get_mutation_rate = function(x, type){
     mu_alpha = x$Input$Parameters %>% dplyr::filter(Name=="alpha_th_step") #%>% pull(Value) %>% as.double()
     mu_beta = x$Input$Parameters %>% dplyr::filter(Name=="beta_th_step") #%>% pull(Value) %>% as.double()
 
-    if (nrow(mu_alpha)==nrow(x$Input$Therapies %>% filter(Class=="Mutagenic"))){
-      mu_alpha = left_join(
+    if (nrow(mu_alpha)==nrow(x$Input$Therapies %>% dplyr::filter(Class=="Mutagenic"))){
+      mu_alpha = dplyr::left_join(
         x$Input$Therapies %>% filter(Class=="Mutagenic"),
         mu_alpha %>% dplyr::rename(par_name = Name, Name = Index), by = "Name") %>%
-        dplyr::arrange(as.Date(Start)) %>% select(Name, Value) %>% unique() %>% pull(Value) %>% #unique() %>%
+        dplyr::arrange(as.Date(Start)) %>% dplyr::select(Name, Value) %>% unique() %>% dplyr::pull(Value) %>% #unique() %>%
         as.double()
       mu_beta = left_join(
         x$Input$Therapies %>% filter(Class=="Mutagenic"),
         mu_beta %>% dplyr::rename(par_name = Name, Name = Index), by = "Name") %>%
-        dplyr::arrange(as.Date(Start)) %>% select(Name, Value) %>% unique() %>% pull(Value) %>% #unique() %>%
+        dplyr::arrange(as.Date(Start)) %>% select(Name, Value) %>% unique() %>% dplyr::pull(Value) %>% #unique() %>%
         as.double()
     }else{
-      therapies = x$Input$Therapies %>% filter(Class=="Mutagenic") %>% arrange(Start)
+      therapies = x$Input$Therapies %>% filter(Class=="Mutagenic") %>% dplyr::arrange(Start)
       mu_alpha = c()
       mu_beta = c()
       for (th in (therapies$Name %>% unique())){
-        if (nrow(x$Input$Parameters %>% filter(Name == "alpha_th_step", Index == th))==1) {
-          mu_alpha = c(mu_alpha, x$Input$Parameters %>% filter(Name == "alpha_th_step", Index == th) %>% pull(Value))
-          mu_beta = c(mu_beta, x$Input$Parameters %>% filter(Name == "beta_th_step", Index == th) %>% pull(Value))
+        if (nrow(x$Input$Parameters %>% dplyr::filter(Name == "alpha_th_step", Index == th))==1) {
+          mu_alpha = c(mu_alpha, x$Input$Parameters %>% dplyr::filter(Name == "alpha_th_step", Index == th) %>% dplyr::pull(Value))
+          mu_beta = c(mu_beta, x$Input$Parameters %>% dplyr::filter(Name == "beta_th_step", Index == th) %>% dplyr::pull(Value))
         }else{
           mu_alpha = c(mu_alpha, get_mu_prior_estimates(x, type="th_step", index = th)[["alpha"]])
           mu_beta = c(mu_beta, get_mu_prior_estimates(x, type="th_step", index = th)[["beta"]])
