@@ -35,6 +35,7 @@ reference:
   - plot_expected_N
   - plot_ppc
   - plot_ppc_single_mut
+  - get_name_mu_step
   - plot_prior_vs_posterior
   - plot_prior_vs_posterior_single_parameter
   - plot_timing
