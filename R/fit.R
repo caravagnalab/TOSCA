@@ -5,6 +5,9 @@
 #' @param n_chains A positive integer specifying the number of Markov chains. The default is 4.
 #' @param warm_up A positive integer specifying the number of warmup (aka burnin) iterations per chain. The default is 5000.
 #' @param cores Number of cores to use when executing the chains in parallel
+#' @param adapt_delta target acceptance probability for the Metropolis step in HMC. The default is 0.95.
+#' @param step_size how far the particle moves in each leapfrog step along the trajectory. The default is 0.01.
+#' @param seed seed of the computation. Default is 5.
 #' @param model_name Name of the model: "CNA" or "Driver"
 #' @param dormancy Boolean specifying if the model should include dormancy (available only for "CNA" model). The default is F
 #' @param verbose Boolen specifying if the fit function should output the iterations progression. The default is F.
@@ -21,8 +24,9 @@ fit = function(
     warm_up = 5000,
     #max_treedepth = 10,
     cores = 4,
-    #adapt_delta = 0.99,
-    #stepsize = 0.01,
+    adapt_delta = 0.95,
+    stepsize = 0.01,
+    seed = 5,
     model_name = 'Driver',
     dormancy=F,
     verbose = F,
@@ -44,14 +48,20 @@ fit = function(
                         iter_warmup = warm_up,
                         iter_sampling = n_iterations,
                         chains = n_chains,
+                        adapt_delta = adapt_delta,
+                        stepsize =  stepsize ,
                         show_messages = verbose,
+                        seed = seed,
                         init = init_fun
     )
   }else{
   fit <- model$sample(data = data,
                         iter_warmup = warm_up,
                         iter_sampling = n_iterations,
+                        adapt_delta = adapt_delta,
+                        stepsize =  stepsize,
                         chains = n_chains,
+                        seed = seed,
                         show_messages = verbose
                         )
   }
