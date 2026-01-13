@@ -93,7 +93,14 @@ fit = function(
   timing_vars = posterior %>% dplyr::select(colnames(posterior)[!(grepl("_tr", colnames(posterior)))]) %>% dplyr::select(starts_with('t_')) %>% colnames()
   ppc_vars = posterior %>% dplyr::select(starts_with('m_')) %>% colnames()
   ind = x$Input$Parameters %>% dplyr::filter(Name == "alpha_th_step") %>% nrow()
-  rates_vars = c("omega", paste0("mu_th_step[",1:ind,"]"))
+  rates_vars = c("omega")
+  if (ind > 0){
+    rates_vars = c(rates_vars, paste0("mu_th_step[",1:ind,"]"))
+  }
+  if (grepl("driver", x$Input$Parameters$Name) %>% sum() > 1){
+    rates_vars = c(rates_vars, "mu_driver")
+  }
+  # rates_vars = c("omega", paste0("mu_th_step[",1:ind,"]"))
 
   # timing_posteriors -> timings without the translated times, converted to dates
   timing_estimates = posterior %>% dplyr::select(colnames(posterior)[!(grepl("_tr", colnames(posterior)))]) %>%

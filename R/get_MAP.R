@@ -50,7 +50,13 @@ get_fit_summary = function(x, parameter=NULL, cna_length=NULL, drug_name=NULL, q
   timing_vars <- summary$variable[startsWith(summary$variable, "t_") &!grepl("_tr", summary$variable)]
   ppc_vars = summary$variable[startsWith(summary$variable, "m_")]
   ind = x$Input$Parameters %>% dplyr::filter(Name == "alpha_th_step") %>% nrow()
-  rates_vars = c("omega", paste0("mu_th_step[",1:ind,"]"))
+  rates_vars = c("omega")
+  if (ind > 0){
+    rates_vars = c(rates_vars, paste0("mu_th_step[",1:ind,"]"))
+  }
+  if (grepl("driver", x$Input$Parameters$Name) %>% sum() > 1){
+    rates_vars = c(rates_vars, "mu_driver")
+  }
   vars_of_interest = c(timing_vars, ppc_vars, rates_vars)
 
   summary = summary %>% dplyr::filter(variable %in% vars_of_interest) %>% select(variable, median, mean, rhat, ess_bulk)

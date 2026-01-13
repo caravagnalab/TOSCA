@@ -93,7 +93,7 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
   }
   if (parameter == "mu_driver") {
     density_post_vs_prior = density_post_vs_prior +
-      ggplot2::scale_x_continuous(name=bquote(.(rlang::sym(mu[.("driver")]))), breaks = scales::pretty_breaks(n=3) )
+      ggplot2::scale_x_continuous(name=bquote(mu[.("driver")]), breaks = scales::pretty_breaks(n=3) )
   }
   if (name_mu_step!=""){
     density_post_vs_prior = density_post_vs_prior +
@@ -145,8 +145,6 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
 plot_prior_vs_posterior = function(x){
   parameters = c()
   posterior = TOSCA:::get_inferred_parameters(x)
-
-
 
   is_omega = grepl("omega", colnames(posterior)) %>% sum()
   # is_s = grepl("s", colnames(posterior)) %>% sum()
