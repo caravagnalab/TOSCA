@@ -4,7 +4,6 @@
 #'
 #' @return The function returns an error of the format of the "samples" dataframe has errors
 #'
-#' @examples
 check_clinical_input = function(clinical_input){
 
   if (nrow(clinical_input) > 0){
@@ -53,9 +52,8 @@ check_clinical_input = function(clinical_input){
 #'
 #' @param mutations
 #'
-#' @return
+#' @return Check that the input mutation dataframe is valid
 #'
-#' @examples
 check_genomic_input = function(mutations){
   if (class(mutations$Name) != "character"){stop("Mutation names must be strings")}
   if (class(mutations$Length) != "numeric"){stop("Genome segments lengths must be integer numbers")}
@@ -75,9 +73,8 @@ check_genomic_input = function(mutations){
 #'
 #' @param parameters
 #'
-#' @return
+#' @return Checks that the parameters dataframe is valid
 #'
-#' @examples
 check_parameters_input = function(parameters){
   valid_parameters_names = c(
     "mu_clock",
@@ -119,9 +116,8 @@ check_parameters_input = function(parameters){
 #'
 #' @param karyo
 #'
-#' @return
+#' @return Check that the input karytypes in the mutations dataframe are valid
 #'
-#' @examples
 check_valid_karyotype = function(karyo){
 
   k1= strsplit(karyo, ":")[[1]][1]
@@ -134,9 +130,8 @@ check_valid_karyotype = function(karyo){
 #'
 #' @param str_date
 #'
-#' @return
+#' @return Check that the input date is valid
 #'
-#' @examples
 check_valid_date = function(str_date){
   y = strsplit(str_date, "-")[[1]][1]
   condition_y = nchar(y) == 4 & as.integer(y) >= 1900
@@ -150,12 +145,11 @@ check_valid_date = function(str_date){
 
 #' Check that for the required columns for each dataframe are present
 #'
-#' @param df
-#' @param type
+#' @param df df to check
+#' @param type type of df
 #'
-#' @return
+#' @return Check that for the required columns for each dataframe are present
 #'
-#' @examples
 check_required_cols = function(df, type){
   if (type == "samples") required_cols <- c("Name", "Date")
   if (type == "parameters") required_cols <- c("Name", "Value","Index")
@@ -168,14 +162,14 @@ check_required_cols = function(df, type){
   }
 }
 
-#' Converts date into real number
+#' Converts real into date
 #'
-#' @param x
-#' @param ref_year
+#' @param x TOSCA obj
+#' @param ref_year year of reference
+#' @param date real number to transform to date
 #'
-#' @return
+#' @return Converts date into real number
 #'
-#' @examples
 convert_date_real = function(date, x, ref_year = 1900) {
 
   if (x$Input$Samples %>% nrow() > 2){
@@ -195,14 +189,14 @@ convert_date_real = function(date, x, ref_year = 1900) {
   return(date_string)
 }
 
-#' Converts real number into date
+#' Converts date into real
 #'
-#' @param date
-#' @param ref_year
+#' @param x TOSCA obj
+#' @param date date to transform
+#' @param ref_year year of reference
 #'
-#' @return
+#' @return Converts real number into date
 #'
-#' @examples
 convert_real_date = function(x, date = NULL, ref_year = 1900) {
 
   if (x$Input$Samples %>% nrow() > 2){

@@ -9,6 +9,9 @@ check_valid_karyotype(karyo)
 \arguments{
 \item{karyo}{}
 }
+\value{
+Check that the input karytypes in the mutations dataframe are valid
+}
 \description{
 Check that the input karytypes in the mutations dataframe are valid
 }

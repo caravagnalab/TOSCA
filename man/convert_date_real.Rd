@@ -2,13 +2,20 @@
 % Please edit documentation in R/utils.R
 \name{convert_date_real}
 \alias{convert_date_real}
-\title{Converts date into real number}
+\title{Converts real into date}
 \usage{
 convert_date_real(date, x, ref_year = 1900)
 }
 \arguments{
-\item{ref_year}{}
+\item{date}{real number to transform to date}
+
+\item{x}{TOSCA obj}
+
+\item{ref_year}{year of reference}
+}
+\value{
+Converts date into real number
 }
 \description{
-Converts date into real number
+Converts real into date
 }

@@ -15,3 +15,7 @@ plot of the posterior predictive distribution versus the real value of all mutat
 \description{
 Plot posterior predictive checks
 }
+\examples{
+data("exampleFit")
+plot_ppc(exampleFit)
+}

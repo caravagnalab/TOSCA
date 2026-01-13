@@ -7,8 +7,15 @@
 plot_timing_MAP(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{TOSCA obj}
+}
+\value{
+posterior distributions of the inferred timing variables on the clinical timeline (alternative visualisation)
 }
 \description{
 Plot clinical timeline + posterior times with MAP
+}
+\examples{
+data("exampleFit")
+plot_timing(exampleFit)
 }

@@ -136,10 +136,12 @@ plot_prior_vs_posterior_single_parameter = function(x, parameter){
 #'
 #' @param x TOSCA obj
 #'
-#' @return plot
+#' @return plot of prior versus posterior distribution for all rate parameters
 #' @export
 #'
 #' @examples
+#' data("exampleFit")
+#' plot_prior_vs_posterior(exampleFit)
 plot_prior_vs_posterior = function(x){
   parameters = c()
   posterior = TOSCA:::get_inferred_parameters(x)

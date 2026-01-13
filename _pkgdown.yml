@@ -9,6 +9,7 @@ reference:
   - exampleData_CNA_dormancy
   - exampleData_CNA
   - exampleData_Driver
+  - exampleFit
 
 - title: Create TOSCA object
   desc:  Functions to create the TOSCA object and check the format of input data.
@@ -40,4 +41,10 @@ reference:
   - plot_prior_vs_posterior_single_parameter
   - plot_timing
   - plot_timing_MAP
-  - plot_timing_density
+
+  - title: Examine fit
+  desc: Get the results from the inference
+  contents:
+  - get_fit_summary
+  - get_index_from_drug_name
+  - get_index_from_cna_length

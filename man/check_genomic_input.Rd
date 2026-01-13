@@ -9,6 +9,9 @@ check_genomic_input(mutations)
 \arguments{
 \item{mutations}{}
 }
+\value{
+Check that the input mutation dataframe is valid
+}
 \description{
 Check that the input mutation dataframe is valid
 }

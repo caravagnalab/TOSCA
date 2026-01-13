@@ -177,6 +177,8 @@ plot_ppc_single_mut = function(x, mut1_real, mut2_real, rep_name1, rep_name2){
 #' @export
 #'
 #' @examples
+#' data("exampleFit")
+#' plot_ppc(exampleFit)
 plot_ppc = function(x){
 
   posterior = TOSCA:::get_inferred_parameters(x)

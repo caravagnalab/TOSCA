@@ -7,8 +7,15 @@
 plot_timing(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{TOSCA obj}
+}
+\value{
+posterior distributions of the inferred timing variables on the clinical timeline
 }
 \description{
 Plot clinical timeline + posterior times with histogram
+}
+\examples{
+data("exampleFit")
+plot_timing(exampleFit)
 }

@@ -7,7 +7,12 @@
 check_required_cols(df, type)
 }
 \arguments{
-\item{type}{}
+\item{df}{df to check}
+
+\item{type}{type of df}
+}
+\value{
+Check that for the required columns for each dataframe are present
 }
 \description{
 Check that for the required columns for each dataframe are present

@@ -10,8 +10,12 @@ plot_prior_vs_posterior(x)
 \item{x}{TOSCA obj}
 }
 \value{
-plot
+plot of prior versus posterior distribution for all rate parameters
 }
 \description{
 Produce collective plot of prior vs posterior for all inferred parameters
+}
+\examples{
+data("exampleFit")
+plot_prior_vs_posterior(exampleFit)
 }

@@ -35,6 +35,8 @@ fit(
 
 \item{adapt_delta}{target acceptance probability for the Metropolis step in HMC. The default is 0.95.}
 
+\item{stepsize}{how far the particle moves in each leapfrog step along the trajectory. The default is 0.01.}
+
 \item{seed}{seed of the computation. Default is 5.}
 
 \item{model_name}{Name of the model: "CNA" or "Driver"}
@@ -43,11 +45,33 @@ fit(
 
 \item{verbose}{Boolen specifying if the fit function should output the iterations progression. The default is F.}
 
-\item{step_size}{how far the particle moves in each leapfrog step along the trajectory. The default is 0.01.}
+\item{initialisation}{Boolean, default= F. If true, must specify an init_fun}
+
+\item{init_fun}{Vector with initial values used if initialisation = T.}
+
+\item{max_mrca}{maximun date for t_mrca}
+
+\item{reg_dormancy}{Boolean (0 or 1). If reg_dormancy = 0, a likelihood regularisation is imposed on the timing of dormancy end}
 }
 \value{
 TOSCA object
 }
 \description{
 Infer the timing of the events of interest fitting the appropriate TOSCA model
+}
+\examples{
+library(TOSCA)
+library(dplyr)
+library(ggplot2)
+data("exampleData_CNA")
+set.seed(123)
+mutations = exampleData_CNA$Mutations
+parameters = exampleData_CNA$Parameters
+samples = exampleData_CNA$Samples
+therapies = exampleData_CNA$Therapies
+x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
+fit = TOSCA::fit(x, model_name='CNA',
+                 n_iterations = 10000,
+                 n_chains = 4,
+                 warm_up = 5000)
 }

@@ -17,7 +17,7 @@ get_model <- function(model_name='Driver', dormancy=F) {
 
 #### Getters for inferred data
 get_inferred_parameters = function(x){
-  x$Fit$posterior
+  x$Fit$posteriors$stan_posterior
 }
 
 get_inferred_times_colors = function(){

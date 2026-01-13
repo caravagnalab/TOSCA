@@ -9,6 +9,9 @@ check_valid_date(str_date)
 \arguments{
 \item{str_date}{}
 }
+\value{
+Check that the input date is valid
+}
 \description{
 Check that the input date is valid
 }

@@ -9,6 +9,9 @@ check_parameters_input(parameters)
 \arguments{
 \item{parameters}{}
 }
+\value{
+Checks that the parameters dataframe is valid
+}
 \description{
 Checks that the parameters dataframe is valid
 }
