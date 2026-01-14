@@ -4,7 +4,7 @@
 \alias{init}
 \title{Initialise TOSCA object}
 \usage{
-init(mutations, parameters, samples, therapies)
+init(mutations, parameters, samples, therapies, sample_name = "Example")
 }
 \arguments{
 \item{mutations}{data.frame with the information on mutation falling on the timed branches.
@@ -28,6 +28,8 @@ init(mutations, parameters, samples, therapies)
 2. Class (str), one of the following : "Mutagenic step", "Mutagenic cauchy", "Driver responsive", "Chemotherapy inducing dormancy"
 3. Start (date), start of the cicle of therapy in the format "YYYY-mm-dd"
 4. End (date), end of the cicle of therapy in the format "YYYY-mm-dd"}
+
+\item{sample_name}{string with the name of the sample}
 }
 \value{
 TOSCA object

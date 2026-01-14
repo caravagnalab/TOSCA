@@ -122,6 +122,9 @@ exampleData_CNA_dormancy = list(
     )
 )
 
+exampleData_CNA_dormancy = TOSCA::init(mutations = exampleData_CNA_dormancy$Mutations, parameters = exampleData_CNA_dormancy$Parameters,
+                              therapies = exampleData_CNA_dormancy$Therapies, samples = exampleData_CNA_dormancy$Samples, sample_name = "exampleData_CNA_dormancy")
+
 
 usethis::use_data(exampleData_CNA_dormancy, overwrite = TRUE)
 

@@ -92,6 +92,8 @@ exampleData_Driver = list(
     ))
 
 
+exampleData_Driver = TOSCA::init(mutations = exampleData_Driver$Mutations, parameters = exampleData_Driver$Parameters,
+                                       therapies = exampleData_Driver$Therapies, samples = exampleData_Driver$Samples, sample_name = "exampleData_Driver")
 
 
 usethis::use_data(exampleData_Driver, overwrite = TRUE)

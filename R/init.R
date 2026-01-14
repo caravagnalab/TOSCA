@@ -18,6 +18,7 @@
 #'  2. Class (str), one of the following : "Mutagenic step", "Mutagenic cauchy", "Driver responsive", "Chemotherapy inducing dormancy"
 #'  3. Start (date), start of the cicle of therapy in the format "YYYY-mm-dd"
 #'  4. End (date), end of the cicle of therapy in the format "YYYY-mm-dd"
+#' @param sample_name string with the name of the sample
 #'
 #' @return TOSCA object
 #' @export
@@ -34,7 +35,7 @@
 #'
 #' x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
 #'
-init = function(mutations, parameters, samples, therapies){
+init = function(mutations, parameters, samples, therapies, sample_name="Example"){
 
   dfs = list(mutations, parameters, samples, therapies)
   dfs_names = c("mutations", "parameters", "samples", "therapies")
@@ -44,6 +45,8 @@ init = function(mutations, parameters, samples, therapies){
       stop("Input must be a data.frame.")
     }
   }
+
+  if (!is.character(sample_name)) stop("Must give a valid sample name")
 
   for (t in 1:length(dfs)){
     check_required_cols(dfs[[t]], type=dfs_names[t])
@@ -59,7 +62,8 @@ init = function(mutations, parameters, samples, therapies){
     "Samples" = samples,
     "Mutations" = mutations,
     "Parameters" = parameters,
-    "Therapies" = therapies
+    "Therapies" = therapies,
+    "Sample_name" = sample_name
     )
 
     )

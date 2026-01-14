@@ -131,6 +131,8 @@ exampleData_CNA = list(
     )
 )
 
+exampleData_CNA = TOSCA::init(mutations = exampleData_CNA$Mutations, parameters = exampleData_CNA$Parameters,
+                              therapies = exampleData_CNA$Therapies, samples = exampleData_CNA$Samples, sample_name = "exampleData_CNA")
 
 usethis::use_data(exampleData_CNA, overwrite = TRUE)
 
