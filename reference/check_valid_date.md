@@ -11,3 +11,7 @@ check_valid_date(str_date)
 ## Arguments
 
 - str_date:
+
+## Value
+
+Check that the input date is valid

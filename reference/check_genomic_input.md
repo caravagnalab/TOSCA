@@ -11,3 +11,7 @@ check_genomic_input(mutations)
 ## Arguments
 
 - mutations:
+
+## Value
+
+Check that the input mutation dataframe is valid

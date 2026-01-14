@@ -10,6 +10,8 @@ Datasets included in the package.
   : Dataset with a toy example for the CNA model
 - [`exampleData_Driver`](https://caravagnalab.github.io/TOSCA/reference/exampleData_Driver.md)
   : Dataset with a toy example for the Driver model
+- [`exampleFit`](https://caravagnalab.github.io/TOSCA/reference/exampleFit.md)
+  : Example of a TOSCA object with compleated inference
 
 ## Create TOSCA object
 
@@ -17,22 +19,35 @@ Functions to create the TOSCA object and check the format of input data.
 
 - [`init()`](https://caravagnalab.github.io/TOSCA/reference/init.md) :
   Initialise TOSCA object
+
 - [`check_clinical_input()`](https://caravagnalab.github.io/TOSCA/reference/check_clinical_input.md)
   : Check clinical input
+
 - [`check_genomic_input()`](https://caravagnalab.github.io/TOSCA/reference/check_genomic_input.md)
   : Check that the input mutation dataframe is valid
+
 - [`check_parameters_input()`](https://caravagnalab.github.io/TOSCA/reference/check_parameters_input.md)
   : Checks that the parameters dataframe is valid
+
 - [`check_required_cols()`](https://caravagnalab.github.io/TOSCA/reference/check_required_cols.md)
   : Check that for the required columns for each dataframe are present
+
 - [`check_valid_date()`](https://caravagnalab.github.io/TOSCA/reference/check_valid_date.md)
   : Check that the input date is valid
+
 - [`check_valid_karyotype()`](https://caravagnalab.github.io/TOSCA/reference/check_valid_karyotype.md)
   : Check that the input karytypes in the mutations dataframe are valid
+
 - [`convert_date_real()`](https://caravagnalab.github.io/TOSCA/reference/convert_date_real.md)
-  : Converts date into real number
+  : Converts real into date
+
 - [`convert_real_date()`](https://caravagnalab.github.io/TOSCA/reference/convert_real_date.md)
-  : Converts real number into date
+  : Converts date into real
+
+- [`print(`*`<TOSCA>`*`)`](https://caravagnalab.github.io/TOSCA/reference/print.TOSCA.md)
+  :
+
+  Print for class `'TOSCA'`.
 
 ## Fit model
 
@@ -67,5 +82,16 @@ Function to visualise the results of the fit.
   : Plot clinical timeline + posterior times with histogram
 - [`plot_timing_MAP()`](https://caravagnalab.github.io/TOSCA/reference/plot_timing_MAP.md)
   : Plot clinical timeline + posterior times with MAP
-- [`plot_timing_density()`](https://caravagnalab.github.io/TOSCA/reference/plot_timing_density.md)
-  : Plot clinical timeline + posterior times with density
+- [`days_from()`](https://caravagnalab.github.io/TOSCA/reference/days_from.md)
+  : Computes the days of the event of interest from a date of interest
+
+## Examine fit
+
+Get the results from the inference.
+
+- [`get_fit_summary()`](https://caravagnalab.github.io/TOSCA/reference/get_fit_summary.md)
+  : Get mean, mode and q5, q95
+- [`get_index_from_drug_name()`](https://caravagnalab.github.io/TOSCA/reference/get_index_from_drug_name.md)
+  : Get index from drug name
+- [`get_index_from_cna_length()`](https://caravagnalab.github.io/TOSCA/reference/get_index_from_cna_length.md)
+  : Get index from cna_length

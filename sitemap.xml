@@ -14,10 +14,15 @@
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/check_valid_karyotype.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/convert_date_real.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/convert_real_date.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/days_from.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/exampleData_CNA.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/exampleData_CNA_dormancy.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/exampleData_Driver.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/exampleFit.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/fit.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/get_fit_summary.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/get_index_from_cna_length.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/get_index_from_drug_name.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/get_name_mu_step.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/index.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/init.html</loc></url>
@@ -28,6 +33,6 @@
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_prior_vs_posterior_single_parameter.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_timing.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_timing_MAP.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_timing_density.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/print.TOSCA.html</loc></url>
 </urlset>
 

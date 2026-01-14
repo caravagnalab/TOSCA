@@ -11,3 +11,7 @@ check_valid_karyotype(karyo)
 ## Arguments
 
 - karyo:
+
+## Value
+
+Check that the input karytypes in the mutations dataframe are valid

@@ -11,3 +11,7 @@ check_parameters_input(parameters)
 ## Arguments
 
 - parameters:
+
+## Value
+
+Checks that the parameters dataframe is valid

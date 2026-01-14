@@ -1,6 +1,6 @@
-# Converts date into real number
+# Converts real into date
 
-Converts date into real number
+Converts real into date
 
 ## Usage
 
@@ -10,4 +10,18 @@ convert_date_real(date, x, ref_year = 1900)
 
 ## Arguments
 
+- date:
+
+  real number to transform to date
+
+- x:
+
+  TOSCA obj
+
 - ref_year:
+
+  year of reference
+
+## Value
+
+Converts date into real number
