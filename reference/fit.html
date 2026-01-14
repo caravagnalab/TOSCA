@@ -136,35 +136,12 @@
 <span class="r-in"><span><span class="va">samples</span> <span class="op">=</span> <span class="va">exampleData_CNA</span><span class="op">$</span><span class="va">Samples</span></span></span>
 <span class="r-in"><span><span class="va">therapies</span> <span class="op">=</span> <span class="va">exampleData_CNA</span><span class="op">$</span><span class="va">Therapies</span></span></span>
 <span class="r-in"><span><span class="va">x</span> <span class="op">=</span> <span class="fu"><a href="init.html">init</a></span><span class="op">(</span>mutations<span class="op">=</span><span class="va">mutations</span>, samples<span class="op">=</span><span class="va">samples</span>, therapies<span class="op">=</span><span class="va">therapies</span>, parameters<span class="op">=</span><span class="va">parameters</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The following mutations do not follow the conventional naming scheme: Drug 1 , Drug 2. If these mutations are associated to a therapy-related mutational process, make sure that the name reported in 'Type' is the same as the one reported in the 'Therapy' dataframe for the corresponding mutational process. If that is not the case, please choose a valid mutation type between the following: clock-like primary , clock-like relapse , alpha , beta , driver</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in init(mutations = mutations, samples = samples, therapies = therapies,     parameters = parameters):</span> Input must be a data.frame.</span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">=</span> <span class="fu">TOSCA</span><span class="fu">::</span><span class="fu">fit</span><span class="op">(</span><span class="va">x</span>, model_name<span class="op">=</span><span class="st">'CNA'</span>,</span></span>
 <span class="r-in"><span>                 n_iterations <span class="op">=</span> <span class="fl">10000</span>,</span></span>
 <span class="r-in"><span>                 n_chains <span class="op">=</span> <span class="fl">4</span>,</span></span>
 <span class="r-in"><span>                 warm_up <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> --- Start Sampling ---</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 1 ./CNA: 1: X: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 1 ./CNA: 1: !H__PAGEZERO__TEXT__text__TEXT__stubs__TEXTl: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 1 ./CNA: 1: cannot open V2: No such file</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 1 ./CNA: 3: __common__DATA0__bss__DATA8H__LINKEDIT43MpL,: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 1 ./CNA: 4: Syntax error: ")" unexpected</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 2 ./CNA: 1: X: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 2 ./CNA: 1: !H__PAGEZERO__TEXT__text__TEXT__stubs__TEXTl: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 2 ./CNA: 1: cannot open V2: No such file</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 2 ./CNA: 3: __common__DATA0__bss__DATA8H__LINKEDIT43MpL,: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 2 ./CNA: 4: Syntax error: ")" unexpected</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 3 ./CNA: 1: X: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 3 ./CNA: 1: !H__PAGEZERO__TEXT__text__TEXT__stubs__TEXTl: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 3 ./CNA: 1: cannot open V2: No such file</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 3 ./CNA: 3: __common__DATA0__bss__DATA8H__LINKEDIT43MpL,: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 3 ./CNA: 4: Syntax error: ")" unexpected</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 4 ./CNA: 1: X: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 4 ./CNA: 1: !H__PAGEZERO__TEXT__text__TEXT__stubs__TEXTl: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 4 ./CNA: 1: cannot open V2: No such file</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 4 ./CNA: 3: __common__DATA0__bss__DATA8H__LINKEDIT43MpL,: not found</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Chain 4 ./CNA: 4: Syntax error: ")" unexpected</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>No chains finished successfully. Unable to retrieve the fit.</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> No chains finished successfully. Unable to retrieve the draws.</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'x' not found</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -5,7 +5,7 @@ Initialise TOSCA object
 ## Usage
 
 ``` r
-init(mutations, parameters, samples, therapies)
+init(mutations, parameters, samples, therapies, sample_name = "Example")
 ```
 
 ## Arguments
@@ -42,6 +42,10 @@ init(mutations, parameters, samples, therapies)
   of the cicle of therapy in the format "YYYY-mm-dd" 4. End (date), end
   of the cicle of therapy in the format "YYYY-mm-dd"
 
+- sample_name:
+
+  string with the name of the sample
+
 ## Value
 
 TOSCA object
@@ -59,5 +63,5 @@ samples = exampleData_CNA$Samples
 therapies = exampleData_CNA$Therapies
 
 x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
-#> Warning: The following mutations do not follow the conventional naming scheme: Drug 1 , Drug 2. If these mutations are associated to a therapy-related mutational process, make sure that the name reported in 'Type' is the same as the one reported in the 'Therapy' dataframe for the corresponding mutational process. If that is not the case, please choose a valid mutation type between the following: clock-like primary , clock-like relapse , alpha , beta , driver
+#> Error in init(mutations = mutations, samples = samples, therapies = therapies,     parameters = parameters): Input must be a data.frame.
 ```
