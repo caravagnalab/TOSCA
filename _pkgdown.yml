@@ -24,6 +24,7 @@ reference:
       - check_valid_karyotype
       - convert_date_real
       - convert_real_date
+      - print.TOSCA
 
   - title: Fit model
     desc: Function to fit model.
@@ -42,6 +43,7 @@ reference:
       - plot_prior_vs_posterior_single_parameter
       - plot_timing
       - plot_timing_MAP
+      - days_from
 
   - title: Examine fit
     desc: Get the results from the inference.
