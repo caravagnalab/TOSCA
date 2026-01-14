@@ -34,3 +34,15 @@
 #'
 "exampleData_Driver"
 
+#' Example of a TOSCA object with compleated inference
+#'
+#' @docType data
+#'
+#' @usage data(exampleFit)
+#'
+#' @format A list of dataframes with the input and outputs of TOSCA
+#'
+#' @keywords datasets
+#'
+"exampleFit"
+
