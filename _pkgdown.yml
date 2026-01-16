@@ -11,6 +11,8 @@ reference:
       - exampleData_CNA
       - exampleData_Driver
       - exampleFit
+      - UPN06
+      - D9MRCY
 
   - title: Create TOSCA object
     desc: Functions to create the TOSCA object and check the format of input data.

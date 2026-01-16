@@ -23,7 +23,7 @@ TOSCA is a packege for inferring the timing in real time of clonal and subclonal
 #### Citation
 
 If you use `TOSCA`, please cite:
-* _Timing cancer genomics driver events around therapy_
+* _Timing the origin of genetic therapy resistance in human cancers_
   Riccardo Bergamin, Alice Antonello, Giulio Caravagna. 
 
 
