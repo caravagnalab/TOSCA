@@ -5,13 +5,7 @@
 <url><loc>https://caravagnalab.github.io/TOSCA/authors.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/index.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/TOSCA-package-imports.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/reference/check_clinical_input.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/reference/check_genomic_input.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/reference/check_parameters_input.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/check_ppc.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/reference/check_required_cols.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/reference/check_valid_date.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/reference/check_valid_karyotype.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/convert_date_real.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/convert_real_date.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/days_from.html</loc></url>
@@ -21,9 +15,7 @@
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/exampleFit.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/fit.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/get_fit_summary.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/reference/get_index_from_cna_length.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/reference/get_index_from_drug_name.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/reference/get_name_mu_step.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/get_inference_data.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/index.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/init.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_expected_N.html</loc></url>
