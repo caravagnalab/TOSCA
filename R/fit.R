@@ -170,7 +170,8 @@ fit = function(
     #   ), # fit$summary(),
 
     'diagnostic_summary' = fit$diagnostic_summary(),
-    'model_info' = list('model_name'=model_name, 'dormancy'=dormancy)
+    'model_info' = list('model_name'=model_name, 'dormancy'=dormancy),
+    "stan_fit" = fit
   )
 
   cat("\n--- End Sampling ---\n")

@@ -1,10 +1,3 @@
-#' Get index from drug name
-#'
-#' @param x TOSCA obj
-#' @param drug_name name of the drug
-#'
-#' @return index of the corresponding drug in the model
-#'
 get_index_from_drug_name = function(x, drug_name){
   mu_alpha = x$Input$Parameters %>% dplyr::filter(Name=="alpha_th_step")
   mu_alpha = left_join(
@@ -14,13 +7,6 @@ get_index_from_drug_name = function(x, drug_name){
   which(mu_alpha$Name == drug_name)
 }
 
-#' Get index from cna_length
-#'
-#' @param x TOSCA obj
-#' @param len length of the CNA of interest
-#'
-#' @return index of the corresponding CNA in the model
-#'
 get_index_from_cna_length = function(x, len){
   index = x$Input$Mutations %>% dplyr::filter(Type == "alpha") %>%
     dplyr::arrange(Length)

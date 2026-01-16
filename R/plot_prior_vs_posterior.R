@@ -1,21 +1,14 @@
-#' Title
-#'
-#' @param x TOSCA object
-#' @param index index of mu_step parameter
-#'
-#' @return name of the drug corresponding to the index
-#'
 get_name_mu_step = function(x, index){
   mu_alpha = x$Input$Parameters %>% dplyr::filter(Name=="alpha_th_step")
-  mu_alpha = left_join(
+  mu_alpha = dplyr::left_join(
     x$Input$Therapies %>% filter(Class=="Mutagenic"),
     mu_alpha %>% dplyr::rename(par_name = Name, Name = Index), by = "Name") %>%
     dplyr::arrange(as.Date(Start))
   names = mu_alpha %>%
-    group_by(Name) %>%
-    slice_min(as.Date(Start, format="%Y-%m-%d"), with_ties = FALSE) %>%
+    dplyr::group_by(Name) %>%
+    dplyr::slice_min(as.Date(Start, format="%Y-%m-%d"), with_ties = FALSE) %>%
     dplyr::arrange(as.Date(Start)) %>%
-    pull(Name)
+    dplyr::pull(Name)
   names[index]
 }
 

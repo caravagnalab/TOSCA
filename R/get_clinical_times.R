@@ -43,8 +43,14 @@ get_sample = function(x, sample=1){
 
 get_max_th = function(x){
   starts = x$Input$Therapies %>% dplyr::arrange(as.Date(Start)) %>%
-    distinct(Name, .keep_all = TRUE) %>% dplyr::pull(Start)
+    dplyr::distinct(Name, .keep_all = TRUE) %>% dplyr::pull(Start)
   TOSCA:::convert_real_date(x, starts[length(starts)])
+}
+
+get_max_th_dormancy = function(x){
+  starts = x$Input$Therapies %>% dplyr::filter(Class != "Chemotherapy inducing dormancy") %>% dplyr::arrange(as.Date(Start)) %>%
+    dplyr::distinct(Name, .keep_all = TRUE) #%>% dplyr::pull(Start)
+  if (nrow(starts>0)) TOSCA:::convert_real_date(x, starts[length(starts)]) else get_sample(x,2)
 }
 
 ############## TODO

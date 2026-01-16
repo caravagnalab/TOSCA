@@ -16,12 +16,6 @@ reference:
     desc: Functions to create the TOSCA object and check the format of input data.
     contents:
       - init
-      - check_clinical_input
-      - check_genomic_input
-      - check_parameters_input
-      - check_required_cols
-      - check_valid_date
-      - check_valid_karyotype
       - convert_date_real
       - convert_real_date
       - print.TOSCA
@@ -30,6 +24,7 @@ reference:
     desc: Function to fit model.
     contents:
       - fit
+      - get_inference_data_dormancy
 
   - title: Plot fit
     desc: Function to visualise the results of the fit.
@@ -38,7 +33,6 @@ reference:
       - plot_expected_N
       - plot_ppc
       - plot_ppc_single_mut
-      - get_name_mu_step
       - plot_prior_vs_posterior
       - plot_prior_vs_posterior_single_parameter
       - plot_timing
@@ -49,5 +43,3 @@ reference:
     desc: Get the results from the inference.
     contents:
       - get_fit_summary
-      - get_index_from_drug_name
-      - get_index_from_cna_length

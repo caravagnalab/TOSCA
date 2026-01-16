@@ -1,9 +1,3 @@
-#' Check clinical input
-#'
-#' @param clinical_input
-#'
-#' @return The function returns an error of the format of the "samples" dataframe has errors
-#'
 check_clinical_input = function(clinical_input){
 
   if (nrow(clinical_input) > 0){
@@ -48,12 +42,6 @@ check_clinical_input = function(clinical_input){
 
 }
 
-#' Check that the input mutation dataframe is valid
-#'
-#' @param mutations
-#'
-#' @return Check that the input mutation dataframe is valid
-#'
 check_genomic_input = function(mutations){
   if (class(mutations$Name) != "character"){stop("Mutation names must be strings")}
   if (class(mutations$Length) != "numeric"){stop("Genome segments lengths must be integer numbers")}
@@ -69,12 +57,6 @@ check_genomic_input = function(mutations){
   if (class(mutations$Value) != "numeric") stop("Mutations must be integer numbers")
 }
 
-#' Checks that the parameters dataframe is valid
-#'
-#' @param parameters
-#'
-#' @return Checks that the parameters dataframe is valid
-#'
 check_parameters_input = function(parameters){
   valid_parameters_names = c(
     "mu_clock",
@@ -112,12 +94,6 @@ check_parameters_input = function(parameters){
   }
 }
 
-#' Check that the input karytypes in the mutations dataframe are valid
-#'
-#' @param karyo
-#'
-#' @return Check that the input karytypes in the mutations dataframe are valid
-#'
 check_valid_karyotype = function(karyo){
 
   k1= strsplit(karyo, ":")[[1]][1]
@@ -126,12 +102,6 @@ check_valid_karyotype = function(karyo){
   class(karyo) == "character" & as.integer(k1) >= as.integer(k2) & as.integer(k1) <= 2 & as.integer(k2) <= 2
 }
 
-#' Check that the input date is valid
-#'
-#' @param str_date
-#'
-#' @return Check that the input date is valid
-#'
 check_valid_date = function(str_date){
   y = strsplit(str_date, "-")[[1]][1]
   condition_y = nchar(y) == 4 & as.integer(y) >= 1900
@@ -143,13 +113,6 @@ check_valid_date = function(str_date){
   condition_y & condition_m & condition_d
 }
 
-#' Check that for the required columns for each dataframe are present
-#'
-#' @param df df to check
-#' @param type type of df
-#'
-#' @return Check that for the required columns for each dataframe are present
-#'
 check_required_cols = function(df, type){
   if (type == "samples") required_cols <- c("Name", "Date")
   if (type == "parameters") required_cols <- c("Name", "Value","Index")

@@ -155,7 +155,7 @@ get_inference_data_dormancy = function(x, reg_dormancy=0){
   data[['chemo_start']] = TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy")
   data[['chemo_end']] = TOSCA:::get_end_therapy(x, class= "Chemotherapy inducing dormancy")
 
-  data[['max_dormancy']] = TOSCA:::get_max_th(x)
+  data[['max_dormancy']] = TOSCA:::get_max_th_dormancy(x)
   data[["reg_dormancy"]] = reg_dormancy
 
   data[['exponential_growth']] = TOSCA:::get_parameter(x, "exponential_growth")
@@ -175,6 +175,16 @@ get_inference_data_dormancy = function(x, reg_dormancy=0){
   data
 }
 
+#' Get inference data
+#'
+#' @param x TOSCA obj
+#' @param model string, either "CNA" or "Driver"
+#' @param dormancy boolean, if model == "CNA", it is possible to include dormancy
+#' @param max_mrca date in "YYYY-mm-dd" format, maximum date at which the MRCA could have been born (if < than the date of the second sample)
+#' @param reg_dormancy boolean (0 or 1), optional regularisation of the growth imposed in case of dormancy
+#'
+#' @return the list of arguments passed to the stan fit function
+#'
 get_inference_data = function(x, model, dormancy = F, max_mrca=NA, reg_dormancy=0){
 
   if (model == "CNA" & !dormancy) data = get_inference_data_cna(x)
