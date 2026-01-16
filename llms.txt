@@ -98,3 +98,9 @@ Get the results from the inference.
 - [`get_fit_summary()`](https://caravagnalab.github.io/TOSCA/reference/get_fit_summary.md)
   : Get mean, mode and q5, q95
 
+# Articles
+
+### All vignettes
+
+- [Timing of
+  CNAs](https://caravagnalab.github.io/TOSCA/articles/Timing_of_CNAs.md):
