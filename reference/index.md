@@ -12,6 +12,10 @@ Datasets included in the package.
   : Dataset with a toy example for the Driver model
 - [`exampleFit`](https://caravagnalab.github.io/TOSCA/reference/exampleFit.md)
   : Example of a TOSCA object with compleated inference
+- [`UPN06`](https://caravagnalab.github.io/TOSCA/reference/UPN06.md) :
+  Input data for patient UPN06
+- [`D9MRCY`](https://caravagnalab.github.io/TOSCA/reference/D9MRCY.md) :
+  Input data for patient D9MRCY
 
 ## Create TOSCA object
 
