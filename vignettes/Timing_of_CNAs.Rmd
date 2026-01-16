@@ -2,7 +2,7 @@
 title: "Timing of CNAs"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Timing_of_CNAs}
+  %\VignetteIndexEntry{Timing of CNAs}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
