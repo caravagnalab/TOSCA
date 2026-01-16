@@ -24,7 +24,7 @@ reference:
     desc: Function to fit model.
     contents:
       - fit
-      - get_inference_data_dormancy
+      - get_inference_data
 
   - title: Plot fit
     desc: Function to visualise the results of the fit.
