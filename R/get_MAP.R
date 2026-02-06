@@ -28,7 +28,8 @@ get_index_from_cna_length = function(x, len){
 #' data("exampleFit")
 #' get_fit_summary(exampleFit, parameter = "t_cna", cna_length = 4.5e+08, quantiles=c(5, 95))
 #' get_fit_summary(exampleFit, parameter = "mu_th_step", drug_name = "Drug 2", quantiles=c(2, 98))
-get_fit_summary = function(x, parameter=NULL, cna_length=NULL, drug_name=NULL, quantiles=c(5, 95)){
+get_fit_summary = function(x, parameter=NULL,
+                           cna_length=NULL, drug_name=NULL, quantiles=c(5, 95)){
 
   summary = x$Fit$summary
 
@@ -139,7 +140,7 @@ get_fit_summary = function(x, parameter=NULL, cna_length=NULL, drug_name=NULL, q
 #' @examples
 #' data("exampleFit")
 #' days_from(exampleFit, parameter = "t_cna", from = "2010-01-04", cna_length = 4.5e+08, quantiles=c(5, 95))
-days_from = function(x, parameter, from, cna_length, quantiles = c(5,95)){
+days_from = function(x, parameter, from, cna_length=NULL, quantiles = c(5,95)){
   #TOSCA:::get_index_from_cna_length(x, cna_length)
   from_chosen_date = function(f) as.Date(f) - as.Date(from)
 
