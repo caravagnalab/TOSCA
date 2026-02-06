@@ -159,8 +159,7 @@ fit = function(
       "stan_posterior" = posterior,
       "timing_posteriors" = timing_estimates,
       "posterior_predictive_checks" = ppc_posterior,
-      "rates_posteriors" = rates_posterior,
-      "stan_fit" = fit
+      "rates_posteriors" = rates_posterior
       ), # posterior::as_draws_df(fit$draws()),
 
     "summary" = summary,
