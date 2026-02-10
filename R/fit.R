@@ -159,7 +159,8 @@ fit = function(
       "stan_posterior" = posterior,
       "timing_posteriors" = timing_estimates,
       "posterior_predictive_checks" = ppc_posterior,
-      "rates_posteriors" = rates_posterior
+      "rates_posteriors" = rates_posterior,
+      "stan_fit" = fit
       ), # posterior::as_draws_df(fit$draws()),
 
     "summary" = summary,
@@ -170,8 +171,8 @@ fit = function(
     #   ), # fit$summary(),
 
     'diagnostic_summary' = fit$diagnostic_summary(),
-    'model_info' = list('model_name'=model_name, 'dormancy'=dormancy),
-    "stan_fit" = fit
+    'model_info' = list('model_name'=model_name, 'dormancy'=dormancy)
+    #"stan_fit" = fit
   )
 
   cat("\n--- End Sampling ---\n")
