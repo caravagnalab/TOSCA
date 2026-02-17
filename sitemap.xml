@@ -10,20 +10,28 @@
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/D9MRCY.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/TOSCA-package-imports.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/UPN06.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/autocorrelation_plot.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/check_ppc.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/convert_date_real.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/convert_real_date.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/days_from.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/energy_plot.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/ess_plot.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/exampleData_CNA.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/exampleData_CNA_dormancy.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/exampleData_Driver.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/exampleFit.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/fit.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/get_cmdstanr_posterior.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/get_fit_summary.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/get_inference_data.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/get_variables_names.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/index.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/init.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_divergent_transitions.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_expected_N.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_mcmc_chains.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_pairs.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_ppc.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_ppc_single_mut.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_prior_vs_posterior.html</loc></url>
@@ -31,5 +39,6 @@
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_timing.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/plot_timing_MAP.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/reference/print.TOSCA.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/reference/rhats_plot.html</loc></url>
 </urlset>
 

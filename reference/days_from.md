@@ -5,7 +5,7 @@ Computes the days of the event of interest from a date of interest
 ## Usage
 
 ``` r
-days_from(x, parameter, from, cna_length, quantiles = c(5, 95))
+days_from(x, parameter, from, cna_length = NULL, quantiles = c(5, 95))
 ```
 
 ## Arguments

@@ -77,3 +77,23 @@ Get the results from the inference.
 
 - [`get_fit_summary()`](https://caravagnalab.github.io/TOSCA/reference/get_fit_summary.md)
   : Get mean, mode and q5, q95
+- [`get_cmdstanr_posterior()`](https://caravagnalab.github.io/TOSCA/reference/get_cmdstanr_posterior.md)
+  : Get posterior draws from cmdstanr obj
+- [`plot_mcmc_chains()`](https://caravagnalab.github.io/TOSCA/reference/plot_mcmc_chains.md)
+  : Plot the MCMC chains
+- [`plot_divergent_transitions()`](https://caravagnalab.github.io/TOSCA/reference/plot_divergent_transitions.md)
+  : Plot the sampling of parameters highlighting the iterations where
+  divergent transitions occurred
+- [`plot_pairs()`](https://caravagnalab.github.io/TOSCA/reference/plot_pairs.md)
+  : Plot univariate and multivariate distributions of selected
+  parameters
+- [`rhats_plot()`](https://caravagnalab.github.io/TOSCA/reference/rhats_plot.md)
+  : Plot Rhats of selected parameters
+- [`ess_plot()`](https://caravagnalab.github.io/TOSCA/reference/ess_plot.md)
+  : Plot the Effective Sample Size of selected parameters
+- [`autocorrelation_plot()`](https://caravagnalab.github.io/TOSCA/reference/autocorrelation_plot.md)
+  : Plot the autocorrelation of MCMC samples with progressive iterations
+- [`energy_plot()`](https://caravagnalab.github.io/TOSCA/reference/energy_plot.md)
+  : Plot to quantiy the heaviness of the tails of the posterior
+- [`get_variables_names()`](https://caravagnalab.github.io/TOSCA/reference/get_variables_names.md)
+  : Get mapping of input variables names and names used in the model
