@@ -174,3 +174,4 @@ days_from = function(x, parameter, from, cna_length=NULL, quantiles = c(5,95)){
 #   if(map=="mean") map = mean(x$Fit$posterior[[var]]) else map = median(x$Fit$posterior[[var]])
 #   map
 # }
+

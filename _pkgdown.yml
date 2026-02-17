@@ -45,3 +45,11 @@ reference:
     desc: Get the results from the inference.
     contents:
       - get_fit_summary
+      - get_cmdstanr_posterior
+      - plot_mcmc_chains
+      - plot_divergent_transitions
+      - plot_pairs
+      - rhats_plot
+      - ess_plot
+      - autocorrelation_plot
+      - energy_plot
