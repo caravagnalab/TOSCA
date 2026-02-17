@@ -114,6 +114,7 @@ plot_mcmc_chains = function(x, days_from=NULL, parameters=NULL, nuts_params = "d
                                          # ggplot2::theme_bw()+
                                          ggplot2::theme(
                                            panel.grid.minor = ggplot2::element_blank(),
+                                           strip.text = ggplot2::element_text(color = "black"),
                                            panel.border = ggplot2::element_blank(),
                                            strip.background = ggplot2::element_blank(),  # removes facet background
                                            panel.background = ggplot2::element_rect(fill = "white", color = NA)  # white panel, no border
@@ -280,6 +281,7 @@ autocorrelation_plot = function(x, parameters=NULL, days_from=NULL){
     TOSCA:::my_ggplot_theme()+
     ggplot2::theme(
     panel.grid.minor = ggplot2::element_blank(),
+    strip.text = ggplot2::element_text(color = "black"),
     panel.border = ggplot2::element_blank(),
     strip.background = ggplot2::element_blank()  # removes facet background
     #panel.background = element_rect(fill = "white", color = NA)  # white panel, no border
