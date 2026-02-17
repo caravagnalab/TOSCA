@@ -257,7 +257,7 @@ ess_plot = function(x, parameters=NULL){
 #' Plot the autocorrelation of MCMC samples with progressive iterations
 #'
 #' @param x TOSCA object
-#' @param parameters
+#' @param parameters parameters
 #' @param days_from date from which to compute the distance from for times
 #'
 #' @return plot

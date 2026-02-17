@@ -9,6 +9,8 @@ autocorrelation_plot(x, parameters = NULL, days_from = NULL)
 \arguments{
 \item{x}{TOSCA object}
 
+\item{parameters}{parameters}
+
 \item{days_from}{date from which to compute the distance from for times}
 }
 \value{

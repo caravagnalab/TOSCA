@@ -53,3 +53,4 @@ reference:
       - ess_plot
       - autocorrelation_plot
       - energy_plot
+      - get_variables_names
