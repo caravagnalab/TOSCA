@@ -4,7 +4,7 @@
 \alias{init}
 \title{Initialise TOSCA object}
 \usage{
-init(mutations, parameters, samples, therapies, sample_name = "Example")
+init(mutations, parameters, samples, therapies = NULL, sample_name = "Example")
 }
 \arguments{
 \item{mutations}{data.frame with the information on mutation falling on the timed branches.

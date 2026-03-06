@@ -39,6 +39,7 @@ reference:
       - plot_prior_vs_posterior_single_parameter
       - plot_timing
       - plot_timing_MAP
+      - plot_timing_days
       - days_from
 
   - title: Examine fit

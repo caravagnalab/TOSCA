@@ -1,258 +1,3 @@
-# #' Plot clinical timeline + posterior times with density
-# #'
-# #' @param x TOSCA obj
-# #'
-# #' @return plot of the inferred timing parameters on the
-# #' @export
-# #'
-# #' @examples
-# plot_timing_density = function(x)
-# {
-#   #clinical_timeline #= x$Input$Samples
-#   estimates = TOSCA:::get_inferred_parameters(x)
-#
-#   endpoints = x$Input$Samples
-#
-#   if (nrow(endpoints) > 2) endpoints = (endpoints %>% dplyr::arrange(as.Date(Date)))[2:3,]
-#
-#   therapies = x$Input$Therapies
-#
-#   # 1. time posterior plot
-#   timing_estimates = estimates %>%
-#     dplyr::select(starts_with('t_')) #%>%
-#     #apply(2, TOSCA:::convert_date_real, x=x) %>%
-#     #dplyr::as_tibble()
-#   #times = timing_estimates$variable %>% unique()
-#
-#   if (x$Fit$model_info$dormancy) {
-#     dormancy_start = TOSCA:::convert_date_real(date = TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy"), x=x)
-#     dormancy_end =  TOSCA:::convert_date_real(date = timing_estimates %>% pull(t_dormancy_end) %>% mean(), x=x)
-#     timing_estimates = timing_estimates %>% select(!c("t_dormancy_end", "t_mrca_tr",
-#                                                       colnames(timing_estimates)[grepl("t_cna_tr", colnames(timing_estimates))]))
-#   }
-#
-#   timing_estimates = timing_estimates %>%
-#     apply(2, TOSCA:::convert_date_real, x=x) %>%
-#     dplyr::as_tibble()
-#
-#   timing_estimates = TOSCA:::convert_timing_names(timing_estimates)
-#
-#   for (i in 1:ncol(timing_estimates)){
-#     timing_estimates[[i]] = as.Date(timing_estimates[[i]])
-#   }
-#
-#   timing_estimates = timing_estimates %>% reshape2::melt() %>% dplyr::as_tibble()
-#   times = timing_estimates$variable %>% unique()
-#   therapy_names = therapies$Name %>% unique()
-#   var_colors = ggsci::pal_npg()(length(times)+length(therapy_names))
-#   times_colors = var_colors[1:length(times)]
-#   names(times_colors) = times
-#   clinical_colors = var_colors[length(times)+1:length(therapy_names)]
-#   names(clinical_colors) = therapy_names
-#   times_colors_df = data.frame("variable" = names(times_colors), "color"=times_colors)
-#   timing_estimates = dplyr::left_join(timing_estimates, times_colors_df, by = "variable")
-#
-#
-#   # posterior_plot = ggplot2::ggplot() +
-#   #   ggplot2::geom_histogram(
-#   #     data = timing_estimates %>% dplyr::rename(Date = value),
-#   #     ggplot2::aes(Date, fill = color, y=..density..),
-#   #     inherit.aes = FALSE,
-#   #     bins = 150
-#   #   ) + #geom_density(data = timing_estimates %>% dplyr::rename(Date = value), aes(color = color)) +
-#   #   ggplot2::geom_point(
-#   #     data = endpoints,
-#   #     ggplot2::aes(x = as.Date(Date), y = 0),
-#   #     inherit.aes = FALSE,
-#   #     size = 3
-#   #   ) +
-#   #   TOSCA:::my_ggplot_theme()+
-#   #   ggplot2::theme(legend.position = 'bottom')+
-#   #   ggplot2::scale_fill_identity()
-#   #scale_fill_manual(values = times_colors)
-#
-#   posterior_plot = ggplot2::ggplot() +
-#     ggplot2::geom_histogram(
-#       data = timing_estimates %>% dplyr::rename(Date = value),
-#       ggplot2::aes(Date, fill = color, y = ..density..),
-#       inherit.aes = FALSE,
-#       bins = 150,
-#       alpha = 0  # make histograms semi-transparent
-#       #color = "white"
-#     ) +
-#     ggplot2::geom_density(
-#       data = timing_estimates %>% dplyr::rename(Date = value),
-#       ggplot2::aes(Date, color = color, fill = color),
-#       inherit.aes = FALSE,
-#       size = 1, alpha = .8
-#     ) +
-#     ggplot2::geom_point(
-#       data = endpoints,
-#       ggplot2::aes(x = as.Date(Date), y = 0),
-#       inherit.aes = FALSE,
-#       size = 3
-#     ) +
-#     TOSCA:::my_ggplot_theme() +
-#     ggplot2::theme(legend.position = 'bottom') +
-#     ggplot2::scale_fill_identity() +
-#     ggplot2::scale_color_identity()
-#
-#
-#   hist_data <- ggplot2::ggplot_build(posterior_plot)$data[[1]]
-#   ymin <- 0
-#   ymax <- max(hist_data$y)
-#
-#   # 5% above bottom
-#   ylab_pos <- ymin + 0.1 * (ymax - ymin)
-#
-#
-#   therapies = therapies %>% dplyr::mutate(Duration = as.Date(End)-as.Date(Start)) %>% dplyr::mutate(short=ifelse(Duration < 30, T, F))
-#   new_col = data.frame(Name = names(clinical_colors), colors = clinical_colors)
-#   therapies = dplyr::left_join(therapies,new_col, by="Name")
-#
-#   posterior_plot = posterior_plot + ggplot2::geom_rect(
-#     data = therapies %>% dplyr::filter(short == F),
-#     ggplot2::aes(xmin = as.Date(Start),
-#                  xmax = as.Date(End),
-#                  fill=colors),
-#     ymin = 0,
-#     ymax = Inf,
-#     #fill = c,
-#     colour = "white",
-#     size = 0.5,
-#     alpha = .5
-#   ) +
-#     ggplot2::geom_segment(
-#       data = therapies %>% dplyr::filter(short == T),
-#       ggplot2::aes(x=as.Date(Start),
-#                    xend=as.Date(Start),
-#                    y=0, yend=Inf), color = therapies %>% dplyr::filter(short == T) %>% dplyr::pull(colors), alpha=1)  +
-#     ggplot2::guides(color = "none")
-#
-#   # posterior_plot = posterior_plot +
-#   #   ggplot2::geom_segment(
-#   #     data = endpoints,
-#   #     ggplot2::aes(x = as.Date(Date),
-#   #                  xend = as.Date(Date),
-#   #                  y=0,
-#   #                  yend = ylab_pos),
-#   #     size = .5, linetype="dashed"
-#   #   )+
-#   #   ggplot2::geom_label(
-#   #     data = endpoints,
-#   #     ggplot2::aes(x = as.Date(Date), y = ylab_pos, label=Name),
-#   #     size = 3
-#   #   )
-#
-#   dummy_guide <- function(
-#     labels = NULL,
-#     ...,
-#     title = NULL,
-#     key   = draw_key_point,
-#     guide_args = list(),
-#     min_value_time
-#   ) {
-#     aesthetics <- list(...)
-#     n <- max(lengths(aesthetics), 0)
-#     labels <- labels %||% seq_len(n)
-#
-#     aesthetics$alpha <- aesthetics$alpha %||% rep(1, n)
-#
-#     guide_args$override.aes <- guide_args$override.aes %||% aesthetics
-#     guide <- do.call(guide_legend, guide_args)
-#
-#     ggplot2::update_geom_defaults("point", list(dummy = "x"))
-#
-#     dummy_geom <- ggplot2::geom_point(
-#       data = data.frame(
-#         x = rep(min_value_time, n),
-#         y = rep(Inf, n),
-#         dummy = factor(labels, levels = labels)   # preserve order!
-#       ),
-#       ggplot2::aes(x, y, dummy = dummy),
-#       alpha = 0,
-#       key_glyph = key
-#     )
-#
-#     fills <- aesthetics$fill
-#
-#     dummy_scale <- ggplot2::discrete_scale(
-#       "dummy", "dummy_scale",
-#       palette = function(x) {
-#         stats::setNames(fills, labels)[x]
-#       },
-#       name = title,
-#       guide = guide
-#     )
-#
-#     list(dummy_geom, dummy_scale)
-#   }
-#
-#   if (nrow(therapies)>0){
-#     posterior_plot = posterior_plot +
-#       dummy_guide(
-#         labels = c(names(times_colors), names(clinical_colors)),
-#         fill   = c(times_colors, clinical_colors),
-#         colour = NA,
-#         title  = "Inferred times and treatments",
-#         key = draw_key_polygon,
-#         min_value_time = min(timing_estimates$value, na.rm = TRUE)
-#       )
-#   }else{
-#     posterior_plot = posterior_plot +
-#       dummy_guide(
-#         labels = names(times_colors),
-#         fill   = times_colors,
-#         colour = NA,
-#         title  = "Inferred times",
-#         key = draw_key_polygon,
-#         min_value_time = min(timing_estimates$value, na.rm = TRUE)
-#       )
-#   }
-#
-#   if (x$Fit$model_info$dormancy) {
-#
-#     dormancy_df = data.frame("event"= c("Dormancy"), "Start"=c(dormancy_start), "End"=c(dormancy_end))
-#     dormancy_df2 = data.frame("event"= c("Dormancy Start", "Dormancy End"), "date"=c(dormancy_start, dormancy_end))
-#
-#     posterior_plot = posterior_plot +
-#       ggplot2::geom_rect(
-#         data = dormancy_df,
-#         ggplot2:::aes(xmin = as.Date(Start), xmax = as.Date(End)),
-#         ymin = 0,ymax = Inf, color = "white", fill="#c0c0c0ff", alpha = .5
-#       )+
-#       ggplot2::geom_segment(
-#         data = dormancy_df2,
-#         ggplot2::aes(x = as.Date(date),
-#                      xend = as.Date(date),
-#                      y=0,
-#                      yend = ylab_pos + 1.5*ylab_pos),
-#         size = .5, linetype="dashed", color = "#7d7d7dff"
-#       )+
-#       ggplot2::geom_label(
-#         data = dormancy_df2,
-#         ggplot2::aes(x = as.Date(date), y = ylab_pos + 1.5*ylab_pos, label=event),
-#         size = 3, fill="#c0c0c0ff"
-#       )
-#   }
-#
-#   posterior_plot = posterior_plot +
-#     ggplot2::geom_segment(
-#       data = endpoints,
-#       ggplot2::aes(x = as.Date(Date),
-#                    xend = as.Date(Date),
-#                    y=0,
-#                    yend = ylab_pos),
-#       size = .5, linetype="dashed"
-#     )+
-#     ggplot2::geom_label(
-#       data = endpoints,
-#       ggplot2::aes(x = as.Date(Date), y = ylab_pos, label=Name),
-#       size = 3
-#     )
-#   posterior_plot
-# }
-
 #' Plot clinical timeline + posterior times with histogram
 #'
 #' @param x TOSCA obj
@@ -370,33 +115,37 @@ plot_timing = function(x)
   # 5% above bottom
   ylab_pos <- ymin + 0.1 * (ymax - ymin)
 
+  if (!is.null(therapies)) {
+    therapies = therapies %>% dplyr::mutate(Duration = as.Date(End)-as.Date(Start)) %>% dplyr::mutate(short=ifelse(Duration < 30, T, F))
+    new_col = data.frame(Name = names(clinical_colors), colors = clinical_colors)
+    therapies = dplyr::left_join(therapies,new_col, by="Name")
 
-  therapies = therapies %>% dplyr::mutate(Duration = as.Date(End)-as.Date(Start)) %>% dplyr::mutate(short=ifelse(Duration < 30, T, F))
-  new_col = data.frame(Name = names(clinical_colors), colors = clinical_colors)
-  therapies = dplyr::left_join(therapies,new_col, by="Name")
 
-  posterior_plot = posterior_plot + ggplot2::geom_rect(
-    data = therapies %>% dplyr::filter(short == F),
-    ggplot2::aes(xmin = as.Date(Start),
-                 xmax = as.Date(End),
-                 fill=colors),
-    ymin = 0,
-    ymax = Inf,
-    #fill = c,
-    colour = "white",
-    size = 0.5,
-    alpha = .5
-  ) +
-    ggplot2::geom_segment(
-      data = therapies %>% dplyr::filter(short == T),
-      ggplot2::aes(x=as.Date(Start),
-                   xend=as.Date(Start),
-                   y=0, yend=Inf), color = therapies %>% dplyr::filter(short == T) %>% dplyr::pull(colors), alpha=1)  +
-    ggplot2::guides(color = "none")
+    posterior_plot = posterior_plot + ggplot2::geom_rect(
+      data = therapies %>% dplyr::filter(short == F),
+      ggplot2::aes(xmin = as.Date(Start),
+                   xmax = as.Date(End),
+                   fill=colors),
+      ymin = 0,
+      ymax = Inf,
+      #fill = c,
+      colour = "white",
+      size = 0.5,
+      alpha = .5
+    ) +
+      ggplot2::geom_segment(
+        data = therapies %>% dplyr::filter(short == T),
+        ggplot2::aes(x=as.Date(Start),
+                     xend=as.Date(Start),
+                     y=0, yend=Inf), color = therapies %>% dplyr::filter(short == T) %>% dplyr::pull(colors), alpha=1)  +
+      ggplot2::guides(color = "none")
+  }
 
-  rect_ind <- which(lapply(posterior_plot$layers, function(x) class(x$geom)[1]) == "GeomRect")
-  ## manually change the order to put geom rect first
-  posterior_plot$layers <- c(posterior_plot$layers[rect_ind], posterior_plot$layers[-rect_ind])
+  if (!is.null(therapies)){
+    rect_ind <- which(lapply(posterior_plot$layers, function(x) class(x$geom)[1]) == "GeomRect")
+    ## manually change the order to put geom rect first
+    posterior_plot$layers <- c(posterior_plot$layers[rect_ind], posterior_plot$layers[-rect_ind])
+  }
 
 
   dummy_guide <- function(
@@ -443,7 +192,7 @@ plot_timing = function(x)
     list(dummy_geom, dummy_scale)
   }
 
-  if (nrow(therapies)>0){
+  if (!is.null(therapies)) { #if (nrow(therapies)>0 & !is.null(therapies)){
     posterior_plot = posterior_plot +
       dummy_guide(
         labels = c(names(times_colors), names(clinical_colors)),
@@ -491,6 +240,7 @@ plot_timing = function(x)
     #     size = 3, fill="#c0c0c0ff"
     #   )
   }
+
   posterior_plot = posterior_plot +
     ggplot2::geom_segment(
       data = endpoints,
@@ -791,5 +541,298 @@ plot_timing_MAP = function(x)
 
 }
 
+#' Plot clinical timeline + posterior times with histogram in days from a chosen date
+#'
+#' @param x TOSCA obj
+#'
+#' @return posterior distributions of the inferred timing variables on the clinical timeline (alternative visualisation)
+#' @export
+#'
+#' @examples
+#' data("exampleFit")
+#' plot_timing(exampleFit)
+plot_timing_days = function(x, days_from=NULL, event_name = "Custom zero")
+{
+  #clinical_timeline #= x$Input$Samples
+  if (is.null(days_from)){
+    days_from = x$Input$Samples %>% dplyr::arrange(as.Date(Date)) %>% pull(Date)
+    days_from = days_from[1]
+    event_name = x$Input$Samples %>% dplyr::arrange(as.Date(Date)) %>% pull(Name)
+    event_name = event_name[1]
+  }
+  estimates = TOSCA:::get_inferred_parameters(x)
+
+  endpoints = x$Input$Samples
+
+  if (nrow(endpoints) > 2) endpoints = (endpoints %>% dplyr::arrange(as.Date(Date)))[2:3,]
+
+  therapies = x$Input$Therapies
+
+  # 1. time posterior plot
+  timing_estimates = estimates %>%
+    dplyr::select(starts_with('t_')) #%>%
+  #apply(2, TOSCA:::convert_date_real, x=x) %>%
+  #dplyr::as_tibble()
+  #times = timing_estimates$variable %>% unique()
+
+  if (x$Fit$model_info$dormancy) {
+    dormancy_start = TOSCA:::convert_date_real(date = TOSCA:::get_start_therapy(x, class= "Chemotherapy inducing dormancy"), x=x)
+    dormancy_end =  TOSCA:::convert_date_real(date = timing_estimates %>% pull(t_dormancy_end) %>% mean(), x=x)
+    timing_estimates = timing_estimates %>% select(!c("t_dormancy_end", "t_mrca_tr",
+                                                      colnames(timing_estimates)[grepl("t_cna_tr", colnames(timing_estimates))]))
+  }
+
+  timing_estimates = timing_estimates %>%
+    apply(2, TOSCA:::convert_date_real, x=x) %>%
+    dplyr::as_tibble()
+
+  timing_estimates = TOSCA:::convert_timing_names(timing_estimates)
+
+  for (i in 1:ncol(timing_estimates)){
+    timing_estimates[[i]] = as.Date(timing_estimates[[i]])
+  }
+
+  timing_estimates = timing_estimates %>% reshape2::melt() %>% dplyr::as_tibble()
+  times = timing_estimates$variable %>% unique()
+  therapy_names = therapies$Name %>% unique()
+  var_colors = ggsci::pal_npg()(length(times)+length(therapy_names))
+  times_colors = var_colors[1:length(times)]
+  names(times_colors) = times
+  clinical_colors = var_colors[length(times)+1:length(therapy_names)]
+  names(clinical_colors) = therapy_names
+  times_colors_df = data.frame("variable" = names(times_colors), "color"=times_colors)
+  timing_estimates = dplyr::left_join(timing_estimates, times_colors_df, by = "variable")
+
+  timing_estimates = timing_estimates %>% dplyr::mutate(value = value - as.Date(days_from))
+  endpoints = endpoints %>% dplyr::mutate(Date = as.Date(Date) - as.Date(days_from))
+
+  posterior_plot = ggplot2::ggplot() +
+    ggplot2::geom_histogram(
+      data = timing_estimates %>% dplyr::rename(Date = value),
+      ggplot2::aes(Date, fill = color, y=..density..),
+      inherit.aes = FALSE,
+      bins = 150, color = "black",
+    ) + #geom_density(data = timing_estimates %>% dplyr::rename(Date = value), aes(color = color)) +
+    ggplot2::geom_point(
+      data = endpoints,
+      ggplot2::aes(x = Date, y = 0),
+      inherit.aes = FALSE,
+      size = 3
+    ) +
+    ggplot2::geom_point(
+      data = data.frame("Date"=0),
+      ggplot2::aes(x = Date, y = 0),
+      inherit.aes = FALSE,
+      size = 3, color = "#A075BF"
+    ) +
+    TOSCA:::my_ggplot_theme()+
+    ggplot2::theme(legend.position = 'bottom',
+                   axis.line.y = ggplot2::element_blank(),
+                   panel.grid.major= ggplot2::element_blank(),
+                   panel.grid.minor= ggplot2::element_blank(),
+                   #axis.ticks.y= ggplot2::element_blank(),
+                   #axis.text.y= ggplot2::element_blank(),
+                   #axis.title.y= ggplot2::element_blank(),
+                   panel.border = ggplot2::element_blank())+
+    ggplot2::scale_fill_identity()
+  #+
+  #scale_fill_manual(values = times_colors)
+
+  # posterior_plot = ggplot2::ggplot() +
+  #   ggplot2::geom_histogram(
+  #     data = timing_estimates %>% dplyr::rename(Date = value),
+  #     ggplot2::aes(Date, fill = color, y = ..density..),
+  #     inherit.aes = FALSE,
+  #     bins = 150,
+  #     alpha = 0  # make histograms semi-transparent
+  #     #color = "white"
+  #   ) +
+  #   ggplot2::geom_density(
+  #     data = timing_estimates %>% dplyr::rename(Date = value),
+  #     ggplot2::aes(Date, color = color, fill = color),
+  #     inherit.aes = FALSE,
+  #     size = 1, alpha = .8
+  #   ) +
+  #   ggplot2::geom_point(
+  #     data = endpoints,
+  #     ggplot2::aes(x = as.Date(Date), y = 0),
+  #     inherit.aes = FALSE,
+  #     size = 3
+  #   ) +
+  #   TOSCA:::my_ggplot_theme() +
+  #   ggplot2::theme(legend.position = 'bottom') +
+  #   ggplot2::scale_fill_identity() +
+  #   ggplot2::scale_color_identity()
+
+
+  hist_data <- ggplot2::ggplot_build(posterior_plot)$data[[1]]
+  ymin <- 0
+  ymax <- max(hist_data$y)
+
+  # 5% above bottom
+  ylab_pos <- ymin + 0.1 * (ymax - ymin)
+
+  if (!is.null(therapies)) {
+    therapies = therapies %>%
+      dplyr::mutate(Duration = as.Date(End)-as.Date(Start)) %>% dplyr::mutate(short=ifelse(Duration < 30, T, F))
+    new_col = data.frame(Name = names(clinical_colors), colors = clinical_colors)
+    therapies = dplyr::left_join(therapies,new_col, by="Name")
+
+    therapies = therapies %>% dplyr::mutate(Start = as.Date(Start) - as.Date(days_from), End = as.Date(End) - as.Date(days_from))
+
+    posterior_plot = posterior_plot + ggplot2::geom_rect(
+      data = therapies %>% dplyr::filter(short == F),
+      ggplot2::aes(xmin = Start,
+                   xmax = End,
+                   fill=colors),
+      ymin = 0,
+      ymax = Inf,
+      #fill = c,
+      colour = "white",
+      size = 0.5,
+      alpha = .5
+    ) +
+      ggplot2::geom_segment(
+        data = therapies %>% dplyr::filter(short == T),
+        ggplot2::aes(x=Start,
+                     xend=Start,
+                     y=0, yend=Inf), color = therapies %>% dplyr::filter(short == T) %>% dplyr::pull(colors), alpha=1)  +
+      ggplot2::guides(color = "none")
+  }
+
+  if (!is.null(therapies)){
+    rect_ind <- which(lapply(posterior_plot$layers, function(x) class(x$geom)[1]) == "GeomRect")
+    ## manually change the order to put geom rect first
+    posterior_plot$layers <- c(posterior_plot$layers[rect_ind], posterior_plot$layers[-rect_ind])
+  }
+
+
+  dummy_guide <- function(
+    labels = NULL,
+    ...,
+    title = NULL,
+    key   = draw_key_point,
+    guide_args = list(),
+    min_value_time
+  ) {
+    aesthetics <- list(...)
+    n <- max(lengths(aesthetics), 0)
+    labels <- labels %||% seq_len(n)
+
+    aesthetics$alpha <- aesthetics$alpha %||% rep(1, n)
+
+    guide_args$override.aes <- guide_args$override.aes %||% aesthetics
+    guide <- do.call(guide_legend, guide_args)
+
+    ggplot2::update_geom_defaults("point", list(dummy = "x"))
+
+    dummy_geom <- ggplot2::geom_point(
+      data = data.frame(
+        x = rep(min_value_time, n),
+        y = rep(Inf, n),
+        dummy = factor(labels, levels = labels)   # preserve order!
+      ),
+      ggplot2::aes(x, y, dummy = dummy),
+      alpha = 0,
+      key_glyph = key
+    )
+
+    fills <- aesthetics$fill
+
+    dummy_scale <- ggplot2::discrete_scale(
+      "dummy", "dummy_scale",
+      palette = function(x) {
+        stats::setNames(fills, labels)[x]
+      },
+      name = title,
+      guide = guide
+    )
+
+    list(dummy_geom, dummy_scale)
+  }
+
+  if (!is.null(therapies)) { #if (nrow(therapies)>0 & !is.null(therapies)){
+    posterior_plot = posterior_plot +
+      dummy_guide(
+        labels = c(names(times_colors), names(clinical_colors)),
+        fill   = c(times_colors, clinical_colors),
+        colour = NA,
+        title  = "Inferred times and treatments",
+        key = draw_key_polygon,
+        min_value_time = min(timing_estimates$value, na.rm = TRUE)
+      )
+  }else{
+    posterior_plot = posterior_plot +
+      dummy_guide(
+        labels = names(times_colors),
+        fill   = times_colors,
+        colour = NA,
+        title  = "Inferred times",
+        key = draw_key_polygon,
+        min_value_time = min(timing_estimates$value, na.rm = TRUE)
+      )
+  }
+
+  if (x$Fit$model_info$dormancy) {
+
+    dormancy_df = data.frame("event"= c("Dormancy"), "Start"=c(dormancy_start), "End"=c(dormancy_end)) %>%
+      dplyr::mutate(Start = as.Date(Start)-as.Date(days_from), End = as.Date(End) - as.Date(days_from))
+    dormancy_df2 = data.frame("event"= c("Dormancy Start", "Dormancy End"), "date"=c(dormancy_start, dormancy_end)) %>%
+      dplyr::mutate(date = as.Date(date) - as.Date(days_from))
+
+    posterior_plot = posterior_plot +
+      ggplot2::geom_rect(
+        data = dormancy_df,
+        ggplot2:::aes(xmin = Start, xmax = End),
+        ymin = 0,ymax = Inf, color = "white", fill="#c0c0c0ff", alpha = .5
+      )
+    # +
+    #   ggplot2::geom_segment(
+    #     data = dormancy_df2,
+    #     ggplot2::aes(x = as.Date(date),
+    #                  xend = as.Date(date),
+    #                  y=0,
+    #                  yend = ylab_pos + 1.5*ylab_pos),
+    #     size = .5, linetype="dashed", color = "#7d7d7dff"
+    #   )+
+    #   ggplot2::geom_label(
+    #     data = dormancy_df2,
+    #     ggplot2::aes(x = as.Date(date), y = ylab_pos + 1.5*ylab_pos, label=event),
+    #     size = 3, fill="#c0c0c0ff"
+    #   )
+  }
+
+  posterior_plot = posterior_plot +
+    ggplot2::geom_segment(
+      data = endpoints,
+      ggplot2::aes(x = Date,
+                   xend = Date,
+                   y=0,
+                   yend = ylab_pos),
+      size = .5 #, linetype="dashed"
+    )+
+    ggplot2::geom_label(
+      data = endpoints,
+      ggplot2::aes(x = Date, y = ylab_pos, label=Name),
+      size = 3,
+      family = "Times New Roman"
+    ) +
+    ggplot2::geom_segment(
+      data = data.frame("Date"=0),
+      ggplot2::aes(x = Date,
+                   xend = Date,
+                   y=0,
+                   yend = ylab_pos),
+      size = .5, color = "#A075BF"#, linetype="dashed"
+    )+
+    ggplot2::geom_label(
+      data = data.frame("Date"=0, "Name"=event_name),
+      ggplot2::aes(x = Date, y = ylab_pos, label=Name),
+      size = 3, color = "#A075BF",
+      family = "Times New Roman"
+    )
+
+  posterior_plot + geom_hline(yintercept=0, color="black")
+}
 
 

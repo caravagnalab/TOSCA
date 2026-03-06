@@ -35,10 +35,15 @@
 #'
 #' x = init(mutations=mutations, samples=samples, therapies=therapies, parameters=parameters)
 #'
-init = function(mutations, parameters, samples, therapies, sample_name="Example"){
+init = function(mutations, parameters, samples, therapies=NULL, sample_name="Example"){
 
-  dfs = list(mutations, parameters, samples, therapies)
-  dfs_names = c("mutations", "parameters", "samples", "therapies")
+  if (!is.null(therapies)) {
+    dfs = list(mutations, parameters, samples, therapies)
+    dfs_names = c("mutations", "parameters", "samples", "therapies")
+    }else {
+    dfs = list(mutations, parameters, samples)
+    dfs_names = c("mutations", "parameters", "samples")
+  }
 
   for (df in dfs){
     if (!is.data.frame(df)) {
@@ -49,11 +54,11 @@ init = function(mutations, parameters, samples, therapies, sample_name="Example"
   if (!is.character(sample_name)) stop("Must give a valid sample name")
 
   for (t in 1:length(dfs)){
-    check_required_cols(dfs[[t]], type=dfs_names[t])
+    TOSCA:::check_required_cols(dfs[[t]], type=dfs_names[t])
   }
 
   TOSCA:::check_clinical_input(samples)
-  TOSCA:::check_clinical_input(therapies)
+  if (!is.null(therapies)) TOSCA:::check_clinical_input(therapies)
   TOSCA:::check_genomic_input(mutations)
   TOSCA:::check_parameters_input(parameters)
 

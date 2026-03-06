@@ -197,8 +197,7 @@ get_second_sample_date = function(x){
 }
 
 get_therapies_ordered = function(x){
-  x$Input$Therapies %>% dplyr::arrange(as.Date(Start)) %>%
-    dplyr::mutate(event = paste0(Name, " (", as.Date(End) - as.Date(Start), " days)")) %>% pull(event) %>% paste(collapse=" --> ")
+  if (!is.null(x$Input$Therapies)) x$Input$Therapies %>% dplyr::arrange(as.Date(Start)) %>% dplyr::mutate(event = paste0(Name, " (", as.Date(End) - as.Date(Start), " days)")) %>% pull(event) %>% paste(collapse=" --> ") else ""
 }
 
 get_clinical_history_length = function(x){
@@ -215,7 +214,11 @@ get_number_of_cna = function(x){
 }
 
 get_possible_dormancy = function(x){
-  if ((x$Input$Therapies %>% dplyr::filter(Class == "Chemotherapy inducing dormancy") %>% nrow()) >= 1) "with" else "without"
+  if (!is.null(x$Input$Therapies)){
+    if ((x$Input$Therapies %>% dplyr::filter(Class == "Chemotherapy inducing dormancy") %>% nrow()) >= 1) "with" else "without"
+  }else{
+    "without"
+  }
 }
 
 get_driver = function(x){

@@ -3,23 +3,30 @@ get_n_cna = function(x){
 }
 
 get_mutation = function(x, type, cauchy=F){
-  if (type == "Mutagenic"){
-    if (!cauchy){
-    drugs = x$Input$Therapies %>% dplyr::filter(Class == "Mutagenic")
-    dplyr::left_join(
-      drugs %>% dplyr::arrange(as.Date(Start)),
-      x$Input$Mutations %>% dplyr::filter(Type %in% drugs$Name) %>% dplyr::select(Type, Value) %>% dplyr::rename(Name=Type),
-      by = "Name") %>% select(Name, Value) %>% unique() %>% pull(Value) %>% round() %>% as.integer()
+
+    if (type == "Mutagenic"){
+      if (!is.null(x$Input$Therapies)){
+        if (!cauchy){
+        drugs = x$Input$Therapies %>% dplyr::filter(Class == "Mutagenic")
+        dplyr::left_join(
+          drugs %>% dplyr::arrange(as.Date(Start)),
+          x$Input$Mutations %>% dplyr::filter(Type %in% drugs$Name) %>% dplyr::select(Type, Value) %>% dplyr::rename(Name=Type),
+          by = "Name") %>% select(Name, Value) %>% unique() %>% pull(Value) %>% round() %>% as.integer()
+        }else{
+          drugs = x$Input$Therapies %>% dplyr::filter(Class == "Mutagenic cauchy")
+          left_join(
+            drugs %>% dplyr::arrange(as.Date(Start)),
+            x$Input$Mutations %>% dplyr::filter(Type %in% drugs$Name) %>% dplyr::select(Type, Value) %>% dplyr::rename(Name=Type),
+            by = "Name") %>% dplyr::select(Name, Value) %>% unique() %>% dplyr::pull(Value) %>% round() %>% as.integer()
+        }
+      }else{
+        integer(0)
+      }
+
     }else{
-      drugs = x$Input$Therapies %>% dplyr::filter(Class == "Mutagenic cauchy")
-      left_join(
-        drugs %>% dplyr::arrange(as.Date(Start)),
-        x$Input$Mutations %>% dplyr::filter(Type %in% drugs$Name) %>% dplyr::select(Type, Value) %>% dplyr::rename(Name=Type),
-        by = "Name") %>% dplyr::select(Name, Value) %>% unique() %>% dplyr::pull(Value) %>% round() %>% as.integer()
+    x$Input$Mutations %>% dplyr::filter(Type == type) %>% dplyr::arrange(Length) %>% pull(Value) %>% as.integer()
     }
-  }else{
-  x$Input$Mutations %>% dplyr::filter(Type == type) %>% dplyr::arrange(Length) %>% pull(Value) %>% as.integer()
-  }
+
 }
 
 get_length = function(x, diploid = T){

@@ -3,24 +3,29 @@ get_drugs_order = function(x){
 }
 
 get_n_therapy_cycles = function(x, class = "Mutagenic"){
-  x$Input$Therapies %>% dplyr::filter(Class==class) %>% nrow()
+  if (!is.null(x$Input$Therapies)) x$Input$Therapies %>% dplyr::filter(Class==class) %>% nrow() else 0
 }
 
 get_n_therapy_classes = function(x, class = "Mutagenic"){
-  x$Input$Therapies %>% dplyr::filter(Class==class) %>% dplyr::pull(Name) %>% unique() %>% length()
+  if (!is.null(x$Input$Therapies)) x$Input$Therapies %>% dplyr::filter(Class==class) %>% dplyr::pull(Name) %>% unique() %>% length() else 0
 }
 
 get_start_therapy = function(x, class= "Mutagenic"){
-  starts = x$Input$Therapies %>% dplyr::filter(Class==class)
+  if (!is.null(x$Input$Therapies)) {
+    starts = x$Input$Therapies %>% dplyr::filter(Class==class)
   if (nrow(starts) >0){
     starts = starts %>% dplyr::arrange(as.Date(Start)) %>% dplyr::pull(Start)
     return(unname(sapply(starts, TOSCA:::convert_real_date, x = x)) %>% unlist())
   }else{
     return(starts = starts %>% dplyr::arrange(as.Date(Start)) %>% dplyr::pull(Start) %>% as.double())
   }
+  } else{
+    return(numeric(0))
+  }
 }
 
 get_end_therapy = function(x, class= "Mutagenic"){
+  if (!is.null(x$Input$Therapies)) {
   starts = x$Input$Therapies %>% dplyr::filter(Class %in% class)
   if (nrow(starts) >0){
     starts = starts %>% dplyr::arrange(as.Date(Start)) %>% dplyr::pull(End)
@@ -28,11 +33,18 @@ get_end_therapy = function(x, class= "Mutagenic"){
   }else{
     return(starts = starts %>% dplyr::arrange(as.Date(Start)) %>% dplyr::pull(End)%>% as.double())
   }
+  }else{
+    return(numeric(0))
+  }
 }
 
 get_therapy_class_index = function(x, class= "Mutagenic"){
+  if (!is.null(x$Input$Therapies)){
   therapy_names = x$Input$Therapies %>% dplyr::filter(Class==class) %>% dplyr::arrange(as.Date(Start)) %>% pull(Name)
   match(therapy_names, unique(therapy_names))
+  }else{
+    integer(0)
+    }
 }
 
 get_sample = function(x, sample=1){
