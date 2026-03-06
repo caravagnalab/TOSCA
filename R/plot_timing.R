@@ -623,7 +623,7 @@ plot_timing_days = function(x, days_from=NULL, event_name = "Custom zero")
       data = data.frame("Date"=0),
       ggplot2::aes(x = Date, y = 0),
       inherit.aes = FALSE,
-      size = 3, color = "#A075BF"
+      size = 3, color = "black"
     ) +
     TOSCA:::my_ggplot_theme()+
     ggplot2::theme(legend.position = 'bottom',
@@ -823,12 +823,12 @@ plot_timing_days = function(x, days_from=NULL, event_name = "Custom zero")
                    xend = Date,
                    y=0,
                    yend = ylab_pos),
-      size = .5, color = "#A075BF"#, linetype="dashed"
+      size = .5, color = "black"#, linetype="dashed"
     )+
     ggplot2::geom_label(
       data = data.frame("Date"=0, "Name"=event_name),
       ggplot2::aes(x = Date, y = ylab_pos, label=Name),
-      size = 3, color = "#A075BF",
+      size = 3, color = "black",
       family = "Times New Roman"
     )
 
