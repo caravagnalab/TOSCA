@@ -5,7 +5,7 @@ Initialise TOSCA object
 ## Usage
 
 ``` r
-init(mutations, parameters, samples, therapies, sample_name = "Example")
+init(mutations, parameters, samples, therapies = NULL, sample_name = "Example")
 ```
 
 ## Arguments

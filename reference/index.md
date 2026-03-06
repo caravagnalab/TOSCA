@@ -68,6 +68,9 @@ Function to visualise the results of the fit.
   : Plot clinical timeline + posterior times with histogram
 - [`plot_timing_MAP()`](https://caravagnalab.github.io/TOSCA/reference/plot_timing_MAP.md)
   : Plot clinical timeline + posterior times with MAP
+- [`plot_timing_days()`](https://caravagnalab.github.io/TOSCA/reference/plot_timing_days.md)
+  : Plot clinical timeline + posterior times with histogram in days from
+  a chosen date
 - [`days_from()`](https://caravagnalab.github.io/TOSCA/reference/days_from.md)
   : Computes the days of the event of interest from a date of interest
 
