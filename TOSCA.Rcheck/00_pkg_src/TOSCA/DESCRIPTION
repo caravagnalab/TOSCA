@@ -1,0 +1,25 @@
+Package: TOSCA
+Type: Package
+Title: TOSCA - Timing Of Somatic Copy number Alterations
+Version: 0.1.0
+Authors@R: c(person("Alice", "Antonello", email = "alice.antonello@units.it", role=c("aut","cre")),
+            person("Riccardo", "Bergamin", email = "riccardo.bergamin@units.it", role=c("aut")))
+Maintainer: Alice Antonello <alice.antonello@units.it>
+Description: TOSCA is a packege for inferring the timing in real time of clonal and subclonal somatic copy numbers (SCNA) of type 2:0, 2:1 and 2:2, from WGS longitudinal data. 
+License: GPL (>= 3) + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 3.5), ggplot2, dplyr
+Imports: dplyr, ggplot2, ggpubr, ggrepel, ggsci, posterior, reshape2,
+        rlang, scales, patchwork, extrafont, bayesplot
+RoxygenNote: 7.3.3
+Suggests: cmdstanr, knitr, rmarkdown, testthat (>= 3.0.0)
+Additional_repositories: https://mc-stan.org/r-packages/
+Config/testthat/edition: 3
+URL: https://aliceantonello.github.io/TOSCA/,
+        https://caravagnalab.github.io/TOSCA/
+VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2026-04-23 09:41:57 UTC; aliceantonello
+Author: Alice Antonello [aut, cre],
+  Riccardo Bergamin [aut]

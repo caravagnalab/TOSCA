@@ -1,0 +1,20 @@
+* using log directory ‘/Users/aliceantonello/Docs/GitHub/TOSCA/TOSCA.Rcheck’
+* using R version 4.4.1 (2024-06-14)
+* using platform: aarch64-apple-darwin20
+* R was compiled by
+    Apple clang version 14.0.0 (clang-1400.0.29.202)
+    GNU Fortran (GCC) 12.2.0
+* running under: macOS 26.3.1
+* using session charset: UTF-8
+* checking for file ‘TOSCA/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘TOSCA’ version ‘0.1.0’
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... ERROR
+Namespace dependency missing from DESCRIPTION Imports/Depends entries: ‘cmdstanr’
+
+See section ‘The DESCRIPTION file’ in the ‘Writing R Extensions’
+manual.
+* DONE
+Status: 1 ERROR
