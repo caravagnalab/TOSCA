@@ -160,4 +160,5 @@ plot_ppc(exampleFit)
 #> Warning: font family 'Times New Roman' not found in PostScript font database
 #> Warning: font family 'Times New Roman' not found in PostScript font database
 #> Warning: font family 'Times New Roman' not found in PostScript font database
+#> Warning: font family 'Times New Roman' not found in PostScript font database
 ```
