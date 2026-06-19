@@ -19,5 +19,6 @@ Caravagna.
 ## Installation
 
 ``` r
+
 devtools::install_github("caravagnalab/TOSCA")
 ```

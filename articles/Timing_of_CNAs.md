@@ -8,6 +8,7 @@ This vignette demonstrates how can be used to analyze such data using a
 real-world case study from acute myeloid leukemia.
 
 ``` r
+
 library(TOSCA)
 #> Loading required package: ggplot2
 #> Loading required package: dplyr
@@ -30,6 +31,7 @@ example highlights how can be used to identify and interpret clinically
 relevant genomic events.
 
 ``` r
+
 data("UPN06")
 ```
 
