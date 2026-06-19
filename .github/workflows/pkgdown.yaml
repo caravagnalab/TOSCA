@@ -1,5 +1,4 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
     branches: [main, master]
@@ -15,7 +14,6 @@ permissions: read-all
 jobs:
   pkgdown:
     runs-on: ubuntu-latest
-    # Only restrict concurrency for non-PR jobs
     concurrency:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
@@ -31,9 +29,9 @@ jobs:
         with:
           use-public-rspm: true
 
-      - name: Add cmdstan repo
+      - name: Install cmdstanr
         run: |
-          writeLines('options(repos = c(cmdstanr = "https://mc-stan.org/r-packages/", getOption(\"repos\")))', file("~/.Rprofile", "ab"))
+          install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
@@ -41,9 +39,8 @@ jobs:
           extra-packages: any::pkgdown, local::.
           needs: website
 
-      - name: Build Cmdstan
+      - name: Install CmdStan
         run: |
-          install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
           cmdstanr::check_cmdstan_toolchain(fix = TRUE)
           cmdstanr::install_cmdstan(cores = parallel::detectCores())
         shell: Rscript {0}
