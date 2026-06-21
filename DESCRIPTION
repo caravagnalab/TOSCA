@@ -28,6 +28,7 @@ Imports:
     bayesplot
 RoxygenNote: 7.3.3
 Suggests: 
+    see,
     here,
     cmdstanr,
     knitr,
