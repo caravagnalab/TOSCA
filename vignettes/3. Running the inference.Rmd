@@ -1,0 +1,52 @@
+---
+title: "3. Running the inference"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{3. Running the inference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Running the inference
+
+Once all inputs are in place and the TOSCA object has been correctly initialised, the inference is launched with a single call to `fit()`. The function takes the TOSCA object as input and populates its inference results slot. For resistances mediated by a CNA event, as is the case for UPN06, `model_name` should be set to `"CNA"`. The `dormancy` argument should be set to `TRUE` when the patient has received a chemotherapeutic agent known to induce tumour cell dormancy, such as cytarabine. Additional arguments allow fine-grained control over the MCMC sampler (number of chains, iterations per chain, warmup length, and so on); see `?TOSCA::fit` for full details.
+
+```{r, message=FALSE, warning=FALSE}
+library(TOSCA)
+set.seed(10)
+data("UPN06")
+
+UPN06 <- TOSCA::fit(
+  UPN06,
+  model_name = "CNA",
+  dormancy   = TRUE
+)
+```
+
+Upon completion, `fit()` prints a summary report containing:
+
+- **Convergence diagnostics:** whether all $\hat{R} < 1.01$, the number of divergent transitions, and whether the E-BFMI fell below 0.3 in any chain.
+- **Preliminary posterior predictive check:** whether the observed mutation count for each group falls between the mode and the 90th percentile of the posterior predictive distribution.
+- **Parameter summary:** posterior estimates for each inferred parameter, including the posterior predictives.
+
+A summary of the inference results can be retrieved at any time with:
+
+```{r, message=FALSE, warning=FALSE}
+TOSCA::get_fit_summary(UPN06)
+```
+
+The fitted object also exposes the raw posterior draws, model specification, and diagnostic summary directly:
+
+```{r, message=FALSE, warning=FALSE}
+UPN06$Fit$posteriors
+UPN06$Fit$model_info
+UPN06$Fit$diagnostic_summary
+```
+

@@ -1,0 +1,176 @@
+---
+title: "2. Setting the priors"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{2. Setting the priors}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## The TOSCA model
+
+TOSCA models mutation accumulation as an inhomogeneous Poisson process whose rate varies over time according to the clinical history of the patient and the latent timing of clonal events. Mutations are partitioned into groups by mutational process and karyotype, and each group accumulates independently. For a group $s$, the expected mutation count is:
+
+$$m_s \sim \text{Poisson}\left( n_s \cdot \ell_s \cdot \omega \cdot \int_{t_{\text{start}}}^{t_{\text{end}}} \mu_s \, dt \right)$$
+
+where $n_s$ is the number of alleles (e.g. 2 for diploid mutations), $\ell_s$ is the length of the genomic region over which mutations accumulate, $\mu_s$ is the mutation rate for group $s$, and $\omega$ is the tumour growth rate. Parameter inference is performed via Markov Chain Monte Carlo (MCMC).
+
+TOSCA infers two sets of latent quantities:
+
+- **Timing parameters:** the time of origin of the early common ancestor (ECA), the time of origin of the resistant clone, and the time of origin of the most recent common ancestor (MRCA).
+- **Dynamic parameters:** the tumour growth rate $\omega$ and the mutation rate(s) $\mu_s$ under each therapy.
+
+## Setting the priors
+
+The hyperparameters required to run TOSCA fall into three groups.
+
+### Timing parameters
+
+The priors on the ECA, MRCA, and resistant clone origin times are set automatically as uniform distributions, with bounds derived from the clinical history provided at initialisation. Ordering constraints between events are enforced by construction (e.g. the ECA must precede the MRCA), and the clinical information further restricts the admissible intervals: for instance, if a therapy-associated mutational process is detected, TOSCA assumes that the MRCA originated no earlier than the start of the corresponding treatment. No user input is required for these priors.
+
+### Clock-like mutation rate
+
+The mutation rate $\mu_{\text{clock}}$ governs mutation accumulation under clock-like processes (SBS1 and SBS5) and is treated as a known constant. It can be estimated by running MOBSTER on the univariate VAF spectrum of the primary sample. We recommend using the primary sample estimate, as the presence of additional mutational processes active at relapse can confound the inference. If both samples show non-clock-like signature activity, use the sample that appears monoclonal and scale the MOBSTER estimate by the SBS1+SBS5 exposure in the tail mutations. For UPN06:
+
+```{r, warning=FALSE, message=FALSE}
+library(TOSCA)
+data("UPN06")
+
+UPN06$Input$Parameters %>% filter(Name == "mu_clock")
+```
+
+### Gamma priors on dynamic parameters
+
+The growth rate $\omega$ and the therapy-associated mutation rate(s) $\mu_s$ are each assigned a Gamma prior parametrised by shape ($\alpha$) and rate ($\beta$). These encode prior beliefs about the plausible range of tumour growth and mutagenicity under each treatment. For UPN06:
+
+```{r, warning=FALSE, message=FALSE}
+UPN06$Input$Parameters %>% 
+  filter(Name %in% c("alpha_th_step", "beta_th_step", "omega_alpha", "omega_beta"))
+```
+
+```{r, echo=FALSE, out.width="50%", dpi=300, warning=FALSE, message=FALSE}
+plot_prior = function(x, parameter){
+
+  #posterior = TOSCA:::get_inferred_parameters(x) %>% dplyr::select(parameter)
+  #colnames(posterior) = "par"
+
+  # if (!(parameter %in% colnames(posterior)) & parameter != "mrca") return(eplot())
+
+  if (parameter=="omega"){
+    alpha = TOSCA:::get_parameter(x, "omega_alpha")
+    beta = TOSCA:::get_parameter(x, "omega_beta")
+  }
+  name_mu_step = ""
+  if (grepl("mu_th_step", parameter)){
+    index = as.integer(strsplit(strsplit(parameter, "\\[")[[1]][2], "\\]")[[1]][1])
+    alpha = TOSCA:::get_mutation_rate(x, type = "th_step")[["alpha"]][index]
+    beta = TOSCA:::get_mutation_rate(x, type = "th_step")[["beta"]][index]
+    name_mu_step = TOSCA:::get_name_mu_step(x, index)
+  }
+  if (grepl("mu_driver", parameter)){
+    alpha = TOSCA:::get_mutation_rate(x, type = "driver")[["alpha"]]
+    beta = TOSCA:::get_mutation_rate(x, type = "driver")[["beta"]]
+  }
+
+  draws = stats::rgamma(1000000, alpha, beta)
+
+  #if (prior == 'gamma') draws = stats::rgamma(1000000, alpha, beta)
+  #if (prior == 'beta') draws = stats::rbeta(1000000, alpha, beta)
+
+  #if (parameter == "mrca") { posterior = as.data.frame(posterior[["rho_mrca"]]) } else { posterior = as.data.frame(posterior[[parameter]]) }
+
+  lb = min(draws) #, min(posterior$par))
+  ub = max(draws) #, max(posterior$par))
+
+  if (lb < 1e-10 & ub>2){
+    density_post_vs_prior = ggplot2::ggplot() +
+      TOSCA:::my_ggplot_theme() 
+      # ggplot2::geom_histogram(data= posterior, ggplot2::aes(x= par, y = ..density..),
+      #                         bins = 100,
+      #                         alpha= .6)+
+      # ggplot2::geom_vline(
+      #   xintercept = mean(posterior$par),
+      #   color = 'indianred3',
+      #   linetype = 'dashed',
+      #   size = 1
+      # )
+  }else{
+    density_post_vs_prior = ggplot2::ggplot() +
+      ggplot2::geom_density(ggplot2::aes(x = draws), alpha=.6, color= 'white', fill= 'grey') +
+      # ggplot2::theme_bw() +
+      TOSCA:::my_ggplot_theme() 
+      # ggplot2::geom_histogram(data= posterior, ggplot2::aes(x= par, y = ..density..),
+      #                         bins = 100,
+      #                         alpha= .6)+
+      # ggplot2::geom_vline(
+      #   xintercept = mean(posterior$par),
+      #   color = 'indianred3',
+      #   linetype = 'dashed',
+      #   size = 1
+      # )
+  }
+
+  if (parameter == "omega"){
+    density_post_vs_prior = density_post_vs_prior +
+      ggplot2::scale_x_continuous(name=bquote(.(rlang::sym(parameter))), breaks = scales::pretty_breaks(n=3) )
+  }
+  if (parameter == "mu_driver") {
+    density_post_vs_prior = density_post_vs_prior +
+      ggplot2::scale_x_continuous(name=bquote(mu[.("driver")]), breaks = scales::pretty_breaks(n=3) )
+  }
+  if (name_mu_step!=""){
+    density_post_vs_prior = density_post_vs_prior +
+      ggplot2::scale_x_continuous(name=bquote(mu[.(name_mu_step)]), breaks = scales::pretty_breaks(n=3) )
+  }
+
+  L = ggplot2::ggplot_build(density_post_vs_prior)$layout$panel_params[[1]]
+
+  # density_post_vs_prior = density_post_vs_prior +
+  #   ggrepel::geom_label_repel(
+  #     ggplot2::aes(
+  #       x = c(L$x.range[2] * .9, NA),
+  #       y = c(L$y.range[2] * .9, NA),
+  #       label = paste0("MAP ", round(mean(posterior$par), 3)),
+  #     ),
+  #     #ylim = c(L$y.range[2] * .9, NA),
+  #     size = 2,
+  #     fill = 'indianred3',
+  #     color = 'white',
+  #     nudge_y = 0,
+  #     nudge_x = 0,
+  #     show.legend = FALSE
+  #   )
+
+  return(density_post_vs_prior)
+}
+ggpubr::ggarrange(
+  plot_prior(UPN06, "omega"), 
+  plot_prior(UPN06, "mu_th_step[1]"), 
+  ncol = 1
+)
+```
+
+### Tumour cell count bounds
+
+The minimum and maximum number of cells in the relapse lineage at primary sampling and at relapse constrain the support of the timing inference. The defaults ($10^6$ and $10^{13}$) can be adjusted if clinical or biological information suggests otherwise. Users can also specify whether to apply a likelihood regularisation term assuming exponential growth before the first and/or second sample, via the `exponential_growth` parameter, which takes value 1 (enabled) or 0 (disabled) for each sample independently. For UPN06:
+
+```{r, warning=FALSE, message=FALSE}
+UPN06$Input$Parameters %>% 
+  filter(Name %in% c("exponential_growth", "N_min", "N_max"))
+```
+
+### Optional parameters
+
+Two additional parameters allow finer control over the model behaviour. The `k_step` parameter controls the steepness of the function regulating the onset and decay of therapy-associated mutagenesis, that is, how rapidly the mutational process activates after treatment begins and fades after it ends. The `phi` parameters introduce an overdispersion term around the expected mutation counts for each group, accommodating uncertainty in the observed mutation tallies. For UPN06:
+
+```{r, warning=FALSE, message=FALSE}
+UPN06$Input$Parameters %>% 
+  filter(Name %in% c("k_step", "phi_clock", "phi_th_step", "phi_cna_alpha", "phi_cna_beta"))
+```

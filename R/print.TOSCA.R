@@ -19,7 +19,7 @@ print.TOSCA <- function(x, ...) {
 
   cli::cli_rule(
     paste(
-      crayon::bgMagenta(crayon::white(paste0("** TOSCA ** Sample: ", x$Input$Sample_name, " ")))
+      crayon::bgMagenta(crayon::white(paste0("\n\n** TOSCA ** Sample: ", x$Input$Sample_name, " ")))
     )
   )
 

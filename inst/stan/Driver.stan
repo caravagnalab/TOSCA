@@ -124,7 +124,6 @@ transformed data{
 
 }
 
-
 parameters{
 
   real <lower=0, upper=Sample_1> t_eca;
@@ -180,7 +179,6 @@ if (n_th_step_type > 0) {
 
 
 }
-
 
 model {
   // Priors

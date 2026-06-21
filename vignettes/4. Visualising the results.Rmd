@@ -1,0 +1,91 @@
+---
+title: "4. Visualising the results"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{3. Running the inference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+### Timing posteriors
+
+The inferred timing posteriors can be visualised on the patient's clinical timeline in two complementary ways: as histograms overlaid on a single timeline, or as stacked densities. In both plots, treatment periods are shown as coloured rectangles and sampling dates as points on the timeline.
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(TOSCA)
+set.seed(10)
+data("UPN06")
+
+UPN06 <- TOSCA::fit(
+  UPN06,
+  model_name = "CNA",
+  dormancy   = TRUE
+)
+```
+
+```{r, message=FALSE, warning=FALSE, fig.width=7, fig.height=4, dpi = 100}
+TOSCA::plot_timing(UPN06)
+```
+
+```{r, message=FALSE, warning=FALSE, fig.width=8, fig.height=5, dpi = 100}
+TOSCA::plot_timing_MAP(UPN06)
+```
+
+By default the x-axis is expressed in calendar dates. If preferred, timings can be displayed in days relative to a clinically meaningful reference event. For UPN06, we use the allo-HSCT date as the origin:
+
+```{r, message=FALSE, warning=FALSE, fig.width=7, fig.height=4, dpi = 100}
+allo_HSCT <- "2014-04-23"
+TOSCA::plot_timing_days(UPN06, days_from = allo_HSCT, event_name = "allo-HSCT")
+```
+
+Summary statistics can likewise be computed relative to a reference date using `days_from()`. This is particularly useful for classifying the timed event as *de novo* (originating after the reference) or *pre-existing* (originating before it). For CNA-mediated resistance, the parameter `t_cna` and the length of the corresponding CNA, as specified in the mutations input, must be provided:
+
+```{r, message=FALSE, warning=FALSE}
+TOSCA::days_from(UPN06, from = allo_HSCT, parameter = "t_cna", cna_length = 47911693)
+```
+
+Consistent with the findings reported in the reference paper, the posterior places the CNLOH of the HLA locus after the allo-HSCT and in close temporal proximity to ganciclovir exposure, supporting a *de novo* origin of the resistance event.
+
+### Dynamic parameters
+
+To assess the inferred dynamic parameters, `plot_prior_vs_posterior()` displays the prior density alongside the posterior histogram for each parameter. The posterior median is indicated by a vertical red line.
+
+```{r, message=FALSE, warning=FALSE, fig.width=8, fig.height=4, dpi = 100}
+TOSCA::plot_prior_vs_posterior(UPN06)
+```
+
+### Posterior predictive check
+
+To verify that the inferred parameters are compatible with the observed data, `plot_ppc()` displays the multivariate posterior predictive distribution (PPD) for each mutation group. The observed mutation count is shown as a red point; the PPD is represented as a cloud of draws, colour-coded by their distance from the observed value.
+
+```{r, message=FALSE, warning=FALSE, fig.width=5, fig.height=5, dpi = 100}
+TOSCA::plot_ppc(UPN06)
+```
+
+## MCMC diagnostics
+
+TOSCA exposes a suite of diagnostic plots built on the [bayesplot](https://mc-stan.org/bayesplot/) package. These should be inspected routinely to verify that the sampler has explored the posterior adequately. Available diagnostics include chain trace plots, $\hat{R}$ plots, effective sample size (ESS) plots, and divergent transitions.
+
+```{r, message=FALSE, warning=FALSE, fig.width=7, fig.height=7, dpi = 100}
+TOSCA::plot_mcmc_chains(UPN06)
+```
+
+```{r, message=FALSE, warning=FALSE, fig.width=3, fig.height=3, dpi = 100}
+TOSCA::rhats_plot(UPN06)
+```
+
+```{r, message=FALSE, warning=FALSE, fig.width=3, fig.height=3, dpi = 100}
+TOSCA::ess_plot(UPN06)
+```
+
+```{r, message=FALSE, warning=FALSE, fig.width=7, fig.height=3, dpi = 100}
+TOSCA::plot_divergent_transitions(UPN06)
+```
+

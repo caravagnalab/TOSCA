@@ -1,0 +1,112 @@
+---
+title: "1. Input data and required pre-processing"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{1. Input data and required pre-processing}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+Understanding when and how genetic resistance to therapy emerges is a central problem in cancer genomics. With the increasing adoption of high-throughput sequencing in clinical practice, it is often possible to identify the driver event responsible for disease relapse. However, even when longitudinal data are available, their resolution is frequently too low to determine whether the resistant clone was already present before treatment onset, and was subsequently selected, or whether it emerged after treatment began. Resolving this question has direct clinical implications: patients harbouring a pre-existing resistant clone may not benefit from a given therapy, and since many treatments are themselves mutagenic, it is also important to identify cases where the treatment itself may have accelerated the emergence of resistance.
+
+**TOSCA** is an R package that leverages longitudinal whole-genome sequencing (WGS) data combined with clinical information to infer, in real time, the timing of origin of clonal expansions associated with therapy resistance. TOSCA employs a Bayesian model in which mutation accumulation is described as a Poisson process, and infers the timing of events associated with changes in process intensity, along with tumour dynamic parameters such as growth rate and mutation rate under therapy.
+
+The required inputs are:
+
+- **Clinical information:** dates of longitudinal sample collection and dates of therapy administration (for therapies associated with known mutational signatures).
+- **Mutation information:** the number of mutations private to the resistant clone, stratified by mutational signature and karyotype.
+
+In this vignette, we walk through a complete analysis of longitudinal WGS data from a single patient with acute myeloid leukaemia (AML) who developed resistance to immunotherapy. This example is drawn from the TOSCA reference paper and illustrates how the package can be used to identify and interpret clinically relevant genomic events in a real-world setting.
+
+## Data pre-processing
+
+UPN06 is drawn from a cohort of 11 AML patients who developed resistance to allogeneic stem cell transplantation (allo-HSCT) through copy-neutral loss of heterozygosity (CNLOH) of the HLA genes located on the short arm (p-arm) of chromosome 6. We begin by loading the data required for inference:
+
+```{r setup, warning=FALSE}
+library(TOSCA)
+data("UPN06")
+```
+
+### Sample collection dates
+
+The first input records the dates of sample collection in `YYYY-mm-dd` format. The date of birth is optional.
+
+```{r}
+UPN06$Input$Samples
+```
+
+### Therapy records
+
+The second input records all therapies that are either associated with a known mutational signature or that can induce a dormant state in cancer cells — for instance, cytarabine in AML. Start and end dates must follow the same `YYYY-mm-dd` format as sample dates. Each therapy must be classified as one of:
+
+- **Mutagenic:** associated with a known SBS signature.
+- **Chemotherapy inducing dormancy:** capable of inducing a dormant state in cancer cells (e.g. cytarabine in AML).
+
+```{r}
+UPN06$Input$Therapies
+```
+
+### Clonal mutations
+
+The third input contains mutations located on the phylogenetic branch associated with relapse. Constructing this input requires two upstream analyses to have been completed:
+
+1. **Clonal deconvolution** to reconstruct the bulk phylogeny and assign mutations to branches (e.g. [MOBSTER](link)).
+2. **Signature deconvolution** to attribute mutations on each branch to SBS signatures (e.g. [SigProfiler](link), [SparseSignatures](link), [BASCULE](link)).
+
+The figure below illustrates the upstream results for UPN06.
+
+```{r, echo=FALSE}
+cap <- "(a) Clinical summary of patient UPN06. Following diagnosis, the patient underwent several cycles of cytarabine prior to allo-HSCT. Post-transplant, the patient received the antiviral agent ganciclovir as prophylaxis against cytomegalovirus (CMV) infection. Disease relapse occurred 828 days after transplantation. 
+(b) Multivariate VAF of the pre-transplant and relapse samples. 
+(c) Reconstructed phylogenetic tree with signature exposures mapped onto branches."
+```
+
+```{r, echo=FALSE, fig.align="left", out.width="100%", fig.cap=cap}
+knitr::include_graphics("figures/UPN06.png")
+```
+
+TOSCA requires the private mutations of each longitudinal sample, stratified by signature. Specifically:
+
+- **Clock-like primary:** diploid private mutations of the first sample attributed to clock-like signatures (SBS1 and SBS5).
+- **Clock-like relapse:** diploid private mutations of the second sample attributed to clock-like signatures.
+- **Treatment-associated relapse:** diploid private mutations of the second sample attributed to the therapy-associated signature (named after the drug).
+- **CNA-associated mutations** (optional, for resistances mediated by a CNA event):
+  - *Alpha:* mutations present in double copy on the CNA.
+  - *Beta:* mutations present in single copy on the CNA.
+
+```{r}
+UPN06$Input$Mutations
+```
+
+### Parameters
+
+Once all inputs are prepared, the TOSCA object is initialised with a single call. 
+All subsequent analyses operate on this object.
+
+```{r}
+x <- TOSCA::init(
+  samples    = UPN06$Input$Samples,
+  therapies  = UPN06$Input$Therapies,
+  mutations  = UPN06$Input$Mutations,
+  parameters = UPN06$Input$Parameters,
+  sample_name = "UPN06"
+)
+x
+```
+
+The warning above is expected. TOSCA flags any mutation type name that does not match the reserved keywords (`clock-like primary`, `clock-like relapse`, `alpha`, `beta`, `driver`) to guard against accidental mismatches between the `Mutations` and `Therapies` dataframes. Here, `Cytarabine` and `Ganciclovir` are intentional: they correspond to therapy-associated mutational processes and their names match exactly the entries in `UPN06$Input$Therapies`, which is all that is required for the inference to proceed correctly.
+
+The inference results slot is empty until the model is fit, as shown in the next section.
+
+
+
+
+
