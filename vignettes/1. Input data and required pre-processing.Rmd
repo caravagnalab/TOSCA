@@ -70,7 +70,7 @@ cap <- "(a) Clinical summary of patient UPN06. Following diagnosis, the patient 
 ```
 
 ```{r, echo=FALSE, fig.align="left", out.width="100%", fig.cap=cap}
-knitr::include_graphics("figures/UPN06.png")
+knitr::include_graphics(here::here("vignettes/figures/UPN06.png"))
 ```
 
 TOSCA requires the private mutations of each longitudinal sample, stratified by signature. Specifically:
