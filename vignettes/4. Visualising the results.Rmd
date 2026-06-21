@@ -23,11 +23,11 @@ library(TOSCA)
 set.seed(10)
 data("UPN06")
 
-UPN06 <- TOSCA::fit(
-  UPN06,
-  model_name = "CNA",
-  dormancy   = TRUE
-)
+# UPN06 <- TOSCA::fit(
+#   UPN06,
+#   model_name = "CNA",
+#   dormancy   = TRUE
+# )
 ```
 
 ```{r, message=FALSE, warning=FALSE, fig.width=7, fig.height=4, dpi = 100}
@@ -73,19 +73,19 @@ TOSCA::plot_ppc(UPN06)
 
 TOSCA exposes a suite of diagnostic plots built on the [bayesplot](https://mc-stan.org/bayesplot/) package. These should be inspected routinely to verify that the sampler has explored the posterior adequately. Available diagnostics include chain trace plots, $\hat{R}$ plots, effective sample size (ESS) plots, and divergent transitions.
 
-```{r, message=FALSE, warning=FALSE, fig.width=7, fig.height=7, dpi = 100}
+```{r, message=FALSE, warning=FALSE, fig.width=7, fig.height=7, dpi = 100, eval = FALSE}
 TOSCA::plot_mcmc_chains(UPN06)
 ```
 
-```{r, message=FALSE, warning=FALSE, fig.width=3, fig.height=3, dpi = 100}
+```{r, message=FALSE, warning=FALSE, fig.width=3, fig.height=3, dpi = 100, eval = FALSE}
 TOSCA::rhats_plot(UPN06)
 ```
 
-```{r, message=FALSE, warning=FALSE, fig.width=3, fig.height=3, dpi = 100}
+```{r, message=FALSE, warning=FALSE, fig.width=3, fig.height=3, dpi = 100, eval = FALSE}
 TOSCA::ess_plot(UPN06)
 ```
 
-```{r, message=FALSE, warning=FALSE, fig.width=7, fig.height=3, dpi = 100}
+```{r, message=FALSE, warning=FALSE, fig.width=7, fig.height=3, dpi = 100, eval = FALSE}
 TOSCA::plot_divergent_transitions(UPN06)
 ```
 

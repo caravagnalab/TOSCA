@@ -18,17 +18,20 @@ knitr::opts_chunk$set(
 
 Once all inputs are in place and the TOSCA object has been correctly initialised, the inference is launched with a single call to `fit()`. The function takes the TOSCA object as input and populates its inference results slot. For resistances mediated by a CNA event, as is the case for UPN06, `model_name` should be set to `"CNA"`. The `dormancy` argument should be set to `TRUE` when the patient has received a chemotherapeutic agent known to induce tumour cell dormancy, such as cytarabine. Additional arguments allow fine-grained control over the MCMC sampler (number of chains, iterations per chain, warmup length, and so on); see `?TOSCA::fit` for full details.
 
-```{r, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(TOSCA)
 set.seed(10)
 data("UPN06")
+```
 
+```{r, message=FALSE, warning=FALSE, eval=FALSE}
 UPN06 <- TOSCA::fit(
   UPN06,
   model_name = "CNA",
   dormancy   = TRUE
 )
 ```
+
 
 Upon completion, `fit()` prints a summary report containing:
 
