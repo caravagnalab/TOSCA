@@ -61,22 +61,6 @@ The third input contains mutations located on the phylogenetic branch associated
 1. **Clonal deconvolution** to reconstruct the bulk phylogeny and assign mutations to branches (e.g. [MOBSTER](link)).
 2. **Signature deconvolution** to attribute mutations on each branch to SBS signatures (e.g. [SigProfiler](link), [SparseSignatures](link), [BASCULE](link)).
 
-The figure below illustrates the upstream results for UPN06.
-
-```{r, echo=FALSE}
-cap <- "(a) Clinical summary of patient UPN06. Following diagnosis, the patient underwent several cycles of cytarabine prior to allo-HSCT. Post-transplant, the patient received the antiviral agent ganciclovir as prophylaxis against cytomegalovirus (CMV) infection. Disease relapse occurred 828 days after transplantation. 
-(b) Multivariate VAF of the pre-transplant and relapse samples. 
-(c) Reconstructed phylogenetic tree with signature exposures mapped onto branches."
-```
-
-# <a href="https://caravagnalab.github.io/TOSCA/"><img src="man/figures/UPN06.png" align="center" height="180" /></a>
-
-```{r, echo=FALSE, fig.align="left", out.width="100%", fig.cap=cap}
-knitr::include_graphics(
-  here::here("man", "figures", "UPN06.png")
-)
-```
-
 TOSCA requires the private mutations of each longitudinal sample, stratified by signature. Specifically:
 
 - **Clock-like primary:** diploid private mutations of the first sample attributed to clock-like signatures (SBS1 and SBS5).

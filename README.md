@@ -31,6 +31,14 @@ Giulio Caravagna.
 
 ## Installation
 
+You can install the released version of from
+[GitHub](https://github.com) with:
+
 ``` r
 devtools::install_github("caravagnalab/TOSCA")
 ```
+
+**Note:** TOSCA requires [cmdstanr](https://mc-stan.org/cmdstanr/) to
+fit models. Please follow the [installation
+instructions](https://mc-stan.org/cmdstanr/articles/cmdstanr.html)
+before use.
