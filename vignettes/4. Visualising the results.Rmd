@@ -20,6 +20,7 @@ The inferred timing posteriors can be visualised on the patient's clinical timel
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
 library(TOSCA)
+library(see)
 set.seed(10)
 data("UPN06")
 
