@@ -2,8 +2,10 @@
 <url><loc>https://caravagnalab.github.io/TOSCA/404.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/LICENSE-text.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/LICENSE.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/articles/Timing_of_CNAs.html</loc></url>
-<url><loc>https://caravagnalab.github.io/TOSCA/articles/Timing_of_Driver.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/articles/1. Input data and required pre-processing.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/articles/2. Setting the priors.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/articles/3. Running the inference.html</loc></url>
+<url><loc>https://caravagnalab.github.io/TOSCA/articles/4. Visualising the results.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/articles/index.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/authors.html</loc></url>
 <url><loc>https://caravagnalab.github.io/TOSCA/index.html</loc></url>

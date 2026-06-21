@@ -2,9 +2,11 @@ pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
-  Timing_of_CNAs: Timing_of_CNAs.html
-  Timing_of_Driver: Timing_of_Driver.html
-last_built: 2026-06-19T13:56Z
+  1. Input data and required pre-processing: 1. Input data and required pre-processing.html
+  2. Setting the priors: 2. Setting the priors.html
+  3. Running the inference: 3. Running the inference.html
+  4. Visualising the results: 4. Visualising the results.html
+last_built: 2026-06-21T20:02Z
 urls:
   reference: https://caravagnalab.github.io/TOSCA/reference
   article: https://caravagnalab.github.io/TOSCA/articles

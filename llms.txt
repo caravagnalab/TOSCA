@@ -1,17 +1,17 @@
 # TOSCA
 
-TOSCA (Timing Of Somatic Events in Cancer), is a framework that used
-longitudinal whole genome sequencing data to time clonal expantions
-associated to drug resistance. It uses a Bayesian Poisson process to
-model mutation accumulation along the phylogenetic branch connecting the
-Early Common Ancestor (ECA) and the Most Recent Common Ancestor (MRCA),
-where genetic resistance emerges. The framework infers the timing of
-resistance-associated genetic events that alter the intensity of the
-mutation accumulation process, such as copy-number alterations and point
-mutations associated with a hypermutator phenotype. Importantly, these
-inferred timings are mapped onto the patient’s clinical history,
-enabling events to be interpreted in real time rather than solely in
-pseudotime.
+TOSCA (Timing Of Somatic Events in Cancer), is a framework that
+leverages longitudinal whole genome sequencing data to time clonal
+expantions associated to drug resistance. It uses a Bayesian Poisson
+process to model mutation accumulation along the phylogenetic branch
+connecting the Early Common Ancestor (ECA) and the Most Recent Common
+Ancestor (MRCA), where genetic resistance emerges. The framework infers
+the timing of resistance-associated genetic events that alter the
+intensity of the mutation accumulation process, such as copy-number
+alterations and point mutations associated with a hypermutator
+phenotype. Importantly, these inferred timings are mapped onto the
+patient’s clinical history, enabling events to be interpreted in real
+time rather than solely in pseudotime.
 
 #### Citation
 
@@ -25,10 +25,18 @@ Giulio Caravagna.
 
 ## Installation
 
+You can install the released version of from
+[GitHub](https://github.com) with:
+
 ``` r
 
 devtools::install_github("caravagnalab/TOSCA")
 ```
+
+**Note:** TOSCA requires [cmdstanr](https://mc-stan.org/cmdstanr/) to
+fit models. Please follow the [installation
+instructions](https://mc-stan.org/cmdstanr/articles/cmdstanr.html)
+before use.
 
 # Package index
 
@@ -137,7 +145,11 @@ Get the results from the inference.
 
 ### All vignettes
 
-- [Timing of
-  CNAs](https://caravagnalab.github.io/TOSCA/articles/Timing_of_CNAs.md):
-- [Timing of
-  Driver](https://caravagnalab.github.io/TOSCA/articles/Timing_of_Driver.md):
+- [1. Input data and required
+  pre-processing](https://caravagnalab.github.io/TOSCA/articles/1.%20Input%20data%20and%20required%20pre-processing.md):
+- [2. Setting the
+  priors](https://caravagnalab.github.io/TOSCA/articles/2.%20Setting%20the%20priors.md):
+- [3. Running the
+  inference](https://caravagnalab.github.io/TOSCA/articles/3.%20Running%20the%20inference.md):
+- [4. Visualising the
+  results](https://caravagnalab.github.io/TOSCA/articles/4.%20Visualising%20the%20results.md):

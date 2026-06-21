@@ -41,8 +41,10 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/Timing_of_CNAs.html">Timing of CNAs</a></li>
-    <li><a class="dropdown-item" href="articles/Timing_of_Driver.html">Timing of Driver</a></li>
+<li><a class="dropdown-item" href="articles/1.%20Input%20data%20and%20required%20pre-processing.html">1. Input data and required pre-processing</a></li>
+    <li><a class="dropdown-item" href="articles/2.%20Setting%20the%20priors.html">2. Setting the priors</a></li>
+    <li><a class="dropdown-item" href="articles/3.%20Running%20the%20inference.html">3. Running the inference</a></li>
+    <li><a class="dropdown-item" href="articles/4.%20Visualising%20the%20results.html">4. Visualising the results</a></li>
   </ul>
 </li>
       </ul>
@@ -65,7 +67,7 @@
 </div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>TOSCA (Timing Of Somatic Events in Cancer), is a framework that used longitudinal whole genome sequencing data to time clonal expantions associated to drug resistance. It uses a Bayesian Poisson process to model mutation accumulation along the phylogenetic branch connecting the Early Common Ancestor (ECA) and the Most Recent Common Ancestor (MRCA), where genetic resistance emerges. The framework infers the timing of resistance-associated genetic events that alter the intensity of the mutation accumulation process, such as copy-number alterations and point mutations associated with a hypermutator phenotype. Importantly, these inferred timings are mapped onto the patient’s clinical history, enabling events to be interpreted in real time rather than solely in pseudotime.</p>
+<p>TOSCA (Timing Of Somatic Events in Cancer), is a framework that leverages longitudinal whole genome sequencing data to time clonal expantions associated to drug resistance. It uses a Bayesian Poisson process to model mutation accumulation along the phylogenetic branch connecting the Early Common Ancestor (ECA) and the Most Recent Common Ancestor (MRCA), where genetic resistance emerges. The framework infers the timing of resistance-associated genetic events that alter the intensity of the mutation accumulation process, such as copy-number alterations and point mutations associated with a hypermutator phenotype. Importantly, these inferred timings are mapped onto the patient’s clinical history, enabling events to be interpreted in real time rather than solely in pseudotime.</p>
 <div class="section level4">
 <h4 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h4>
@@ -79,8 +81,10 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
+<p>You can install the released version of from <a href="https://github.com" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"caravagnalab/TOSCA"</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Note:</strong> TOSCA requires <a href="https://mc-stan.org/cmdstanr/" class="external-link">cmdstanr</a> to fit models. Please follow the <a href="https://mc-stan.org/cmdstanr/articles/cmdstanr.html" class="external-link">installation instructions</a> before use.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="license">
