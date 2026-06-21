@@ -69,6 +69,8 @@ cap <- "(a) Clinical summary of patient UPN06. Following diagnosis, the patient 
 (c) Reconstructed phylogenetic tree with signature exposures mapped onto branches."
 ```
 
+# <a href="https://caravagnalab.github.io/TOSCA/"><img src="man/figures/UPN06.png" align="center" height="180" /></a>
+
 ```{r, echo=FALSE, fig.align="left", out.width="100%", fig.cap=cap}
 knitr::include_graphics(
   here::here("man", "figures", "UPN06.png")
